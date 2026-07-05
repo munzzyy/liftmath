@@ -12,14 +12,18 @@ Subcommands:
     warmup    Warm-up ramp sets up to a working weight
 
 All loads are unit-agnostic (kg or lb) unless a subcommand needs the unit; pass --unit.
+Pass --json (before or after the subcommand) to get machine-readable JSON instead of
+the formatted text, e.g. `liftmath 1rm --weight 225 --reps 5 --json`.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 
 from liftmath import __version__
+from liftmath._serialize import to_json
 from liftmath.loads import load_chart, target_load
 from liftmath.macros import ACTIVITY_LEVELS, GOALS, macro_targets
 from liftmath.mesocycle import ramp_mesocycle
@@ -36,6 +40,10 @@ def cmd_1rm(args: argparse.Namespace) -> int:
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
+
+    if args.json:
+        print(to_json(est))
+        return 0
 
     if est.is_exact:
         print(f"That set IS a 1RM: {args.weight:g}{args.unit}.")
@@ -66,6 +74,10 @@ def cmd_1rm(args: argparse.Namespace) -> int:
 
 def cmd_reps(args: argparse.Namespace) -> int:
     one = args.onerm
+    if args.json:
+        print(to_json(load_chart(one, unit=args.unit)))
+        return 0
+
     print(f"%1RM load & effort chart (1RM = {one:g}{args.unit})")
     print("-" * 54)
     print(f"{'%1RM':>5} {'load':>9} {'~max reps':>10}   typical use")
@@ -83,6 +95,10 @@ def cmd_reps(args: argparse.Namespace) -> int:
 
 def cmd_target(args: argparse.Namespace) -> int:
     result = target_load(args.onerm, args.reps, rir=args.rir)
+    if args.json:
+        print(to_json(result))
+        return 0
+
     print(f"To do ~{args.reps} reps (to failure) with a {args.onerm:g}{args.unit} 1RM:")
     print(f"  load ~= {result.load:.1f}{args.unit}  ({result.pct*100:.0f}% 1RM)")
     if args.rir:
@@ -98,6 +114,9 @@ def cmd_volume(args: argparse.Namespace) -> int:
         except KeyError as e:
             print(f"error: {e}", file=sys.stderr)
             return 1
+        if args.json:
+            print(to_json(info))
+            return 0
         print(f"{info.muscle} - weekly hard-set landmarks (sets to ~0-4 RIR):")
         print(f"  MV  (maintain)          {info.mv}")
         print(f"  MEV (min effective)     {info.mev}")
@@ -105,6 +124,14 @@ def cmd_volume(args: argparse.Namespace) -> int:
         print(f"  MRV (max recoverable)   {info.mrv}")
         if args.sets is not None:
             print(f"\n  Your {args.sets} sets/wk: {info.verdict}")
+        return 0
+
+    if args.json:
+        table = {
+            m: {"mv": mv, "mev": mev, "mav_low": mlo, "mav_high": mhi, "mrv": mrv}
+            for m, (mv, mev, mlo, mhi, mrv) in LANDMARKS.items()
+        }
+        print(json.dumps(table, indent=2))
         return 0
 
     print("Weekly hard-set landmarks per muscle (Israetel/RP heuristics - starting points):")
@@ -155,6 +182,10 @@ def cmd_program(args: argparse.Namespace) -> int:
         print(f"error: {e}", file=sys.stderr)
         return 1
 
+    if args.json:
+        print(to_json(audit))
+        return 0
+
     print("Program volume audit - weekly hard sets per muscle:")
     print("-" * 66)
     print(f"{'muscle':<12}{'sets/wk':>8}{'MEV':>5}{'MRV':>5}   verdict")
@@ -177,6 +208,10 @@ def cmd_meso(args: argparse.Namespace) -> int:
         print(f"error: {e}", file=sys.stderr)
         return 1
 
+    if args.json:
+        print(to_json(meso))
+        return 0
+
     print(f"{meso.muscle} mesocycle - {args.weeks} weeks: ramp MEV({meso.mev}) -> MRV({meso.mrv}), then deload")
     print(f"{'week':>5}{'sets':>7}{'%MRV':>7}   note")
     print("-" * 46)
@@ -194,6 +229,10 @@ def cmd_macros(args: argparse.Namespace) -> int:
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
+
+    if args.json:
+        print(to_json(m))
+        return 0
 
     est = " (estimated)" if m.tdee_is_estimate else " (you supplied)"
     print(f"Targets for {args.bodyweight:g}{args.unit} ({m.bodyweight_kg:.1f}kg), goal = {args.goal}")
@@ -228,6 +267,10 @@ def cmd_plates(args: argparse.Namespace) -> int:
         print(f"error: {e}", file=sys.stderr)
         return 1
 
+    if args.json:
+        print(to_json(result))
+        return 0
+
     print(f"Load {args.target:g}{args.unit} on a {result.bar:g}{args.unit} bar:")
     if result.plates:
         detail = ", ".join(f"{n}x{p:g}" for p, n in result.plates)
@@ -242,6 +285,10 @@ def cmd_plates(args: argparse.Namespace) -> int:
 
 def cmd_warmup(args: argparse.Namespace) -> int:
     ramp = warmup_ramp(args.weight, unit=args.unit, bar=args.bar)
+    if args.json:
+        print(to_json(ramp))
+        return 0
+
     print(f"Warm-up ramp to {args.weight:g}{args.unit} (working weight):")
     for step in ramp.steps:
         print(f"  {step.label:<12} ~{step.load:g}{args.unit}")
@@ -250,46 +297,64 @@ def cmd_warmup(args: argparse.Namespace) -> int:
     return 0
 
 
+def _json_parent(*, suppress_default: bool) -> argparse.ArgumentParser:
+    """Shared --json flag, usable before or after the subcommand name.
+
+    Both the top-level parser and every subparser carry this flag so
+    `liftmath --json plates ...` and `liftmath plates --json ...` both work.
+    argparse re-applies each parser's own default when it runs, so the
+    subparsers' copy must suppress its default instead of resetting a
+    True value set by the top-level parser back to False.
+    """
+    parent = argparse.ArgumentParser(add_help=False)
+    parent.add_argument("--json", action="store_true",
+                         default=argparse.SUPPRESS if suppress_default else False,
+                         help="print machine-readable JSON instead of formatted text")
+    return parent
+
+
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="liftmath", description="Strength & hypertrophy training math.")
+    p = argparse.ArgumentParser(prog="liftmath", description="Strength & hypertrophy training math.",
+                                 parents=[_json_parent(suppress_default=False)])
     p.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = p.add_subparsers(dest="cmd", required=True)
+    json_parent = _json_parent(suppress_default=True)
 
-    s = sub.add_parser("1rm", help="estimate 1RM from a weight x reps set")
+    s = sub.add_parser("1rm", help="estimate 1RM from a weight x reps set", parents=[json_parent])
     s.add_argument("--weight", type=float, required=True)
     s.add_argument("--reps", type=int, required=True)
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_1rm)
 
-    s = sub.add_parser("reps", help="%%1RM load & effort chart from a known 1RM")
+    s = sub.add_parser("reps", help="%%1RM load & effort chart from a known 1RM", parents=[json_parent])
     s.add_argument("--onerm", type=float, required=True)
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_reps)
 
-    s = sub.add_parser("target", help="weight for a target rep count from a 1RM")
+    s = sub.add_parser("target", help="weight for a target rep count from a 1RM", parents=[json_parent])
     s.add_argument("--onerm", type=float, required=True)
     s.add_argument("--reps", type=int, required=True)
     s.add_argument("--rir", type=int, default=0, help="reps in reserve (stop short of failure)")
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_target)
 
-    s = sub.add_parser("volume", help="weekly set landmarks per muscle + audit")
+    s = sub.add_parser("volume", help="weekly set landmarks per muscle + audit", parents=[json_parent])
     s.add_argument("--muscle", help="one muscle (omit for full table)")
     s.add_argument("--sets", type=int, help="your current weekly hard sets, to audit")
     s.set_defaults(func=cmd_volume)
 
-    s = sub.add_parser("program", help="whole-program weekly volume audit per muscle")
+    s = sub.add_parser("program", help="whole-program weekly volume audit per muscle", parents=[json_parent])
     s.add_argument("--exercise", action="append", required=True, metavar="SPEC",
                    help="'Name | sets x freq | muscle=frac,...' - repeat per exercise; "
                         "fractions optional for known lifts (e.g. 'Bench Press | 4x2')")
     s.set_defaults(func=cmd_program)
 
-    s = sub.add_parser("meso", help="ramp a muscle MEV->MRV over N weeks + deload")
+    s = sub.add_parser("meso", help="ramp a muscle MEV->MRV over N weeks + deload", parents=[json_parent])
     s.add_argument("--muscle", required=True)
     s.add_argument("--weeks", type=int, default=5, help="total weeks incl. a final deload (default 5)")
     s.set_defaults(func=cmd_meso)
 
-    s = sub.add_parser("macros", help="protein/calorie/fat/carb targets")
+    s = sub.add_parser("macros", help="protein/calorie/fat/carb targets", parents=[json_parent])
     s.add_argument("--bodyweight", type=float, required=True)
     s.add_argument("--goal", default="maintain", choices=list(GOALS))
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
@@ -297,14 +362,14 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--activity", default="moderate", choices=list(ACTIVITY_LEVELS))
     s.set_defaults(func=cmd_macros)
 
-    s = sub.add_parser("plates", help="plate-loading math")
+    s = sub.add_parser("plates", help="plate-loading math", parents=[json_parent])
     s.add_argument("--target", type=float, required=True)
     s.add_argument("--bar", type=float, help="bar weight (default 20kg / 45lb)")
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.add_argument("--plates", type=float, nargs="*", help="available plate denominations (per side)")
     s.set_defaults(func=cmd_plates)
 
-    s = sub.add_parser("warmup", help="warm-up ramp to a working weight")
+    s = sub.add_parser("warmup", help="warm-up ramp to a working weight", parents=[json_parent])
     s.add_argument("--weight", type=float, required=True)
     s.add_argument("--bar", type=float, help="bar weight (default 20kg / 45lb)")
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])

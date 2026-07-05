@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from liftmath.cli import main
@@ -123,3 +125,82 @@ def test_warmup_command(capsys):
 def test_no_subcommand_requires_one():
     with pytest.raises(SystemExit):
         main([])
+
+
+def test_json_flag_after_subcommand(capsys):
+    code, out = run(capsys, ["1rm", "--weight", "225", "--reps", "5", "--json"])
+    assert code == 0
+    data = json.loads(out)
+    assert data["reps"] == 5
+    assert data["per_formula"]["Epley"] == pytest.approx(262.5)
+    assert data["is_exact"] is False
+
+
+def test_json_flag_before_subcommand(capsys):
+    code, out = run(capsys, ["--json", "1rm", "--weight", "225", "--reps", "5"])
+    assert code == 0
+    data = json.loads(out)
+    assert data["consensus"] == pytest.approx(259.17, abs=0.01)
+
+
+def test_json_reps_command(capsys):
+    code, out = run(capsys, ["reps", "--onerm", "315", "--json"])
+    data = json.loads(out)
+    assert data["one_rm"] == 315
+    assert isinstance(data["rows"], list) and data["rows"]
+
+
+def test_json_volume_full_table(capsys):
+    code, out = run(capsys, ["volume", "--json"])
+    data = json.loads(out)
+    assert data["chest"]["mev"] == 10
+
+
+def test_json_volume_single_muscle(capsys):
+    code, out = run(capsys, ["volume", "--muscle", "chest", "--sets", "14", "--json"])
+    data = json.loads(out)
+    assert data["muscle"] == "chest"
+    assert data["verdict"]
+
+
+def test_json_program_command(capsys):
+    argv = ["program", "--exercise", "Bench Press | 4x2", "--json"]
+    code, out = run(capsys, argv)
+    data = json.loads(out)
+    assert data["totals"]["chest"] == pytest.approx(8.0)
+    assert any(row["muscle"] == "chest" for row in data["rows"])
+
+
+def test_json_meso_command(capsys):
+    code, out = run(capsys, ["meso", "--muscle", "chest", "--weeks", "5", "--json"])
+    data = json.loads(out)
+    assert data["muscle"] == "chest"
+    assert len(data["weeks"]) == 5
+
+
+def test_json_macros_command(capsys):
+    argv = ["macros", "--bodyweight", "185", "--goal", "gain", "--json"]
+    code, out = run(capsys, argv)
+    data = json.loads(out)
+    assert data["goal"] == "gain"
+    assert data["protein_g"] > 0
+
+
+def test_json_plates_command(capsys):
+    code, out = run(capsys, ["plates", "--target", "245", "--json"])
+    data = json.loads(out)
+    assert data["exact"] is True
+    assert data["plates"] == [[45, 2], [10, 1]]
+
+
+def test_json_warmup_command(capsys):
+    code, out = run(capsys, ["warmup", "--weight", "275", "--json"])
+    data = json.loads(out)
+    assert data["working_weight"] == 275
+    assert isinstance(data["steps"], list) and data["steps"]
+
+
+def test_json_error_path_stays_plain_text(capsys):
+    """Errors still go to stderr as text, --json only affects the success path."""
+    code, out = run(capsys, ["1rm", "--weight", "225", "--reps", "0", "--json"])
+    assert code == 1

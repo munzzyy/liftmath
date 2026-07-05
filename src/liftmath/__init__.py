@@ -9,6 +9,7 @@ in the module it lives in.
 None of this is medical or nutrition advice. See the README.
 """
 
+from liftmath._serialize import to_dict, to_json
 from liftmath.loads import load_chart, pct_to_reps, reps_to_pct, target_load
 from liftmath.macros import MacroTargets, macro_targets
 from liftmath.mesocycle import ramp_mesocycle
@@ -40,5 +41,7 @@ __all__ = [
     "load_plates",
     "PlateLoad",
     "warmup_ramp",
+    "to_dict",
+    "to_json",
     "__version__",
 ]

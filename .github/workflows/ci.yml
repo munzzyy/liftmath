@@ -43,3 +43,5 @@ jobs:
           liftmath macros --bodyweight 185 --goal gain
           liftmath plates --target 245
           liftmath warmup --weight 275
+          liftmath 1rm --weight 225 --reps 5 --json
+          liftmath --json plates --target 245

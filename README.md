@@ -50,6 +50,25 @@ liftmath warmup --weight 275 --unit lb
 
 Run `liftmath <command> --help` for the full flag list on any of them.
 
+Add `--json` (before or after the subcommand) to get the same result as JSON
+instead of formatted text, for piping into another tool or script:
+
+```
+$ liftmath 1rm --weight 225 --reps 5 --json
+{
+  "weight": 225.0,
+  "reps": 5,
+  "unit": "lb",
+  "per_formula": {"Epley": 262.5, "Brzycki": 253.125, "...": "..."},
+  "consensus": 259.17253238856380,
+  "low": 253.125,
+  "high": 267.7740310159191,
+  "high_rep_warning": false,
+  "soft_estimate_warning": false,
+  "is_exact": false
+}
+```
+
 ### 1RM estimate
 
 Give it a weight and a rep count, it runs six published rep-max formulas and
@@ -125,6 +144,17 @@ print(m.protein_g, m.carb_g)
 
 plates = load_plates(245, unit="lb")
 print(plates.plates)   # [(45, 2), (10, 1)]
+```
+
+Every result is a plain dataclass. To serialize one (for an API response, a
+log line, whatever), use `to_dict`/`to_json` rather than hand-rolling
+`dataclasses.asdict()` yourself, they also carry over read-only properties
+like `is_exact` and `exact` that `asdict()` alone would drop:
+
+```python
+from liftmath import estimate_one_rm, to_json
+
+print(to_json(estimate_one_rm(225, 5, unit="lb")))
 ```
 
 See the module docstrings in `src/liftmath/` for the full API; each module
