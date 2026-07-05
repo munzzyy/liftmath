@@ -59,3 +59,29 @@ def test_audit_program_rows_carry_verdicts():
     assert chest_row.mev == 10
     assert chest_row.mrv == 22
     assert chest_row.verdict  # non-empty string
+
+
+def test_cable_crossover_resolves_to_chest():
+    assert resolve_fractions("Cable Crossover") == {"chest": 1.0}
+
+
+def test_preacher_curl_resolves_to_biceps():
+    assert resolve_fractions("Preacher Curl") == {"biceps": 1.0}
+
+
+def test_concentration_curl_resolves_to_biceps():
+    assert resolve_fractions("Concentration Curl") == {"biceps": 1.0}
+
+
+def test_skull_crusher_resolves_to_triceps():
+    assert resolve_fractions("Skull Crusher") == {"triceps": 1.0}
+
+
+def test_tricep_kickback_resolves_to_triceps():
+    assert resolve_fractions("Tricep Kickback") == {"triceps": 1.0}
+
+
+def test_new_curl_variants_do_not_break_hammer_curl():
+    # hammer curl also trains forearms; make sure the new "curl" keys
+    # (preacher, concentration) don't shadow the more specific hammer-curl match
+    assert resolve_fractions("Hammer Curl") == {"biceps": 1.0, "forearms": 0.4}
