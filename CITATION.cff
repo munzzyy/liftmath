@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "liftmath"
+abstract: >-
+  Evidence-based strength training math: 1RM estimation, percentage-based
+  load charts, weekly volume landmarks per muscle group, mesocycle ramps,
+  macro targets, plate loading, and warm-up ramps. Pure Python standard
+  library, no runtime dependencies.
+authors:
+  - family-names: "Munz"
+    given-names: "Cole"
+version: 0.1.0
+date-released: "2026-07-05"
+url: "https://github.com/munzzyy/liftmath"
+repository-code: "https://github.com/munzzyy/liftmath"
+license: MIT
+keywords:
+  - strength-training
+  - one-rep-max
+  - powerlifting
+  - hypertrophy
+  - fitness

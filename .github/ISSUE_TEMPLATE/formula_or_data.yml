@@ -1,0 +1,48 @@
+name: Formula, volume landmark, or exercise-data proposal
+description: Propose a new/changed 1RM formula, volume landmark, macro constant, or an exercise for the program.py fraction table
+labels: ["enhancement", "data"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of change is this
+      options:
+        - New or changed 1RM formula
+        - New or changed volume landmark (MV/MEV/MAV/MRV)
+        - New or changed macro/nutrition constant
+        - New exercise for the EXERCISE_FRACTIONS table (program.py)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: citation
+    attributes:
+      label: Source
+      description: >-
+        Author, year, and where it was published (journal, book, framework name).
+        liftmath's whole premise is that every number traces to a named source,
+        so this is required, not optional. If this is an exercise-fraction
+        addition, cite the same reasoning style used elsewhere in program.py
+        (prime mover vs. synergist logic) rather than a formal paper.
+      placeholder: "Refalo et al. (2023), systematic review and meta-analysis, ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: detail
+    attributes:
+      label: What should change
+      description: The formula/value/fraction itself, and which file it belongs in.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reference-value
+    attributes:
+      label: A hand-checked reference value
+      description: >-
+        A worked example (input -> expected output) you've verified by hand,
+        that could become a test case. See CONTRIBUTING.md.
+    validations:
+      required: false

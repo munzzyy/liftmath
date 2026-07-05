@@ -1,0 +1,47 @@
+name: Bug report
+description: Something in liftmath is broken or gives a wrong answer
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you run, and what went wrong?
+      placeholder: |
+        liftmath 1rm --weight 225 --reps 5
+        # expected X, got Y
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+      description: If this is a wrong number rather than a crash, say what you think the correct value is and why (a source helps, see CONTRIBUTING.md).
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: liftmath version
+      description: Output of `liftmath --version`
+      placeholder: "liftmath 0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      placeholder: "3.12"
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Full traceback, OS, or other context, if relevant.
+    validations:
+      required: false
