@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the package (no runtime dependencies)
+        run: pip install -e .
+
+      - name: Install test and lint tools
+        run: pip install pytest ruff
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Run tests
+        run: pytest -v
+
+      - name: Smoke-test the CLI end to end
+        run: |
+          liftmath --version
+          liftmath 1rm --weight 225 --reps 5
+          liftmath reps --onerm 315
+          liftmath volume
+          liftmath macros --bodyweight 185 --goal gain
+          liftmath plates --target 245
+          liftmath warmup --weight 275
