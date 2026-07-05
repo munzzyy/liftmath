@@ -16,6 +16,16 @@ back to a named formula or a cited source, and you can read the whole thing
 in a sitting. If you want to know exactly why it told you 259 lbs instead of
 260, the answer is in the code, not a black box.
 
+A few things it does differently from a typical single-formula calculator:
+1RM estimates run six published equations and report the median instead of
+picking one and hoping, with the curvilinear ones automatically dropped past
+12 reps where they're known to drift. Macro targets enforce their own math -
+protein, fat, and carbs are checked to actually sum to the calorie target,
+and you get a warning instead of silently wrong numbers if the protein-and-fat
+floor doesn't fit. Program auditing resolves exercise names to muscle
+fractions with a longest-match rule, so "Leg Extension" and "Leg Curl" don't
+collide with unrelated lifts that share a word.
+
 ## Install
 
 Not on PyPI yet, so install straight from GitHub:
@@ -46,6 +56,7 @@ liftmath meso --muscle chest --weeks 5
 liftmath macros --bodyweight 185 --goal gain --unit lb
 liftmath plates --target 245 --unit lb
 liftmath warmup --weight 275 --unit lb
+liftmath standards --total 1100 --bodyweight 220 --sex male --unit lb
 ```
 
 Run `liftmath <command> --help` for the full flag list on any of them.
@@ -126,7 +137,19 @@ printing numbers that don't add up.
 ### Plates and warm-ups
 
 `plates` solves plate loading for a target barbell weight with a standard or
-custom plate set. `warmup` builds a five-step ramp up to a working weight.
+custom plate set. Pass `--preset womens` for a 15kg bar or `--preset
+metric-no-45` for a metric gym with no 45lb-equivalent plate, instead of
+spelling out `--bar`/`--plates` by hand. `warmup` builds a five-step ramp up
+to a working weight.
+
+### Relative-strength scoring
+
+`standards` scores a competition total (or a single lift) against bodyweight
+using three published formulas side by side: Wilks (the 2020 revision), DOTS,
+and IPF GL points. They're reported together rather than as one number
+because each is fit to a different sample and they disagree slightly,
+especially at the extremes of the bodyweight range - useful for comparing
+lifters across weight classes, not for treating any single score as gospel.
 
 ## As a library
 
@@ -159,7 +182,7 @@ print(to_json(estimate_one_rm(225, 5, unit="lb")))
 
 See the module docstrings in `src/liftmath/` for the full API; each module
 covers one area (`onerm.py`, `loads.py`, `volume.py`, `program.py`,
-`mesocycle.py`, `macros.py`, `plates.py`, `warmup.py`).
+`mesocycle.py`, `macros.py`, `plates.py`, `warmup.py`, `standards.py`).
 
 ## Where the numbers come from
 
@@ -181,6 +204,10 @@ The protein target comes from a Morton et al. (2018) meta-analysis putting
 about 1.6 g/kg as the point of diminishing returns for hypertrophy, with
 intakes up to about 2.2 g/kg shown safe, raised further in a deficit per
 Helms, Aragon & Fitschen (2014).
+
+The relative-strength scores come from the IPF's own published GL
+coefficients (May 2020), the 2020 revision of the Wilks formula, and the DOTS
+formula introduced in 2019 as a bodyweight-independent alternative to Wilks.
 
 Full citations are in the relevant module's docstring, not just this file.
 

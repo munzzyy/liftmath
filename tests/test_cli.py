@@ -122,6 +122,26 @@ def test_warmup_command(capsys):
     assert "then work sets" in out
 
 
+def test_plates_preset_command(capsys):
+    code, out = run(capsys, ["plates", "--target", "67.5", "--unit", "kg", "--preset", "womens"])
+    assert code == 0
+    assert "15kg bar" in out
+
+
+def test_standards_command(capsys):
+    code, out = run(capsys, ["standards", "--total", "1100", "--bodyweight", "220",
+                              "--sex", "male", "--unit", "lb"])
+    assert code == 0
+    assert "Wilks" in out
+    assert "DOTS" in out
+    assert "IPF GL" in out
+
+
+def test_standards_rejects_bad_sex():
+    with pytest.raises(SystemExit):
+        main(["standards", "--total", "1100", "--bodyweight", "220", "--sex", "unicorn"])
+
+
 def test_no_subcommand_requires_one():
     with pytest.raises(SystemExit):
         main([])
@@ -191,6 +211,16 @@ def test_json_plates_command(capsys):
     data = json.loads(out)
     assert data["exact"] is True
     assert data["plates"] == [[45, 2], [10, 1]]
+
+
+def test_json_standards_command(capsys):
+    code, out = run(capsys, ["standards", "--total", "1100", "--bodyweight", "220",
+                              "--sex", "male", "--unit", "lb", "--json"])
+    data = json.loads(out)
+    assert data["sex"] == "male"
+    assert data["wilks"] > 0
+    assert data["dots"] > 0
+    assert data["ipf_gl"] > 0
 
 
 def test_json_warmup_command(capsys):

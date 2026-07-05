@@ -10,6 +10,7 @@ Subcommands:
     macros    Protein / calorie / fat / carb targets from bodyweight + goal
     plates    Plate-loading math for a target barbell weight
     warmup    Warm-up ramp sets up to a working weight
+    standards Relative-strength scoring: Wilks (2020), DOTS, IPF GL points
 
 All loads are unit-agnostic (kg or lb) unless a subcommand needs the unit; pass --unit.
 Pass --json (before or after the subcommand) to get machine-readable JSON instead of
@@ -28,8 +29,9 @@ from liftmath.loads import load_chart, target_load
 from liftmath.macros import ACTIVITY_LEVELS, GOALS, macro_targets
 from liftmath.mesocycle import ramp_mesocycle
 from liftmath.onerm import estimate_one_rm
-from liftmath.plates import load_plates
+from liftmath.plates import PRESETS, load_plates
 from liftmath.program import ExerciseSet, audit_program
+from liftmath.standards import score as strength_score
 from liftmath.volume import LANDMARKS, landmarks_for
 from liftmath.warmup import warmup_ramp
 
@@ -262,7 +264,8 @@ def cmd_macros(args: argparse.Namespace) -> int:
 
 def cmd_plates(args: argparse.Namespace) -> int:
     try:
-        result = load_plates(args.target, unit=args.unit, bar=args.bar, plates=args.plates)
+        result = load_plates(args.target, unit=args.unit, bar=args.bar, plates=args.plates,
+                              preset=args.preset)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -294,6 +297,36 @@ def cmd_warmup(args: argparse.Namespace) -> int:
         print(f"  {step.label:<12} ~{step.load:g}{args.unit}")
     print(f"  then work sets @ {args.weight:g}{args.unit}")
     print("Rest 1-3 min between warm-ups; the goal is to prime, not fatigue.")
+    return 0
+
+
+_LB_PER_KG = 0.45359237
+
+
+def cmd_standards(args: argparse.Namespace) -> int:
+    bodyweight_kg = args.bodyweight * _LB_PER_KG if args.unit == "lb" else args.bodyweight
+    total_kg = args.total * _LB_PER_KG if args.unit == "lb" else args.total
+    try:
+        result = strength_score(total_kg, bodyweight_kg, args.sex)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(result))
+        return 0
+
+    print(f"Relative-strength scores - {args.total:g}{args.unit} total @ {args.bodyweight:g}{args.unit} "
+          f"bodyweight ({args.sex}):")
+    print("-" * 40)
+    print(f"  Wilks (2020)   {result.wilks:7.2f}")
+    print(f"  DOTS           {result.dots:7.2f}")
+    print(f"  IPF GL points  {result.ipf_gl:7.2f}")
+    print("-" * 40)
+    print("IPF GL uses classic (raw) powerlifting coefficients only. All three formulas")
+    print("are fit to different samples and will disagree slightly, especially at the")
+    print("extremes of the bodyweight range - treat them as three independent opinions,")
+    print("not a single ground truth.")
     return 0
 
 
@@ -367,6 +400,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--bar", type=float, help="bar weight (default 20kg / 45lb)")
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.add_argument("--plates", type=float, nargs="*", help="available plate denominations (per side)")
+    s.add_argument("--preset", choices=sorted(PRESETS),
+                   help="named non-standard setup (kg-only): "
+                        "'womens' = 15kg bar, 'metric-no-45' = metric gym with no 45lb-equivalent plate")
     s.set_defaults(func=cmd_plates)
 
     s = sub.add_parser("warmup", help="warm-up ramp to a working weight", parents=[json_parent])
@@ -374,6 +410,14 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--bar", type=float, help="bar weight (default 20kg / 45lb)")
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_warmup)
+
+    s = sub.add_parser("standards", help="relative-strength scoring: Wilks/DOTS/IPF GL",
+                        parents=[json_parent])
+    s.add_argument("--total", type=float, required=True, help="competition total (or single-lift result)")
+    s.add_argument("--bodyweight", type=float, required=True)
+    s.add_argument("--sex", required=True, choices=["male", "female"])
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_standards)
 
     return p
 

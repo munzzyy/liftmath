@@ -4,8 +4,9 @@ title: "liftmath"
 abstract: >-
   Evidence-based strength training math: 1RM estimation, percentage-based
   load charts, weekly volume landmarks per muscle group, mesocycle ramps,
-  macro targets, plate loading, and warm-up ramps. Pure Python standard
-  library, no runtime dependencies.
+  macro targets, plate loading, warm-up ramps, and Wilks/DOTS/IPF GL
+  relative-strength scoring. Pure Python standard library, no runtime
+  dependencies.
 authors:
   - family-names: "Munz"
     given-names: "Cole"

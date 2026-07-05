@@ -16,6 +16,7 @@ from liftmath.mesocycle import ramp_mesocycle
 from liftmath.onerm import OneRmEstimate, estimate_one_rm
 from liftmath.plates import PlateLoad, load_plates
 from liftmath.program import ExerciseSet, audit_program
+from liftmath.standards import StrengthScore, dots_score, ipf_gl_points, score, wilks_score
 from liftmath.volume import LANDMARKS, MUSCLES, band_for, describe_band, resolve_muscle
 from liftmath.warmup import warmup_ramp
 
@@ -41,6 +42,11 @@ __all__ = [
     "load_plates",
     "PlateLoad",
     "warmup_ramp",
+    "score",
+    "StrengthScore",
+    "wilks_score",
+    "dots_score",
+    "ipf_gl_points",
     "to_dict",
     "to_json",
     "__version__",

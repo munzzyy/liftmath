@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "liftmath"
 version = "0.1.0"
-description = "Evidence-based strength training math: 1RM, load charts, volume landmarks, macros, plates, warm-ups."
+description = "Evidence-based strength training math: 1RM, load charts, volume landmarks, macros, plates, warm-ups, Wilks/DOTS/IPF GL."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]

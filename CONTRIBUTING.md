@@ -29,14 +29,15 @@ doesn't guarantee green everywhere, but it catches almost everything.
 liftmath's whole pitch is that every number traces back to a named source.
 That bar applies to contributions too, not just the existing code.
 
-**New or changed 1RM formulas, volume landmarks, or nutrition targets** need
+**New or changed 1RM formulas, volume landmarks, nutrition targets, or
+relative-strength standards (Wilks/DOTS/IPF GL and anything like them)** need
 a citation: author, year, and where it was published, in the same style as
-the docstrings already in `onerm.py` and `volume.py`. An opinion or "this
-felt more accurate for me" isn't enough on its own, tie it to a source. Add
-a hand-checked reference value to the matching test file too
-(`tests/test_onerm.py`, `tests/test_volume.py`, etc.) alongside the code
-change. If you're not sure a formula belongs, open an issue first and we can
-figure it out before you write code.
+the docstrings already in `onerm.py`, `volume.py`, and `standards.py`. An
+opinion or "this felt more accurate for me" isn't enough on its own, tie it
+to a source. Add a hand-checked reference value to the matching test file too
+(`tests/test_onerm.py`, `tests/test_volume.py`, `tests/test_standards.py`,
+etc.) alongside the code change. If you're not sure a formula belongs, open
+an issue first and we can figure it out before you write code.
 
 **Exercises missing from the `EXERCISE_FRACTIONS` table in `program.py`**
 are an easy, contained place to help. Pick a lift, figure out what it

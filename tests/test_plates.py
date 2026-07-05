@@ -44,3 +44,33 @@ def test_unloadable_target_reports_closest_achievable():
     result = load_plates(100, unit="kg", bar=15, plates=(20, 10, 5))
     # closest below = target - 2*shortfall = 100 - 5 = 95
     assert result.achievable == pytest.approx(95.0)
+
+
+def test_womens_preset_uses_15kg_bar():
+    # per side = (67.5-15)/2 = 26.25 -> 1x20 + 1x5 + 1x1.25
+    result = load_plates(67.5, unit="kg", preset="womens")
+    assert result.bar == 15
+    assert result.plates == [(20, 1), (5, 1), (1.25, 1)]
+    assert result.exact is True
+
+
+def test_metric_no_45_preset_uses_20kg_bar_and_no_25_plate_analog():
+    result = load_plates(100, unit="kg", preset="metric-no-45")
+    assert result.bar == 20
+    # per side = 40 -> 2x20, since 25 isn't in this preset's plate set
+    assert result.plates == [(20, 2)]
+
+
+def test_explicit_bar_or_plates_override_preset():
+    result = load_plates(70, unit="kg", preset="womens", bar=20)
+    assert result.bar == 20
+
+
+def test_preset_with_lb_unit_raises():
+    with pytest.raises(ValueError):
+        load_plates(245, unit="lb", preset="womens")
+
+
+def test_unknown_preset_raises():
+    with pytest.raises(ValueError):
+        load_plates(100, unit="kg", preset="not-a-real-preset")
