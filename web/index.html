@@ -6,7 +6,21 @@
 <title>liftmath - strength training calculators</title>
 <meta name="description" content="1RM consensus, %1RM/RIR load charts, volume landmarks, macros, plate loading, warm-up ramps, and Wilks/DOTS/IPF GL scores. Free, offline-capable, no account, no ads." />
 <meta name="theme-color" content="#101216" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-Xoxi2+ZtIRHohuMn3HN9NMzipTDRDy/stNTItI3oar4='; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" />
+<script>
+// Pre-paint theme apply, so a stored theme never flashes the default first.
+// Keep the id list in sync with THEMES in js/ui/theme.js. The CSP meta above
+// pins this script's exact bytes (script-src sha256) - editing it means
+// recomputing that hash.
+(function () {
+  try {
+    var t = localStorage.getItem("liftmath:theme");
+    if (["light", "dark", "iron", "chalk", "rust", "forest", "contrast", "neon"].indexOf(t) !== -1) {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) {}
+})();
+</script>
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icons/icon-192.png" />
 <link rel="apple-touch-icon" href="icons/icon-192.png" />
