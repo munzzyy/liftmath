@@ -652,7 +652,9 @@
     <span class="offline-indicator" id="offline-indicator"><span class="dot" aria-hidden="true"></span> <span id="offline-indicator-text">online</span></span>
     &middot; <span id="footer-tagline">liftmath is a calculator, not a coach - informational only, not medical or nutrition advice.</span>
   </p>
-  <p><a href="https://github.com/munzzyy/liftmath" rel="noopener" id="footer-source-link">source on GitHub</a> &middot; v<span id="app-version">1.1.0</span></p>
+  <!-- app-version has no build step to read it from pyproject.toml automatically -
+       bump it by hand alongside CACHE_NAME whenever a release changes web/. -->
+  <p><a href="https://github.com/munzzyy/liftmath" rel="noopener" id="footer-source-link">source on GitHub</a> &middot; v<span id="app-version">1.2.0</span></p>
 </footer>
 
 <script type="module" src="js/app.js"></script>

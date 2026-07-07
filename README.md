@@ -358,6 +358,12 @@ math and its cited sources are identical underneath, and the JavaScript is
 pinned to the Python either way (see below), so a Wilks score in Thai is the
 same number as in English.
 
+Eight themes, also from the header - light and dark, plus Iron (true OLED
+black), Chalk, Rust, Forest, a max-contrast accessibility mode, and Neon.
+Auto follows your system by default; whatever you pick is remembered and
+applied before the page paints, so a saved theme never flashes the wrong one
+first.
+
 The JavaScript in `web/js/math/` is hand-mirrored from the Python in
 `src/liftmath/` and checked against it: `tools/gen_fixtures.py` runs the
 Python reference across an edge-case input matrix and writes the results to
