@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Bağlantıyı kopyala",
   "copyLink.statusOk": "Bağlantı kopyalandı.",
   "copyLink.statusFail": "Bağlantı kopyalanamadı - adres çubuğundan kopyalayın.",
-  "theme.toggleToDark": "Koyu temaya geç",
-  "theme.toggleToLight": "Açık temaya geç",
+  "theme.switcherLabel": "Tema",
+  "theme.auto": "Otomatik",
   "lang.switcherLabel": "Dil",
 
   // ---- Tabs ---------------------------------------------------------------

@@ -26,7 +26,7 @@ import {
 } from "./math/training-templates.js";
 
 import { renderBarbellSvg, renderPlateLegend } from "./ui/svg-barbell.js";
-import { initTheme, toggleTheme } from "./ui/theme.js";
+import { THEMES, initTheme, currentSelection, chooseTheme } from "./ui/theme.js";
 import { wireStepper, minFromInput } from "./ui/steppers.js";
 import { readParams, updateParamsDebounced, pushTab, copyCurrentUrl } from "./ui/url-state.js";
 import { toUnit, fromUnit, roundForDisplay } from "./ui/units.js";
@@ -93,6 +93,7 @@ function applyStaticText() {
   $("app-title-lift").textContent = t("app.title.lift");
   $("app-title-math").textContent = t("app.title.math");
   $("lang-select-label").textContent = t("lang.switcherLabel");
+  $("theme-select-label").textContent = t("theme.switcherLabel");
   $("unit-toggle-group").setAttribute("aria-label", t("unit.groupLabel"));
   $("unit-lb").textContent = t("unit.lb");
   $("unit-kg").textContent = t("unit.kg");
@@ -105,9 +106,6 @@ function applyStaticText() {
   $("hero-start-onerm-label").textContent = t("hero.start.onerm");
   $("hero-start-plates-label").textContent = t("hero.start.plates");
   $("hero-start-programs-label").textContent = t("hero.start.programs");
-
-  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-  $("theme-toggle").setAttribute("aria-label", isDark ? t("theme.toggleToLight") : t("theme.toggleToDark"));
 
   $("tabs-list").setAttribute("aria-label", t("tabs.groupLabel"));
   $("tab-btn-onerm").textContent = t("tab.onerm");
@@ -358,7 +356,7 @@ $("lang-select").addEventListener("change", async () => {
 async function onLocaleChanged() {
   applyStaticText();
   populateLangSelect(); // re-sync <select> value + keep it in sync if called externally
-  syncThemeGlyph();
+  populateThemeSelect(); // "Auto"'s label is translated - refresh it + re-sync the selected value
   renderActiveTab();
 }
 
@@ -366,16 +364,23 @@ async function onLocaleChanged() {
 // Theme
 // ---------------------------------------------------------------------------
 
-function syncThemeGlyph() {
-  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-  $("theme-toggle-glyph").textContent = isDark ? "☀" : "☽";
-  $("theme-toggle").setAttribute("aria-label", isDark ? t("theme.toggleToLight") : t("theme.toggleToDark"));
+// Theme NAMES are proper nouns and stay untranslated in every locale (see
+// js/i18n/en.js's header comment); only the leading "Auto" option and this
+// control's own <label> (theme.switcherLabel, set in applyStaticText) are
+// translated, so this needs re-running on locale change same as the
+// language switcher itself does.
+function populateThemeSelect() {
+  const select = $("theme-select");
+  const options = [`<option value="auto">${escapeHtml(t("theme.auto"))}</option>`].concat(
+    THEMES.map((th) => `<option value="${escapeHtml(th.id)}">${escapeHtml(th.name)}</option>`)
+  );
+  select.innerHTML = options.join("");
+  select.value = currentSelection();
 }
 
 initTheme();
-$("theme-toggle").addEventListener("click", () => {
-  toggleTheme();
-  syncThemeGlyph();
+$("theme-select").addEventListener("change", () => {
+  chooseTheme($("theme-select").value);
 });
 
 // ---------------------------------------------------------------------------
@@ -1584,8 +1589,8 @@ async function init() {
   // resolving against the right dictionary.
   await initLocale();
   populateLangSelect();
+  populateThemeSelect();
   applyStaticText();
-  syncThemeGlyph();
 
   const initialTab = applyInitialParams();
   wireInstantRecompute();

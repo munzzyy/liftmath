@@ -26,8 +26,8 @@ export default {
   "copyLink.button": "העתק קישור",
   "copyLink.statusOk": "הקישור הועתק.",
   "copyLink.statusFail": "לא ניתן היה להעתיק את הקישור - העתק אותו משורת הכתובת.",
-  "theme.toggleToDark": "החלף לערכת נושא כהה",
-  "theme.toggleToLight": "החלף לערכת נושא בהירה",
+  "theme.switcherLabel": "ערכת נושא",
+  "theme.auto": "אוטומטי",
   "lang.switcherLabel": "שפה",
 
   // ---- Tabs ---------------------------------------------------------------

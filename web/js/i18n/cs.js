@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Kopírovat odkaz",
   "copyLink.statusOk": "Odkaz zkopírován.",
   "copyLink.statusFail": "Odkaz se nepodařilo zkopírovat - zkopírujte ho z adresního řádku.",
-  "theme.toggleToDark": "Přepnout na tmavý motiv",
-  "theme.toggleToLight": "Přepnout na světlý motiv",
+  "theme.switcherLabel": "Motiv",
+  "theme.auto": "Automatický",
   "lang.switcherLabel": "Jazyk",
 
   // ---- Tabs ---------------------------------------------------------------

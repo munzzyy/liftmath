@@ -18,8 +18,8 @@ export default {
   "copyLink.button": "复制链接",
   "copyLink.statusOk": "链接已复制。",
   "copyLink.statusFail": "无法复制链接 - 请从地址栏手动复制。",
-  "theme.toggleToDark": "切换到深色主题",
-  "theme.toggleToLight": "切换到浅色主题",
+  "theme.switcherLabel": "主题",
+  "theme.auto": "自动",
   "lang.switcherLabel": "语言",
 
   // ---- Tabs ---------------------------------------------------------------

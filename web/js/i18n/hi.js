@@ -26,8 +26,8 @@ export default {
   "copyLink.button": "लिंक कॉपी करें",
   "copyLink.statusOk": "लिंक कॉपी हो गया।",
   "copyLink.statusFail": "लिंक कॉपी नहीं हो सका - इसे एड्रेस बार से कॉपी करें।",
-  "theme.toggleToDark": "डार्क थीम पर स्विच करें",
-  "theme.toggleToLight": "लाइट थीम पर स्विच करें",
+  "theme.switcherLabel": "थीम",
+  "theme.auto": "स्वचालित",
   "lang.switcherLabel": "भाषा",
 
   // ---- Tabs ---------------------------------------------------------------

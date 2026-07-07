@@ -25,8 +25,8 @@ export default {
   "copyLink.button": "লিংক কপি করুন",
   "copyLink.statusOk": "লিংক কপি হয়েছে।",
   "copyLink.statusFail": "লিংক কপি করা যায়নি - অ্যাড্রেস বার থেকে কপি করুন।",
-  "theme.toggleToDark": "ডার্ক থিমে যান",
-  "theme.toggleToLight": "লাইট থিমে যান",
+  "theme.switcherLabel": "থিম",
+  "theme.auto": "স্বয়ংক্রিয়",
   "lang.switcherLabel": "ভাষা",
 
   // ---- Tabs ---------------------------------------------------------------

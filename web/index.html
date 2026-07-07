@@ -65,9 +65,10 @@
       <button type="button" id="unit-kg" aria-pressed="false">kg</button>
     </div>
     <button type="button" class="icon-btn" id="copy-link-btn">Copy link</button>
-    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
-      <span aria-hidden="true" id="theme-toggle-glyph">&#9789;</span>
-    </button>
+    <div class="field theme-field">
+      <label for="theme-select" class="visually-hidden" id="theme-select-label">Theme</label>
+      <select id="theme-select"></select>
+    </div>
   </div>
 </header>
 <p class="visually-hidden" id="copy-link-status" role="status" aria-live="polite"></p>

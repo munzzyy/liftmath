@@ -22,8 +22,8 @@ export default {
   "copyLink.button": "複製連結",
   "copyLink.statusOk": "連結已複製。",
   "copyLink.statusFail": "無法複製連結 - 請從網址列手動複製。",
-  "theme.toggleToDark": "切換為深色主題",
-  "theme.toggleToLight": "切換為淺色主題",
+  "theme.switcherLabel": "主題",
+  "theme.auto": "自動",
   "lang.switcherLabel": "語言",
 
   // ---- Tabs ---------------------------------------------------------------

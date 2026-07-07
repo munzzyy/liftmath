@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Скопировать ссылку",
   "copyLink.statusOk": "Ссылка скопирована.",
   "copyLink.statusFail": "Не удалось скопировать ссылку - скопируйте её из адресной строки.",
-  "theme.toggleToDark": "Переключить на тёмную тему",
-  "theme.toggleToLight": "Переключить на светлую тему",
+  "theme.switcherLabel": "Тема",
+  "theme.auto": "Автоматически",
   "lang.switcherLabel": "Язык",
 
   // ---- Tabs ---------------------------------------------------------------

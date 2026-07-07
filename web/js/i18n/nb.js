@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Kopier lenke",
   "copyLink.statusOk": "Lenke kopiert.",
   "copyLink.statusFail": "Kunne ikke kopiere lenken - kopier den fra adressefeltet.",
-  "theme.toggleToDark": "Bytt til mørkt tema",
-  "theme.toggleToLight": "Bytt til lyst tema",
+  "theme.switcherLabel": "Tema",
+  "theme.auto": "Automatisk",
   "lang.switcherLabel": "Språk",
 
   // ---- Tabs ---------------------------------------------------------------

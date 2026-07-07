@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Salin tautan",
   "copyLink.statusOk": "Tautan disalin.",
   "copyLink.statusFail": "Tautan gagal disalin - salin dari address bar.",
-  "theme.toggleToDark": "Ganti ke tema gelap",
-  "theme.toggleToLight": "Ganti ke tema terang",
+  "theme.switcherLabel": "Tema",
+  "theme.auto": "Otomatis",
   "lang.switcherLabel": "Bahasa",
 
   // ---- Tabs ---------------------------------------------------------------

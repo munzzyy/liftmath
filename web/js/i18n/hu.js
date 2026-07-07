@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Link másolása",
   "copyLink.statusOk": "Link másolva.",
   "copyLink.statusFail": "A linket nem sikerült másolni - másold ki a címsorból.",
-  "theme.toggleToDark": "Váltás sötét témára",
-  "theme.toggleToLight": "Váltás világos témára",
+  "theme.switcherLabel": "Téma",
+  "theme.auto": "Automatikus",
   "lang.switcherLabel": "Nyelv",
 
   // ---- Tabs ---------------------------------------------------------------

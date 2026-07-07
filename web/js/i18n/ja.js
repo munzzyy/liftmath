@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "リンクをコピー",
   "copyLink.statusOk": "リンクをコピーしました。",
   "copyLink.statusFail": "リンクをコピーできませんでした - アドレスバーからコピーしてください。",
-  "theme.toggleToDark": "ダークテーマに切り替え",
-  "theme.toggleToLight": "ライトテーマに切り替え",
+  "theme.switcherLabel": "テーマ",
+  "theme.auto": "自動",
   "lang.switcherLabel": "言語",
 
   // ---- Tabs ---------------------------------------------------------------

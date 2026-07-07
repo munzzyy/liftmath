@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "I-copy ang link",
   "copyLink.statusOk": "Na-copy na ang link.",
   "copyLink.statusFail": "Hindi na-copy ang link - i-copy na lang mula sa address bar.",
-  "theme.toggleToDark": "Lumipat sa dark theme",
-  "theme.toggleToLight": "Lumipat sa light theme",
+  "theme.switcherLabel": "Tema",
+  "theme.auto": "Awtomatiko",
   "lang.switcherLabel": "Wika",
 
   // ---- Tabs ---------------------------------------------------------------

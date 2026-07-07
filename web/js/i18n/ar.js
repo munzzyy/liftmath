@@ -24,8 +24,8 @@ export default {
   "copyLink.button": "نسخ الرابط",
   "copyLink.statusOk": "تم نسخ الرابط.",
   "copyLink.statusFail": "تعذّر نسخ الرابط - انسخه من شريط العنوان.",
-  "theme.toggleToDark": "التبديل إلى المظهر الداكن",
-  "theme.toggleToLight": "التبديل إلى المظهر الفاتح",
+  "theme.switcherLabel": "المظهر",
+  "theme.auto": "تلقائي",
   "lang.switcherLabel": "اللغة",
 
   // ---- Tabs ---------------------------------------------------------------

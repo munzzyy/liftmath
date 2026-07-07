@@ -23,8 +23,8 @@ export default {
   "copyLink.button": "คัดลอกลิงก์",
   "copyLink.statusOk": "คัดลอกลิงก์แล้ว",
   "copyLink.statusFail": "คัดลอกลิงก์ไม่สำเร็จ - คัดลอกจากแถบที่อยู่แทน",
-  "theme.toggleToDark": "เปลี่ยนเป็นธีมมืด",
-  "theme.toggleToLight": "เปลี่ยนเป็นธีมสว่าง",
+  "theme.switcherLabel": "ธีม",
+  "theme.auto": "อัตโนมัติ",
   "lang.switcherLabel": "ภาษา",
 
   // ---- Tabs ---------------------------------------------------------------

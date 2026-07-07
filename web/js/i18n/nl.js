@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Link kopiëren",
   "copyLink.statusOk": "Link gekopieerd.",
   "copyLink.statusFail": "Kon de link niet kopiëren - kopieer hem uit de adresbalk.",
-  "theme.toggleToDark": "Naar donker thema",
-  "theme.toggleToLight": "Naar licht thema",
+  "theme.switcherLabel": "Thema",
+  "theme.auto": "Automatisch",
   "lang.switcherLabel": "Taal",
 
   // ---- Tabs ---------------------------------------------------------------

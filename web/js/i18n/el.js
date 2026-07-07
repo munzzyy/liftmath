@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Αντιγραφή συνδέσμου",
   "copyLink.statusOk": "Ο σύνδεσμος αντιγράφηκε.",
   "copyLink.statusFail": "Δεν ήταν δυνατή η αντιγραφή του συνδέσμου - αντιγράψτε τον από τη γραμμή διευθύνσεων.",
-  "theme.toggleToDark": "Εναλλαγή σε σκοτεινό θέμα",
-  "theme.toggleToLight": "Εναλλαγή σε φωτεινό θέμα",
+  "theme.switcherLabel": "Θέμα",
+  "theme.auto": "Αυτόματο",
   "lang.switcherLabel": "Γλώσσα",
 
   // ---- Tabs ---------------------------------------------------------------

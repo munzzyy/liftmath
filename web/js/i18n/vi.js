@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Sao chép liên kết",
   "copyLink.statusOk": "Đã sao chép liên kết.",
   "copyLink.statusFail": "Không sao chép được liên kết - hãy sao chép từ thanh địa chỉ.",
-  "theme.toggleToDark": "Chuyển sang giao diện tối",
-  "theme.toggleToLight": "Chuyển sang giao diện sáng",
+  "theme.switcherLabel": "Giao diện",
+  "theme.auto": "Tự động",
   "lang.switcherLabel": "Ngôn ngữ",
 
   // ---- Tabs ---------------------------------------------------------------

@@ -32,8 +32,8 @@ export default {
   "copyLink.button": "کپی لینک",
   "copyLink.statusOk": "لینک کپی شد.",
   "copyLink.statusFail": "کپی لینک ممکن نشد - آن را از نوار آدرس کپی کنید.",
-  "theme.toggleToDark": "تغییر به تم تیره",
-  "theme.toggleToLight": "تغییر به تم روشن",
+  "theme.switcherLabel": "تم",
+  "theme.auto": "خودکار",
   "lang.switcherLabel": "زبان",
 
   // ---- Tabs ---------------------------------------------------------------

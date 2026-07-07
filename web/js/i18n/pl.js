@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Kopiuj link",
   "copyLink.statusOk": "Link skopiowany.",
   "copyLink.statusFail": "Nie udało się skopiować linku - skopiuj go z paska adresu.",
-  "theme.toggleToDark": "Przełącz na ciemny motyw",
-  "theme.toggleToLight": "Przełącz na jasny motyw",
+  "theme.switcherLabel": "Motyw",
+  "theme.auto": "Automatyczny",
   "lang.switcherLabel": "Język",
 
   // ---- Tabs ---------------------------------------------------------------

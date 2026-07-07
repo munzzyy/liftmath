@@ -53,8 +53,8 @@ export default {
   "copyLink.button": "Copy link",
   "copyLink.statusOk": "Link copied.",
   "copyLink.statusFail": "Could not copy link - copy it from the address bar.",
-  "theme.toggleToDark": "Switch to dark theme",
-  "theme.toggleToLight": "Switch to light theme",
+  "theme.switcherLabel": "Theme",
+  "theme.auto": "Auto",
   "lang.switcherLabel": "Language",
 
   // ---- Tabs ---------------------------------------------------------------

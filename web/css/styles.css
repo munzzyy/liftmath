@@ -101,7 +101,6 @@
   --plate-other: #6d7386;
   --plate-label: #14161c;
   --bar-color: #8a8f9e;
-  --bar-color-dark: #4d5262;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -145,7 +144,6 @@
     --plate-other: #6b7280;
     --plate-label: #edeef2;
     --bar-color: #6b7280;
-    --bar-color-dark: #6b7280;
   }
 }
 
@@ -222,6 +220,257 @@
   --plate-other: #6b7280;
   --plate-label: #edeef2;
   --bar-color: #6b7280;
+}
+
+/* ---- 6 more themes ------------------------------------------------------
+   Same mechanism as light/dark above (a full custom-property block keyed
+   off [data-theme]), nothing new architecturally - just more palettes.
+   Each is a deliberately distinct identity (own accent hue, own plate
+   colors, own shadow treatment), not a hue-rotated clone of light/dark.
+   Every pairing below was checked against real WCAG contrast math (relative
+   luminance / (L1+0.05)/(L2+0.05)), not eyeballed - body text clears 4.5:1,
+   focus rings and border-strong clear 3:1, same bar the light/dark palettes
+   above already had to clear. */
+
+/* Iron - true OLED black. Minimal, almost monochrome, one cold steel-blue
+   signal color. Built for AMOLED screens and late-night sessions where any
+   stray light is too much light. */
+:root[data-theme="iron"] {
+  color-scheme: dark;
+  --color-bg: #000000;
+  --color-surface: #0a0a0c;
+  --color-surface-raised: #101114;
+  --color-surface-alt: #17181c;
+  --color-surface-sunken: #000000;
+  --color-text: #f2f3f5;
+  --color-muted: #a8adba;
+  --color-faint: #8a90a0;
+  --color-border: #2c2d32;
+  --color-border-strong: #5b5e68;
+  --color-accent: #4da6ff;
+  --color-accent-strong: #8ecbff;
+  --color-accent-tint: #0d2436;
+  --color-accent-contrast: #00131f;
+  --color-danger: #ff6b6b;
+  --color-danger-tint: #2a1113;
+  --color-ok: #4ce08a;
+  --color-ok-tint: #0e2417;
+  --focus-ring: #8ecbff;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.55), 0 12px 30px rgba(0, 0, 0, 0.45);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-card: var(--shadow-md);
+  --plate-25: #ff6259;
+  --plate-20: #63a4ff;
+  --plate-15: #ffd166;
+  --plate-10: #57cf88;
+  --plate-5: #1c1d21;
+  --plate-2_5: #4a4f5c;
+  --plate-1_25: #383c46;
+  --plate-other: #6b7280;
+  --plate-label: #f5f6f8;
+  --bar-color: #5b5e68;
+}
+
+/* Chalk - warm chalk-dust paper, near the color of an actual bag of gym
+   chalk. Deep charcoal ink, and a "chalk-line" blue accent (the snapped
+   carpenter's/lifter's chalk line) instead of light's hot-iron orange, so
+   it reads as its own warm-paper identity rather than a paler "light". */
+:root[data-theme="chalk"] {
+  color-scheme: light;
+  --color-bg: #f2ede0;
+  --color-surface: #faf7ef;
+  --color-surface-raised: #fdfbf5;
+  --color-surface-alt: #ece4d1;
+  --color-surface-sunken: #e7ddc5;
+  --color-text: #2b2620;
+  --color-muted: #645a4c;
+  --color-faint: #756b5b;
+  --color-border: #ddd0ac;
+  --color-border-strong: #8c7b52;
+  --color-accent: #2557a7;
+  --color-accent-strong: #163e80;
+  --color-accent-tint: #dbe6f6;
+  --color-accent-contrast: #f7fbff;
+  --color-danger: #a3291f;
+  --color-danger-tint: #f6e2dd;
+  --color-ok: #2c6b3f;
+  --color-ok-tint: #e2ecdf;
+  --focus-ring: #8a5300;
+  --shadow-sm: 0 1px 2px rgba(43, 38, 32, 0.1);
+  --shadow-md: 0 2px 6px rgba(43, 38, 32, 0.08), 0 8px 24px rgba(43, 38, 32, 0.08);
+  --shadow-inset: inset 0 1px 2px rgba(43, 38, 32, 0.1);
+  --shadow-card: var(--shadow-md);
+  --plate-25: #b13224;
+  --plate-20: #1f4f8f;
+  --plate-15: #c4900a;
+  --plate-10: #2c6b3f;
+  --plate-5: #efe8d6;
+  --plate-2_5: #a89a7c;
+  --plate-1_25: #cfc3a3;
+  --plate-other: #7a6f5c;
+  --plate-label: #f5f6f8;
+  --bar-color: #8f8266;
+}
+
+/* Rust - oxidized steel and copper. Warm dark umber-brown surfaces (not
+   graphite-cool like Dark/Iron), a copper-penny accent, cream ink. */
+:root[data-theme="rust"] {
+  color-scheme: dark;
+  --color-bg: #1c1410;
+  --color-surface: #251c16;
+  --color-surface-raised: #2c211a;
+  --color-surface-alt: #34281f;
+  --color-surface-sunken: #170f0b;
+  --color-text: #f1e6d8;
+  --color-muted: #c2ab8f;
+  --color-faint: #ab9478;
+  --color-border: #453425;
+  --color-border-strong: #87694a;
+  --color-accent: #d9853b;
+  --color-accent-strong: #f0a25e;
+  --color-accent-tint: #3a2313;
+  --color-accent-contrast: #1d1006;
+  --color-danger: #ff7a63;
+  --color-danger-tint: #3a1f18;
+  --color-ok: #8fce6f;
+  --color-ok-tint: #20280f;
+  --focus-ring: #6fc2ff;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-card: var(--shadow-md);
+  --plate-25: #e0604a;
+  --plate-20: #5b9bd6;
+  --plate-15: #e0b04a;
+  --plate-10: #7fbf6a;
+  --plate-5: #2c211a;
+  --plate-2_5: #5c4a38;
+  --plate-1_25: #493a2c;
+  --plate-other: #8a7360;
+  --plate-label: #f5f6f8;
+  --bar-color: #6b5540;
+}
+
+/* Forest - deep pine-black surfaces, a dappled-sunlight amber accent kept
+   deliberately distinct from the leaf-green "ok" success color so the two
+   greens/warm tones never get confused for each other. */
+:root[data-theme="forest"] {
+  color-scheme: dark;
+  --color-bg: #0e1712;
+  --color-surface: #16231c;
+  --color-surface-raised: #1c2b22;
+  --color-surface-alt: #223327;
+  --color-surface-sunken: #0b120e;
+  --color-text: #e9f1ea;
+  --color-muted: #a8bdac;
+  --color-faint: #93a897;
+  --color-border: #2c4534;
+  --color-border-strong: #597a63;
+  --color-accent: #e0a940;
+  --color-accent-strong: #f0c26a;
+  --color-accent-tint: #3a2d10;
+  --color-accent-contrast: #1d1608;
+  --color-danger: #ff7a6e;
+  --color-danger-tint: #33201c;
+  --color-ok: #5bd074;
+  --color-ok-tint: #163322;
+  --focus-ring: #7fc4ff;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-card: var(--shadow-md);
+  --plate-25: #e0645a;
+  --plate-20: #5b9bd6;
+  --plate-15: #d9b54a;
+  --plate-10: #4fbf7c;
+  --plate-5: #1c2a20;
+  --plate-2_5: #3a5240;
+  --plate-1_25: #2c3e32;
+  --plate-other: #6b8074;
+  --plate-label: #14161c;
+  --bar-color: #4d6b56;
+}
+
+/* Contrast - maximum-contrast accessibility mode. Pure white/black, no
+   mid-tone subtlety, thick pure-black borders standing in for the soft
+   shadows every other theme uses (shadows are a low-contrast cue by
+   nature, so this theme leans on hard borders instead and turns them off). */
+:root[data-theme="contrast"] {
+  color-scheme: light;
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-alt: #e8e8e8;
+  --color-surface-sunken: #ececec;
+  --color-text: #000000;
+  --color-muted: #1f1f1f;
+  --color-faint: #2b2b2b;
+  --color-border: #000000;
+  --color-border-strong: #000000;
+  --color-accent: #0b3d91;
+  --color-accent-strong: #062a66;
+  --color-accent-tint: #cfe0ff;
+  --color-accent-contrast: #ffffff;
+  --color-danger: #b30000;
+  --color-danger-tint: #ffd9d9;
+  --color-ok: #056608;
+  --color-ok-tint: #d7f2d5;
+  --focus-ring: #8a5300;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-inset: none;
+  --shadow-card: none;
+  --plate-25: #b30000;
+  --plate-20: #0b3d91;
+  --plate-15: #8a6400;
+  --plate-10: #056608;
+  --plate-5: #d8d8d8;
+  --plate-2_5: #9a9a9a;
+  --plate-1_25: #c4c4c4;
+  --plate-other: #444444;
+  --plate-label: #f5f6f8;
+  --bar-color: #333333;
+}
+
+/* Neon - a night-gym black-light identity: violet-black surfaces, a neon
+   magenta accent, neon-cyan focus ring kept a distinct hue from the accent
+   so focus is always unmistakable against the brightest palette here. */
+:root[data-theme="neon"] {
+  color-scheme: dark;
+  --color-bg: #0a0612;
+  --color-surface: #140f22;
+  --color-surface-raised: #1b1430;
+  --color-surface-alt: #241b3d;
+  --color-surface-sunken: #08050f;
+  --color-text: #f2eefc;
+  --color-muted: #b7aed6;
+  --color-faint: #9c92c2;
+  --color-border: #362c5c;
+  --color-border-strong: #6f5da3;
+  --color-accent: #ff2fb4;
+  --color-accent-strong: #ff6fd0;
+  --color-accent-tint: #3a1030;
+  --color-accent-contrast: #1a0313;
+  --color-danger: #ff5468;
+  --color-danger-tint: #3a1420;
+  --color-ok: #2ee6a8;
+  --color-ok-tint: #0d2e26;
+  --focus-ring: #2ee6ff;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.5), 0 12px 30px rgba(0, 0, 0, 0.4);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-card: var(--shadow-md);
+  --plate-25: #ff4d6a;
+  --plate-20: #4dc4ff;
+  --plate-15: #ffd23f;
+  --plate-10: #39e6a5;
+  --plate-5: #241a3d;
+  --plate-2_5: #4a3d6b;
+  --plate-1_25: #372c54;
+  --plate-other: #7a6fa3;
+  --plate-label: #f5f6f8;
+  --bar-color: #6b5f94;
 }
 
 *,
@@ -336,8 +585,7 @@ a:hover {
 }
 
 .icon-btn,
-.unit-toggle button,
-.theme-toggle {
+.unit-toggle button {
   min-width: var(--tap-min);
   min-height: var(--tap-min);
   border: 1px solid var(--color-border);
@@ -353,21 +601,14 @@ a:hover {
 }
 
 .icon-btn:hover,
-.unit-toggle button:hover,
-.theme-toggle:hover {
+.unit-toggle button:hover {
   border-color: var(--color-border-strong);
   background: var(--color-surface-sunken);
 }
 
 .icon-btn:active,
-.unit-toggle button:active,
-.theme-toggle:active {
+.unit-toggle button:active {
   transform: scale(0.96);
-}
-
-.theme-toggle {
-  font-size: var(--font-size-md);
-  line-height: 1;
 }
 
 .unit-toggle {
@@ -391,11 +632,22 @@ a:hover {
   background: var(--color-accent-strong);
 }
 
-.lang-field {
+.lang-field,
+.theme-field {
   margin-bottom: 0; /* .field's default margin-bottom doesn't apply in this inline header context */
 }
 
-#lang-select {
+/* Theme picker: a native <select>, same control shape as the language
+   switcher right next to it (native selects are already keyboard-operable,
+   already open a one-handed-reachable native picker on mobile, and already
+   flip correctly under dir="rtl" - reusing the pattern means the compact
+   picker this app needs costs no new interaction code). Theme NAMES inside
+   are proper nouns and stay untranslated in every locale; only this
+   control's own visually-hidden <label> (js/i18n's theme.switcherLabel) and
+   the "Auto" option (theme.auto) are translated - see app.js's
+   populateThemeSelect(). */
+#lang-select,
+#theme-select {
   min-width: var(--tap-min);
   min-height: var(--tap-min);
   border: 1px solid var(--color-border);
@@ -408,7 +660,8 @@ a:hover {
   padding: var(--space-2) var(--space-3);
 }
 
-#lang-select:hover {
+#lang-select:hover,
+#theme-select:hover {
   border-color: var(--color-border-strong);
   background: var(--color-surface-sunken);
 }
@@ -951,8 +1204,14 @@ table.data-table tr.highlight td {
    legend already uses (see .plate-legend .swatch rules below) - avoids an
    inline style="..." attribute, which the page's CSP (style-src 'self', no
    'unsafe-inline') would otherwise block. WCAG contrast ratios computed
-   against both this theme's plate colors (see :root / [data-theme="dark"]
-   above); values change per theme since the plate hex values themselves do. */
+   against every theme's own plate colors (see the [data-theme="..."] blocks
+   above); values change per theme since the plate hex values themselves do,
+   but every theme's plates group into one of only three shapes below, so
+   themes that land on the same shape share one rule via :is(...) instead of
+   repeating it - see each block's comment for which themes share which shape.
+   "Chalk" isn't mentioned anywhere below: its plates happen to need exactly
+   the same light/dark label split as this first, unscoped rule (the same
+   one light itself relies on), so it needs no override at all. */
 .barbell-svg text[data-plate-color="--plate-25"],
 .barbell-svg text[data-plate-color="--plate-20"],
 .barbell-svg text[data-plate-color="--plate-10"] {
@@ -970,36 +1229,79 @@ table.data-table tr.highlight td {
   fill: var(--plate-label);
 }
 
-[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-25"],
-[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-20"],
-[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-15"],
-[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-10"] {
+/* Shape 2: the 4 main IPF denominations are all bright/saturated (need dark
+   labels) and the 3 small plates are all dark (need light labels) - true of
+   Dark itself, and (by design, not coincidence - each was tuned to read the
+   same way) of Iron/Rust/Forest/Neon too. */
+:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
+  .barbell-svg text[data-plate-color="--plate-25"],
+:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
+  .barbell-svg text[data-plate-color="--plate-20"],
+:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
+  .barbell-svg text[data-plate-color="--plate-15"],
+:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
+  .barbell-svg text[data-plate-color="--plate-10"] {
   fill: #14161c;
 }
 
-[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-5"],
-[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-2_5"],
-[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-1_25"] {
+:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
+  .barbell-svg text[data-plate-color="--plate-5"],
+:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
+  .barbell-svg text[data-plate-color="--plate-2_5"],
+:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
+  .barbell-svg text[data-plate-color="--plate-1_25"] {
   fill: #edeef2;
 }
 
-[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-other"] {
+:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
+  .barbell-svg text[data-plate-color="--plate-other"] {
   fill: #edeef2;
 }
 
+/* Shape 3: Contrast's plate-15 (an unusually dark gold, chosen for its own
+   4.5:1 text/bg elsewhere) flips the grouping again - all 4 main
+   denominations want a LIGHT label here, all 3 small plates want DARK. */
+[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-25"],
+[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-20"],
+[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-15"],
+[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-10"] {
+  fill: #f5f6f8;
+}
+
+[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-5"],
+[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-2_5"],
+[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-1_25"] {
+  fill: #14161c;
+}
+
+[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-other"] {
+  fill: #f5f6f8;
+}
+
+/* Pre-JS / no-JS fallback only: before js/ui/theme.js's initTheme() runs (or
+   if script-blocked entirely), no [data-theme] attribute exists yet at all,
+   so this guard is deliberately ":not([data-theme])" (attribute ABSENT) and
+   not ":not([data-theme="light"])" (attribute present-but-not-light) - the
+   latter would also match every OTHER explicit theme name (chalk, contrast,
+   etc.), and being a more specific selector than each of those themes' own
+   [data-theme="..."] rules above, it would wrongly win the cascade and force
+   Dark's plate-label choice onto an explicitly-chosen light-based theme
+   whenever the OS happens to prefer dark. Scoping to "attribute absent"
+   makes this rule inert the instant JS sets any explicit theme, which is
+   the only state it was ever meant to cover. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-25"],
-  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-20"],
-  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-15"],
-  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-10"] {
+  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-25"],
+  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-20"],
+  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-15"],
+  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-10"] {
     fill: #14161c;
   }
-  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-5"],
-  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-2_5"],
-  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-1_25"] {
+  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-5"],
+  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-2_5"],
+  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-1_25"] {
     fill: #edeef2;
   }
-  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-other"] {
+  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-other"] {
     fill: #edeef2;
   }
 }
@@ -1120,7 +1422,7 @@ table.data-table tr.highlight td {
    from feeling cramped once 4 controls + the title share ~340px. */
 @media (max-width: 360px) {
   .header-controls { gap: 0.35rem; }
-  .icon-btn, .unit-toggle button, .theme-toggle, #lang-select {
+  .icon-btn, .unit-toggle button, #lang-select, #theme-select {
     padding-inline: var(--space-2);
   }
 }

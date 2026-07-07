@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Kopioi linkki",
   "copyLink.statusOk": "Linkki kopioitu.",
   "copyLink.statusFail": "Linkkiä ei voitu kopioida - kopioi se osoiterivilta.",
-  "theme.toggleToDark": "Vaihda tummaan teemaan",
-  "theme.toggleToLight": "Vaihda vaaleaan teemaan",
+  "theme.switcherLabel": "Teema",
+  "theme.auto": "Automaattinen",
   "lang.switcherLabel": "Kieli",
 
   // ---- Tabs ---------------------------------------------------------------

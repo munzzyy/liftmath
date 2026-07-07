@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Kopiera länk",
   "copyLink.statusOk": "Länk kopierad.",
   "copyLink.statusFail": "Kunde inte kopiera länken - kopiera den från adressfältet istället.",
-  "theme.toggleToDark": "Byt till mörkt tema",
-  "theme.toggleToLight": "Byt till ljust tema",
+  "theme.switcherLabel": "Tema",
+  "theme.auto": "Automatiskt",
   "lang.switcherLabel": "Språk",
 
   // ---- Tabs ---------------------------------------------------------------

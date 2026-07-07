@@ -26,8 +26,8 @@ export default {
   "copyLink.button": "링크 복사",
   "copyLink.statusOk": "링크를 복사했습니다.",
   "copyLink.statusFail": "링크를 복사하지 못했습니다 - 주소창에서 직접 복사하세요.",
-  "theme.toggleToDark": "다크 테마로 전환",
-  "theme.toggleToLight": "라이트 테마로 전환",
+  "theme.switcherLabel": "테마",
+  "theme.auto": "자동",
   "lang.switcherLabel": "언어",
 
   // ---- Tabs ---------------------------------------------------------------

@@ -17,8 +17,8 @@ export default {
   "copyLink.button": "Copiază linkul",
   "copyLink.statusOk": "Link copiat.",
   "copyLink.statusFail": "Linkul nu a putut fi copiat - copiază-l din bara de adrese.",
-  "theme.toggleToDark": "Comută la tema întunecată",
-  "theme.toggleToLight": "Comută la tema luminoasă",
+  "theme.switcherLabel": "Temă",
+  "theme.auto": "Automat",
   "lang.switcherLabel": "Limbă",
 
   // ---- Tabs ---------------------------------------------------------------
