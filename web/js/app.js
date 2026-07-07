@@ -27,7 +27,7 @@ import {
 
 import { renderBarbellSvg, renderPlateLegend } from "./ui/svg-barbell.js";
 import { initTheme, toggleTheme } from "./ui/theme.js";
-import { wireStepper } from "./ui/steppers.js";
+import { wireStepper, minFromInput } from "./ui/steppers.js";
 import { readParams, updateParamsDebounced, pushTab, copyCurrentUrl } from "./ui/url-state.js";
 import { toUnit, fromUnit, roundForDisplay } from "./ui/units.js";
 import { t, initLocale, setLocale, getLocale, isRtl, AVAILABLE_LOCALES, AUTONYMS, formatNumber } from "./i18n/index.js";
@@ -1458,7 +1458,7 @@ function wireAllSteppers() {
       decBtn: dec,
       incBtn: inc,
       step,
-      min: parseFloat(input.min) || 0,
+      min: minFromInput(input),
       unitLabel: () => (STEPPER_NO_UNIT_SUBSTRINGS.some((s) => id.includes(s)) ? "" : state.unit),
     });
   }

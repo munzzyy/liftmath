@@ -21,6 +21,21 @@
  *   value changes via a stepper click (not on manual typing - the input's
  *   own "input" event listener should be wired separately by the caller).
  */
+/**
+ * Read a stepper's clamp floor from the wired input's own `min` attribute.
+ *
+ * An input with no min attribute means "no floor" - added weight on a
+ * bodyweight movement is the standing example, where negative values are a
+ * real state (assisted pull-ups/dips) - so the absence of the attribute must
+ * come back as undefined, never a defaulted 0.
+ *
+ * @param {HTMLInputElement} input
+ * @returns {number|undefined}
+ */
+export function minFromInput(input) {
+  return input.min === "" ? undefined : parseFloat(input.min);
+}
+
 export function wireStepper({ input, decBtn, incBtn, step, min, max, unitLabel, onChange }) {
   function clamp(v) {
     if (typeof min === "number") v = Math.max(min, v);
