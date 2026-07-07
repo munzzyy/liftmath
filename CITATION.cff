@@ -10,11 +10,11 @@ abstract: >-
 authors:
   - family-names: "Munz"
     given-names: "Cole"
-version: 0.1.0
+version: 1.0.0
 date-released: "2026-07-05"
 url: "https://github.com/munzzyy/liftmath"
 repository-code: "https://github.com/munzzyy/liftmath"
-license: MIT
+license-url: "https://github.com/munzzyy/liftmath/blob/main/LICENSE"
 keywords:
   - strength-training
   - one-rep-max

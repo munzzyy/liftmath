@@ -1,0 +1,199 @@
+[
+  {
+    "args": {
+      "bodyweightKg": 83,
+      "sex": "male",
+      "totalKg": 500
+    },
+    "expected": {
+      "bodyweightKg": 83,
+      "dots": 337.543687827234,
+      "ipfGl": 69.2135,
+      "sex": "male",
+      "total": 500,
+      "wilks": 400.8214143202762,
+      "wilksOriginal": 333.7497133016794
+    },
+    "fn": "score"
+  },
+  {
+    "args": {
+      "bodyweightKg": 60,
+      "sex": "female",
+      "totalKg": 300
+    },
+    "expected": {
+      "bodyweightKg": 60,
+      "dots": 332.56368739944025,
+      "ipfGl": 67.812,
+      "sex": "female",
+      "total": 300,
+      "wilks": 395.70982213835464,
+      "wilksOriginal": 334.46606258791513
+    },
+    "fn": "score"
+  },
+  {
+    "args": {
+      "bodyweightKg": 120,
+      "sex": "male",
+      "totalKg": 700
+    },
+    "expected": {
+      "bodyweightKg": 120,
+      "dots": 402.01421334768156,
+      "ipfGl": 81.3722,
+      "sex": "male",
+      "total": 700,
+      "wilks": 477.20779792432353,
+      "wilksOriginal": 402.44497492201174
+    },
+    "fn": "score"
+  },
+  {
+    "args": {
+      "bodyweightKg": 50,
+      "sex": "female",
+      "totalKg": 200
+    },
+    "expected": {
+      "bodyweightKg": 50,
+      "dots": 250.60191054824324,
+      "ipfGl": 52.2798,
+      "sex": "female",
+      "total": 200,
+      "wilks": 301.8228604466211,
+      "wilksOriginal": 256.9276592690973
+    },
+    "fn": "score"
+  },
+  {
+    "args": {
+      "bodyweightKg": 140,
+      "sex": "male",
+      "totalKg": 1000
+    },
+    "expected": {
+      "bodyweightKg": 140,
+      "dots": 548.0198742893696,
+      "ipfGl": 109.009,
+      "sex": "male",
+      "total": 1000,
+      "wilks": 654.5632685172351,
+      "wilksOriginal": 558.8066764072306
+    },
+    "fn": "score"
+  },
+  {
+    "args": {
+      "bodyweightKg": 45,
+      "sex": "female",
+      "totalKg": 150
+    },
+    "expected": {
+      "bodyweightKg": 45,
+      "dots": 203.0900293994863,
+      "ipfGl": 43.4706,
+      "sex": "female",
+      "total": 150,
+      "wilks": 247.84964767612405,
+      "wilksOriginal": 208.01731445706397
+    },
+    "fn": "score"
+  },
+  {
+    "args": {
+      "bodyweightKg": 93.4,
+      "sex": "male",
+      "totalKg": 620.5
+    },
+    "expected": {
+      "bodyweightKg": 93.4,
+      "dots": 393.9825223226905,
+      "ipfGl": 81.005034,
+      "sex": "male",
+      "total": 620.5,
+      "wilks": 467.125980161069,
+      "wilksOriginal": 389.00296494333367
+    },
+    "fn": "score"
+  },
+  {
+    "args": {
+      "age": 40,
+      "totalKg": 500
+    },
+    "expected": {
+      "adjustedTotal": 500.0,
+      "age": 40,
+      "coefficient": 1.0,
+      "total": 500
+    },
+    "fn": "mcullochScore"
+  },
+  {
+    "args": {
+      "age": 50,
+      "totalKg": 500
+    },
+    "expected": {
+      "adjustedTotal": 575.0,
+      "age": 50,
+      "coefficient": 1.15,
+      "total": 500
+    },
+    "fn": "mcullochScore"
+  },
+  {
+    "args": {
+      "age": 65,
+      "totalKg": 500
+    },
+    "expected": {
+      "adjustedTotal": 677.5,
+      "age": 65,
+      "coefficient": 1.355,
+      "total": 500
+    },
+    "fn": "mcullochScore"
+  },
+  {
+    "args": {
+      "age": 79,
+      "totalKg": 500
+    },
+    "expected": {
+      "adjustedTotal": 1030.0,
+      "age": 79,
+      "coefficient": 2.06,
+      "total": 500
+    },
+    "fn": "mcullochScore"
+  },
+  {
+    "args": {
+      "age": 90,
+      "totalKg": 500
+    },
+    "expected": {
+      "adjustedTotal": 1030.0,
+      "age": 90,
+      "coefficient": 2.06,
+      "total": 500
+    },
+    "fn": "mcullochScore"
+  },
+  {
+    "args": {
+      "age": 45,
+      "totalKg": 500
+    },
+    "expected": {
+      "adjustedTotal": 521.0,
+      "age": 45,
+      "coefficient": 1.042,
+      "total": 500
+    },
+    "fn": "mcullochScore"
+  }
+]

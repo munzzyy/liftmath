@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>liftmath - strength training calculators</title>
+<meta name="description" content="1RM consensus, %1RM/RIR load charts, volume landmarks, macros, plate loading, warm-up ramps, and Wilks/DOTS/IPF GL scores. Free, offline-capable, no account, no ads." />
+<meta name="theme-color" content="#0f1115" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<a class="visually-hidden" href="#main-content">Skip to content</a>
+
+<header class="app-header">
+  <h1 class="app-title">lift<span class="accent">math</span></h1>
+  <div class="header-controls">
+    <div class="unit-toggle" role="group" aria-label="Weight unit">
+      <button type="button" id="unit-lb" aria-pressed="true">lb</button>
+      <button type="button" id="unit-kg" aria-pressed="false">kg</button>
+    </div>
+    <button type="button" class="icon-btn" id="copy-link-btn">Copy link</button>
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme">
+      <span aria-hidden="true" id="theme-toggle-glyph">&#9789;</span>
+    </button>
+  </div>
+</header>
+<p class="visually-hidden" id="copy-link-status" role="status" aria-live="polite"></p>
+
+<nav class="tabs" role="tablist" aria-label="Calculators">
+  <button class="tab" role="tab" id="tab-btn-onerm" aria-controls="tool-onerm" aria-selected="true" tabindex="0">1RM</button>
+  <button class="tab" role="tab" id="tab-btn-loadchart" aria-controls="tool-loadchart" aria-selected="false" tabindex="-1">Load chart</button>
+  <button class="tab" role="tab" id="tab-btn-volume" aria-controls="tool-volume" aria-selected="false" tabindex="-1">Volume</button>
+  <button class="tab" role="tab" id="tab-btn-mesocycle" aria-controls="tool-mesocycle" aria-selected="false" tabindex="-1">Mesocycle</button>
+  <button class="tab" role="tab" id="tab-btn-macros" aria-controls="tool-macros" aria-selected="false" tabindex="-1">Macros</button>
+  <button class="tab" role="tab" id="tab-btn-plates" aria-controls="tool-plates" aria-selected="false" tabindex="-1">Plates</button>
+  <button class="tab" role="tab" id="tab-btn-warmup" aria-controls="tool-warmup" aria-selected="false" tabindex="-1">Warm-up</button>
+  <button class="tab" role="tab" id="tab-btn-scores" aria-controls="tool-scores" aria-selected="false" tabindex="-1">Wilks/DOTS/GL</button>
+</nav>
+
+<main id="main-content">
+
+  <!-- ============ 1RM consensus ============ -->
+  <section class="tool-panel" id="tool-onerm" role="tabpanel" aria-labelledby="tab-btn-onerm" tabindex="0">
+    <h2>One-rep max consensus</h2>
+    <p class="disclaimer">Six rep-max formulas, side by side, plus their median as the consensus estimate. Formulas
+      drift more the higher the rep count runs - treat anything past 8-10 reps as a soft estimate, and past 12 the
+      most rep-sensitive formulas are dropped automatically.</p>
+    <div class="tool-grid">
+      <div>
+        <div class="field">
+          <label for="onerm-weight">Weight lifted</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="onerm-weight-dec" aria-label="Decrease weight">&minus;</button>
+            <input type="number" id="onerm-weight" inputmode="decimal" value="225" min="0" step="0.5" />
+            <button class="stepper-btn" id="onerm-weight-inc" aria-label="Increase weight">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="onerm-reps">Reps performed</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="onerm-reps-dec" aria-label="Decrease reps">&minus;</button>
+            <input type="number" id="onerm-reps" inputmode="numeric" value="5" min="1" step="1" />
+            <button class="stepper-btn" id="onerm-reps-inc" aria-label="Increase reps">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="results" id="onerm-results" aria-live="polite">
+        <!-- filled by app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Load chart ============ -->
+  <section class="tool-panel" id="tool-loadchart" role="tabpanel" aria-labelledby="tab-btn-loadchart" tabindex="0" hidden>
+    <h2>%1RM / RIR load chart</h2>
+    <p class="disclaimer">Uses the consensus 1RM from the 1RM tab. The Have/Want panel converts between a
+      known set and a target set around that same 1RM.</p>
+    <div class="field">
+      <label for="loadchart-onerm">Training max (1RM)</label>
+      <div class="stepper-row">
+        <button class="stepper-btn" id="loadchart-onerm-dec" aria-label="Decrease 1RM">&minus;</button>
+        <input type="number" id="loadchart-onerm" inputmode="decimal" value="315" min="0" step="0.5" />
+        <button class="stepper-btn" id="loadchart-onerm-inc" aria-label="Increase 1RM">+</button>
+      </div>
+    </div>
+
+    <div class="tool-grid">
+      <div>
+        <h3>Want: target reps</h3>
+        <div class="field">
+          <label for="loadchart-reps">Target reps</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="loadchart-reps-dec" aria-label="Decrease reps">&minus;</button>
+            <input type="number" id="loadchart-reps" inputmode="numeric" value="5" min="1" step="1" />
+            <button class="stepper-btn" id="loadchart-reps-inc" aria-label="Increase reps">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="loadchart-rir">Reps in reserve (RIR)</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="loadchart-rir-dec" aria-label="Decrease RIR">&minus;</button>
+            <input type="number" id="loadchart-rir" inputmode="numeric" value="0" min="0" step="1" />
+            <button class="stepper-btn" id="loadchart-rir-inc" aria-label="Increase RIR">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="results" id="loadchart-target-results" aria-live="polite"></div>
+    </div>
+
+    <h3>Full %1RM chart</h3>
+    <div class="results" id="loadchart-table-results" aria-live="polite"></div>
+  </section>
+
+  <!-- ============ Volume landmarks ============ -->
+  <section class="tool-panel" id="tool-volume" role="tabpanel" aria-labelledby="tab-btn-volume" tabindex="0" hidden>
+    <h2>Weekly volume landmarks</h2>
+    <p class="disclaimer">MV/MEV/MAV/MRV are population starting points to titrate from, not fixed laws - see the
+      README for sourcing. Enter your current weekly hard sets for a muscle to get a verdict.</p>
+    <div class="tool-grid">
+      <div>
+        <div class="field">
+          <label for="volume-muscle">Muscle group</label>
+          <select id="volume-muscle"></select>
+        </div>
+        <div class="field">
+          <label for="volume-sets">Weekly hard sets</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="volume-sets-dec" aria-label="Decrease sets">&minus;</button>
+            <input type="number" id="volume-sets" inputmode="numeric" value="10" min="0" step="1" />
+            <button class="stepper-btn" id="volume-sets-inc" aria-label="Increase sets">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="results" id="volume-results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============ Mesocycle ramp ============ -->
+  <section class="tool-panel" id="tool-mesocycle" role="tabpanel" aria-labelledby="tab-btn-mesocycle" tabindex="0" hidden>
+    <h2>Mesocycle set ramp</h2>
+    <p class="disclaimer">Linear set progression from MEV to MRV across the accumulation weeks, then a deload
+      week at roughly half of MEV.</p>
+    <div class="tool-grid">
+      <div>
+        <div class="field">
+          <label for="meso-muscle">Muscle group</label>
+          <select id="meso-muscle"></select>
+        </div>
+        <div class="field">
+          <label for="meso-weeks">Total weeks (including deload)</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="meso-weeks-dec" aria-label="Decrease weeks">&minus;</button>
+            <input type="number" id="meso-weeks" inputmode="numeric" value="5" min="2" step="1" />
+            <button class="stepper-btn" id="meso-weeks-inc" aria-label="Increase weeks">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="results" id="meso-results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============ Macros ============ -->
+  <section class="tool-panel" id="tool-macros" role="tabpanel" aria-labelledby="tab-btn-macros" tabindex="0" hidden>
+    <h2>Macro targets</h2>
+    <p class="disclaimer">TDEE is a rough estimate (bodyweight &times; activity factor) unless you supply a known
+      value. Track bodyweight over 1-2 weeks and adjust to the real trend.</p>
+    <div class="tool-grid">
+      <div>
+        <div class="field">
+          <label for="macros-bodyweight">Bodyweight</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="macros-bodyweight-dec" aria-label="Decrease bodyweight">&minus;</button>
+            <input type="number" id="macros-bodyweight" inputmode="decimal" value="185" min="1" step="0.5" />
+            <button class="stepper-btn" id="macros-bodyweight-inc" aria-label="Increase bodyweight">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="macros-goal">Goal</label>
+          <select id="macros-goal">
+            <option value="gain">Gain</option>
+            <option value="maintain">Maintain</option>
+            <option value="recomp">Recomp</option>
+            <option value="cut">Cut</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="macros-activity">Activity level (used if TDEE is blank)</label>
+          <select id="macros-activity">
+            <option value="sedentary">Sedentary</option>
+            <option value="light">Light</option>
+            <option value="moderate" selected>Moderate</option>
+            <option value="active">Active</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="macros-tdee">Known TDEE (optional)</label>
+          <input type="number" id="macros-tdee" inputmode="numeric" min="0" step="10" placeholder="leave blank to estimate" />
+        </div>
+      </div>
+      <div class="results" id="macros-results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============ Plate loading ============ -->
+  <section class="tool-panel" id="tool-plates" role="tabpanel" aria-labelledby="tab-btn-plates" tabindex="0" hidden>
+    <h2>Plate loading</h2>
+    <div class="tool-grid">
+      <div>
+        <div class="field">
+          <label for="plates-target">Target barbell weight</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="plates-target-dec" aria-label="Decrease target weight">&minus;</button>
+            <input type="number" id="plates-target" inputmode="decimal" value="225" min="0" step="2.5" />
+            <button class="stepper-btn" id="plates-target-inc" aria-label="Increase target weight">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <span id="plates-preset-label">Bar / preset</span>
+          <div class="chip-row" role="group" aria-labelledby="plates-preset-label" id="plates-preset-group">
+            <button type="button" class="chip" data-preset="standard" aria-pressed="true">Standard</button>
+            <button type="button" class="chip" data-preset="womens" aria-pressed="false">Women's bar (15kg)</button>
+            <button type="button" class="chip" data-preset="metric-no-45" aria-pressed="false">Metric, no 45lb-eq.</button>
+          </div>
+          <p class="hint">Presets use kg regardless of the global unit toggle.</p>
+        </div>
+      </div>
+      <div>
+        <div class="results" id="plates-results" aria-live="polite"></div>
+        <div class="barbell-wrap" id="plates-barbell-wrap"></div>
+        <div id="plates-legend"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Warm-up ramp ============ -->
+  <section class="tool-panel" id="tool-warmup" role="tabpanel" aria-labelledby="tab-btn-warmup" tabindex="0" hidden>
+    <h2>Warm-up ramp</h2>
+    <p class="disclaimer">Standard five-step ramp (empty bar, then 50/70/85/95% of the working weight), rounded
+      to realistic plate increments. Rest 1-3 minutes between warm-up sets.</p>
+    <div class="field">
+      <label for="warmup-weight">Working weight</label>
+      <div class="stepper-row">
+        <button class="stepper-btn" id="warmup-weight-dec" aria-label="Decrease working weight">&minus;</button>
+        <input type="number" id="warmup-weight" inputmode="decimal" value="225" min="0" step="2.5" />
+        <button class="stepper-btn" id="warmup-weight-inc" aria-label="Increase working weight">+</button>
+      </div>
+    </div>
+    <div class="results" id="warmup-results" aria-live="polite"></div>
+    <div class="barbell-wrap" id="warmup-barbell-wrap"></div>
+  </section>
+
+  <!-- ============ Strength standards ============ -->
+  <section class="tool-panel" id="tool-scores" role="tabpanel" aria-labelledby="tab-btn-scores" tabindex="0" hidden>
+    <h2>Wilks / DOTS / IPF GL</h2>
+    <p class="disclaimer">All formulas are shown side by side rather than picked as one "correct" answer - see the
+      README for full sourcing and evidence grading.</p>
+    <div class="tool-grid">
+      <div>
+        <div class="field">
+          <label for="scores-total">Competition total (or single-lift result)</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="scores-total-dec" aria-label="Decrease total">&minus;</button>
+            <input type="number" id="scores-total" inputmode="decimal" value="500" min="0" step="2.5" />
+            <button class="stepper-btn" id="scores-total-inc" aria-label="Increase total">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="scores-bodyweight">Bodyweight</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="scores-bodyweight-dec" aria-label="Decrease bodyweight">&minus;</button>
+            <input type="number" id="scores-bodyweight" inputmode="decimal" value="183" min="1" step="0.5" />
+            <button class="stepper-btn" id="scores-bodyweight-inc" aria-label="Increase bodyweight">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <span id="scores-sex-label">Sex (formula coefficients)</span>
+          <div class="radio-row" role="radiogroup" aria-labelledby="scores-sex-label" id="scores-sex-group">
+            <button type="button" class="chip" data-sex="male" aria-pressed="true">Male</button>
+            <button type="button" class="chip" data-sex="female" aria-pressed="false">Female</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="scores-age">Age (optional, for McCulloch masters adjustment)</label>
+          <input type="number" id="scores-age" inputmode="numeric" min="40" max="90" step="1" placeholder="40-90, leave blank to skip" />
+        </div>
+      </div>
+      <div class="results" id="scores-results" aria-live="polite"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <p>
+    <span class="offline-indicator" id="offline-indicator"><span class="dot" aria-hidden="true"></span> <span id="offline-indicator-text">online</span></span>
+    &middot; liftmath is a calculator, not a coach - informational only, not medical or nutrition advice.
+  </p>
+  <p><a href="https://github.com/munzzyy/liftmath" rel="noopener">source on GitHub</a> &middot; v<span id="app-version">1.0.0</span></p>
+</footer>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -14,6 +14,28 @@ Sources:
     Mayhew, J.L. et al. (1992). Muscular endurance repetitions to predict bench press
         strength in men of different training levels. Journal of Sports Medicine and
         Physical Fitness, 32(3), 295-298.
+
+Open question, flagged rather than silently asserted (checked, not fixed):
+    which formulas actually degrade worse at high rep counts is genuinely
+    contested in the secondary literature, and this codebase's choice to drop
+    the three "curvilinear" formulas (Brzycki, Lander, Mayhew) above
+    HIGH_REP_THRESHOLD reps was not backed by an in-code citation. A research
+    pass looking for the mechanism found conflicting claims even among
+    fitness-calculator summaries of formula-comparison studies: some sources
+    say curvilinear/exponential forms (Mayhew, Desgorces-style) hold up
+    BETTER, not worse, past ~10-12 reps because their shape better matches
+    the true curvilinear reps-vs-%1RM relationship, while the LINEAR
+    equations (Epley, O'Conner, and Brzycki's own linear-in-reps form) are
+    the ones that drift most - which would make this module's drop rule
+    backwards. Other sources claim the opposite. Neither claim was verified
+    against full peer-reviewed primary-source text (not just search-snippet
+    summaries) at the time this note was written, so the drop-list behavior
+    below is being left UNCHANGED rather than "fixed" on unresolved,
+    contradictory secondary evidence - changing which formulas get dropped
+    on a coin-flip citation would be worse than the current uncited-but-
+    unchanged state. Anyone revisiting this: pull the actual full-text
+    formula-comparison papers (not calculator-site summaries of them) before
+    changing HIGH_REP_THRESHOLD or _CURVILINEAR.
 """
 
 from __future__ import annotations
@@ -94,10 +116,12 @@ def estimate_one_rm(weight: float, reps: int, unit: str = "lb") -> OneRmEstimate
         unit: display unit only ("lb" or "kg"); the math is unit-agnostic.
 
     Raises:
-        ValueError: if reps < 1.
+        ValueError: if reps < 1 or weight <= 0.
     """
     if reps < 1:
         raise ValueError("reps must be >= 1")
+    if weight <= 0:
+        raise ValueError("weight must be > 0")
 
     if reps == 1:
         return OneRmEstimate(

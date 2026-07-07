@@ -1,0 +1,198 @@
+[
+  {
+    "args": {
+      "activity": "moderate",
+      "bodyweight": 185,
+      "goal": "gain",
+      "tdee": null,
+      "unit": "lb"
+    },
+    "expected": {
+      "actualKcal": 3195.4675598444833,
+      "bodyweightKg": 83.91458928163034,
+      "carbG": 494.6765038152108,
+      "carbKcal": 1978.7060152608433,
+      "fatG": 75.52313035346731,
+      "fatGPerKg": 0.9,
+      "fatKcal": 679.7081731812058,
+      "goal": "gain",
+      "perMealProteinG": 33.56583571265214,
+      "proteinG": 134.26334285060855,
+      "proteinGPerKg": 1.6,
+      "proteinKcal": 537.0533714024342,
+      "shortfall": false,
+      "targetKcal": 3195.4675598444833,
+      "tdee": 2853.0960355754314,
+      "tdeeIsEstimate": true
+    },
+    "fn": "macroTargets"
+  },
+  {
+    "args": {
+      "activity": "moderate",
+      "bodyweight": 185,
+      "goal": "cut",
+      "tdee": null,
+      "unit": "lb"
+    },
+    "expected": {
+      "actualKcal": 2282.476828460345,
+      "bodyweightKg": 83.91458928163034,
+      "carbG": 255.93949730897248,
+      "carbKcal": 1023.7579892358899,
+      "fatG": 50.3487535689782,
+      "fatGPerKg": 0.6,
+      "fatKcal": 453.13878212080385,
+      "goal": "cut",
+      "perMealProteinG": 33.56583571265214,
+      "proteinG": 201.3950142759128,
+      "proteinGPerKg": 2.4,
+      "proteinKcal": 805.5800571036513,
+      "shortfall": false,
+      "targetKcal": 2282.476828460345,
+      "tdee": 2853.0960355754314,
+      "tdeeIsEstimate": true
+    },
+    "fn": "macroTargets"
+  },
+  {
+    "args": {
+      "activity": "sedentary",
+      "bodyweight": 185,
+      "goal": "maintain",
+      "tdee": null,
+      "unit": "lb"
+    },
+    "expected": {
+      "actualKcal": 2349.6084998856495,
+      "bodyweightKg": 83.91458928163034,
+      "carbG": 283.2117388255024,
+      "carbKcal": 1132.8469553020095,
+      "fatG": 75.52313035346731,
+      "fatGPerKg": 0.9,
+      "fatKcal": 679.7081731812058,
+      "goal": "maintain",
+      "perMealProteinG": 33.56583571265214,
+      "proteinG": 134.26334285060855,
+      "proteinGPerKg": 1.6,
+      "proteinKcal": 537.0533714024342,
+      "shortfall": false,
+      "targetKcal": 2349.6084998856495,
+      "tdee": 2349.6084998856495,
+      "tdeeIsEstimate": true
+    },
+    "fn": "macroTargets"
+  },
+  {
+    "args": {
+      "activity": "active",
+      "bodyweight": 80,
+      "goal": "recomp",
+      "tdee": null,
+      "unit": "kg"
+    },
+    "expected": {
+      "actualKcal": 3040.0,
+      "bodyweightKg": 80,
+      "carbG": 422.0,
+      "carbKcal": 1688.0,
+      "fatG": 72.0,
+      "fatGPerKg": 0.9,
+      "fatKcal": 648.0,
+      "goal": "recomp",
+      "perMealProteinG": 32.0,
+      "proteinG": 176.0,
+      "proteinGPerKg": 2.2,
+      "proteinKcal": 704.0,
+      "shortfall": false,
+      "targetKcal": 3040.0,
+      "tdee": 3040,
+      "tdeeIsEstimate": true
+    },
+    "fn": "macroTargets"
+  },
+  {
+    "args": {
+      "activity": "moderate",
+      "bodyweight": 80,
+      "goal": "cut",
+      "tdee": 1800,
+      "unit": "kg"
+    },
+    "expected": {
+      "actualKcal": 1440.0,
+      "bodyweightKg": 80,
+      "carbG": 60.0,
+      "carbKcal": 240.0,
+      "fatG": 48.0,
+      "fatGPerKg": 0.6,
+      "fatKcal": 432.0,
+      "goal": "cut",
+      "perMealProteinG": 32.0,
+      "proteinG": 192.0,
+      "proteinGPerKg": 2.4,
+      "proteinKcal": 768.0,
+      "shortfall": false,
+      "targetKcal": 1440.0,
+      "tdee": 1800,
+      "tdeeIsEstimate": false
+    },
+    "fn": "macroTargets"
+  },
+  {
+    "args": {
+      "activity": "moderate",
+      "bodyweight": 250,
+      "goal": "cut",
+      "tdee": 1600,
+      "unit": "lb"
+    },
+    "expected": {
+      "actualKcal": 1700.9714043573717,
+      "bodyweightKg": 113.39809362382478,
+      "carbG": 0.0,
+      "carbKcal": 0.0,
+      "fatG": 68.03885617429486,
+      "fatGPerKg": 0.6,
+      "fatKcal": 612.3497055686538,
+      "goal": "cut",
+      "perMealProteinG": 45.359237449529914,
+      "proteinG": 272.15542469717946,
+      "proteinGPerKg": 2.4,
+      "proteinKcal": 1088.6216987887178,
+      "shortfall": true,
+      "targetKcal": 1280.0,
+      "tdee": 1600,
+      "tdeeIsEstimate": false
+    },
+    "fn": "macroTargets"
+  },
+  {
+    "args": {
+      "activity": "light",
+      "bodyweight": 120,
+      "goal": "gain",
+      "tdee": null,
+      "unit": "lb"
+    },
+    "expected": {
+      "actualKcal": 1889.8472690972142,
+      "bodyweightKg": 54.43108493943589,
+      "carbG": 275.1491343688484,
+      "carbKcal": 1100.5965374753937,
+      "fatG": 48.9879764454923,
+      "fatGPerKg": 0.9,
+      "fatKcal": 440.8917880094307,
+      "goal": "gain",
+      "perMealProteinG": 21.77243397577436,
+      "proteinG": 87.08973590309743,
+      "proteinGPerKg": 1.6,
+      "proteinKcal": 348.35894361238974,
+      "shortfall": false,
+      "targetKcal": 1889.8472690972142,
+      "tdee": 1687.3636331225125,
+      "tdeeIsEstimate": true
+    },
+    "fn": "macroTargets"
+  }
+]

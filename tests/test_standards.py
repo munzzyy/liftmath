@@ -1,6 +1,14 @@
 import pytest
 
-from liftmath.standards import dots_score, ipf_gl_points, score, wilks_score
+from liftmath.standards import (
+    dots_score,
+    ipf_gl_points,
+    mcculloch_coefficient,
+    mcculloch_score,
+    score,
+    wilks_original_score,
+    wilks_score,
+)
 
 
 def test_wilks_male_reference_value():
@@ -11,6 +19,23 @@ def test_wilks_male_reference_value():
 
 def test_wilks_female_reference_value():
     assert wilks_score(300, 60, "female") == pytest.approx(395.710, abs=0.01)
+
+
+def test_wilks_original_male_matches_openpowerlifting_pinned_test():
+    # OpenPowerlifting's own Rust unit test: M, 100kg BW, 1000kg total -> 608.589.
+    assert wilks_original_score(1000, 100, "male") == pytest.approx(608.589, abs=0.01)
+
+
+def test_wilks_original_female_matches_openpowerlifting_pinned_test():
+    # OpenPowerlifting's own Rust unit test: F, 60kg BW, 500kg total -> 557.4434.
+    assert wilks_original_score(500, 60, "female") == pytest.approx(557.4434, abs=0.01)
+
+
+def test_wilks_original_and_2020_disagree_meaningfully():
+    # Same input, different formula era - they should NOT collapse to the same value.
+    original = wilks_original_score(500, 100, "male")
+    revised = wilks_score(500, 100, "male")
+    assert original != pytest.approx(revised, abs=1.0)
 
 
 def test_dots_male_reference_value():
@@ -68,3 +93,33 @@ def test_nonpositive_bodyweight_raises():
         score(500, 0, "male")
     with pytest.raises(ValueError):
         score(500, -5, "male")
+
+
+def test_score_bundles_wilks_original_too():
+    s = score(500, 100, "male")
+    assert s.wilks_original == pytest.approx(304.295, abs=0.01)
+
+
+def test_mcculloch_wrpf_worked_example():
+    # WRPF's own worked example: age 50, total 300kg -> coefficient 1.150, adjusted 345.000kg.
+    result = mcculloch_score(300, 50)
+    assert result.coefficient == pytest.approx(1.150)
+    assert result.adjusted_total == pytest.approx(345.000)
+
+
+def test_mcculloch_age_40_is_identity():
+    assert mcculloch_coefficient(40) == pytest.approx(1.000)
+    result = mcculloch_score(300, 40)
+    assert result.adjusted_total == pytest.approx(300.0)
+
+
+def test_mcculloch_plateaus_past_79():
+    assert mcculloch_coefficient(79) == pytest.approx(2.060)
+    assert mcculloch_coefficient(90) == pytest.approx(2.060)
+
+
+def test_mcculloch_out_of_range_age_raises():
+    with pytest.raises(ValueError):
+        mcculloch_coefficient(39)
+    with pytest.raises(ValueError):
+        mcculloch_coefficient(91)

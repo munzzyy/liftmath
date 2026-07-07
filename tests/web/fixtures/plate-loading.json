@@ -1,0 +1,361 @@
+[
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 135
+    },
+    "expected": {
+      "achievable": 135.0,
+      "bar": 45,
+      "exact": true,
+      "perSide": 45.0,
+      "plates": [
+        [
+          45,
+          1
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 135,
+      "unit": "lb"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "expected": {
+      "achievable": 225.0,
+      "bar": 45,
+      "exact": true,
+      "perSide": 90.0,
+      "plates": [
+        [
+          45,
+          2
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 225,
+      "unit": "lb"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 315
+    },
+    "expected": {
+      "achievable": 315.0,
+      "bar": 45,
+      "exact": true,
+      "perSide": 135.0,
+      "plates": [
+        [
+          45,
+          3
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 315,
+      "unit": "lb"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 45
+    },
+    "expected": {
+      "achievable": 45.0,
+      "bar": 45,
+      "exact": true,
+      "perSide": 0.0,
+      "plates": [],
+      "shortfall": 0.0,
+      "target": 45,
+      "unit": "lb"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 100
+    },
+    "expected": {
+      "achievable": 100.0,
+      "bar": 45,
+      "exact": true,
+      "perSide": 27.5,
+      "plates": [
+        [
+          25,
+          1
+        ],
+        [
+          2.5,
+          1
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 100,
+      "unit": "lb"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "target": 60
+    },
+    "expected": {
+      "achievable": 60.0,
+      "bar": 20,
+      "exact": true,
+      "perSide": 20.0,
+      "plates": [
+        [
+          20,
+          1
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 60,
+      "unit": "kg"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "target": 100
+    },
+    "expected": {
+      "achievable": 100.0,
+      "bar": 20,
+      "exact": true,
+      "perSide": 40.0,
+      "plates": [
+        [
+          25,
+          1
+        ],
+        [
+          15,
+          1
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 100,
+      "unit": "kg"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "target": 140
+    },
+    "expected": {
+      "achievable": 140.0,
+      "bar": 20,
+      "exact": true,
+      "perSide": 60.0,
+      "plates": [
+        [
+          25,
+          2
+        ],
+        [
+          10,
+          1
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 140,
+      "unit": "kg"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "target": 20
+    },
+    "expected": {
+      "achievable": 20.0,
+      "bar": 20,
+      "exact": true,
+      "perSide": 0.0,
+      "plates": [],
+      "shortfall": 0.0,
+      "target": 20,
+      "unit": "kg"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "preset": "womens",
+        "unit": "kg"
+      },
+      "target": 60
+    },
+    "expected": {
+      "achievable": 60.0,
+      "bar": 15,
+      "exact": true,
+      "perSide": 22.5,
+      "plates": [
+        [
+          20,
+          1
+        ],
+        [
+          2.5,
+          1
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 60,
+      "unit": "kg"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "preset": "womens",
+        "unit": "kg"
+      },
+      "target": 45
+    },
+    "expected": {
+      "achievable": 45.0,
+      "bar": 15,
+      "exact": true,
+      "perSide": 15.0,
+      "plates": [
+        [
+          15,
+          1
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 45,
+      "unit": "kg"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "preset": "metric-no-45",
+        "unit": "kg"
+      },
+      "target": 100
+    },
+    "expected": {
+      "achievable": 100.0,
+      "bar": 20,
+      "exact": true,
+      "perSide": 40.0,
+      "plates": [
+        [
+          20,
+          2
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 100,
+      "unit": "kg"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "bar": 45,
+        "plates": [
+          45,
+          25,
+          10
+        ],
+        "unit": "lb"
+      },
+      "target": 200
+    },
+    "expected": {
+      "achievable": 185.0,
+      "bar": 45,
+      "exact": false,
+      "perSide": 77.5,
+      "plates": [
+        [
+          45,
+          1
+        ],
+        [
+          25,
+          1
+        ]
+      ],
+      "shortfall": 7.5,
+      "target": 200,
+      "unit": "lb"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "plates": [
+          45,
+          25
+        ],
+        "unit": "lb"
+      },
+      "target": 137
+    },
+    "expected": {
+      "achievable": 135.0,
+      "bar": 45,
+      "exact": false,
+      "perSide": 46.0,
+      "plates": [
+        [
+          45,
+          1
+        ]
+      ],
+      "shortfall": 1.0,
+      "target": 137,
+      "unit": "lb"
+    },
+    "fn": "loadPlates"
+  }
+]

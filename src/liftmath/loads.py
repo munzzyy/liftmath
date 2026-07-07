@@ -31,7 +31,13 @@ DEFAULT_BANDS: tuple[tuple[float, str], ...] = (
 
 
 def pct_to_reps(pct: float) -> int:
-    """Predicted max reps achievable at a given fraction of 1RM (inverse Epley)."""
+    """Predicted max reps achievable at a given fraction of 1RM (inverse Epley).
+
+    Raises:
+        ValueError: if pct <= 0.
+    """
+    if pct <= 0:
+        raise ValueError("pct must be > 0")
     if pct >= 1.0:
         return 1
     reps = 30.0 * (1.0 / pct - 1.0)
@@ -85,7 +91,16 @@ def target_load(one_rm: float, reps: int, rir: int = 0) -> TargetLoad:
     Without RIR, `reps` is treated as the reps-to-failure target. With RIR > 0,
     the load is computed so that `reps` is performed while stopping `rir` reps
     short of failure (i.e. the effective max-rep target becomes reps + rir).
+
+    Raises:
+        ValueError: if one_rm <= 0, reps < 1, or rir < 0.
     """
+    if one_rm <= 0:
+        raise ValueError("one_rm must be > 0")
+    if reps < 1:
+        raise ValueError("reps must be >= 1")
+    if rir < 0:
+        raise ValueError("rir must be >= 0")
     pct = reps_to_pct(reps)
     load = one_rm * pct
     result = TargetLoad(one_rm=one_rm, reps=reps, pct=pct, load=load, rir=rir)

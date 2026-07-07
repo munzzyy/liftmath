@@ -73,6 +73,15 @@ Match what's already there: `ruff check .` enforces the actual rules
 modules are written (one area per module, a dataclass result type, cited
 docstrings) and follow the same shape.
 
+## License of your contribution
+
+liftmath is under the Prosperity Public License: free for noncommercial use, commercial
+use by paid license. So the project stays maintainable under one owner, contributions are
+taken under the Blue Oak Model License 1.0.0 (https://blueoakcouncil.org/license/1.0.0), a
+simple permissive license. Opening a PR means you're offering your change under those
+terms. Prosperity's own Contributions Back clause is written for exactly this, so sending a
+fix back never counts as commercial use on your end.
+
 ## Reporting a security issue
 
 Don't open a public issue for it. See `SECURITY.md`.

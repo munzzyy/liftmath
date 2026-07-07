@@ -1,0 +1,586 @@
+/* liftmath - design tokens + layout + component styles.
+   No webfont, no external asset - system font stack keeps the zero-CDN
+   promise and avoids FOUT/layout shift entirely. */
+
+:root {
+  /* type scale */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-sm: 0.875rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.75rem;
+  --font-size-2xl: clamp(1.75rem, 5vw + 1rem, 2.5rem); /* hero result number */
+  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* spacing scale: 4px base */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  /* touch targets */
+  --tap-min: 44px;
+
+  /* light theme (default) */
+  --color-bg: #ffffff;
+  --color-surface: #f4f5f7;
+  --color-surface-alt: #e9ebef;
+  --color-text: #16181d;
+  --color-muted: #5b616e;
+  --color-accent: #1a5fd6;
+  --color-accent-contrast: #ffffff;
+  --color-border: #d8dbe1;
+  --color-danger: #b3261e;
+  /* Slightly darker than a "pure" success green so .badge.ok (14px/700, under
+     the large-text threshold) clears WCAG AA 4.5:1 against --color-surface-alt
+     (previously #1e7e34 measured 4.30:1, failing by a small margin). */
+  --color-ok: #1b7530;
+  --focus-ring: #1a5fd6;
+
+  --radius-sm: 0.35rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.85rem;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+
+  /* plate colors: IPF/IWF-standard, tuned per theme so light plates never
+     wash out against their own canvas (see plates below for dark overrides) */
+  --plate-25: #d22b2b;
+  --plate-20: #1a5fd6;
+  --plate-15: #e0b400;
+  --plate-10: #1e7e34;
+  --plate-5: #e7e9ed;
+  --plate-2_5: #9aa1ab;
+  --plate-1_25: #c9cdd4;
+  --plate-other: #7a808c;
+  --plate-label: #16181d;
+  --bar-color: #8a909c;
+}
+
+[data-theme="dark"] {
+  --color-bg: #0f1115;
+  --color-surface: #1a1d24;
+  --color-surface-alt: #23262f;
+  --color-text: #eceef1;
+  --color-muted: #9aa1ab;
+  --color-accent: #5b9bff;
+  --color-accent-contrast: #0f1115;
+  --color-border: #2b2f38;
+  --color-danger: #ff6b64;
+  --color-ok: #4caf60;
+  --focus-ring: #7fb0ff;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+  --plate-25: #ff5a5a;
+  --plate-20: #5b9bff;
+  --plate-15: #f0c94a;
+  --plate-10: #4caf60;
+  --plate-5: #3a3f4a;
+  --plate-2_5: #565c68;
+  --plate-1_25: #454a55;
+  --plate-other: #6b7280;
+  --plate-label: #eceef1;
+  --bar-color: #6b7280;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+a {
+  color: var(--color-accent);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---------- App shell ---------- */
+
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.app-title .accent {
+  color: var(--color-accent);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.icon-btn,
+.unit-toggle button,
+.theme-toggle {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  cursor: pointer;
+  padding: var(--space-2) var(--space-3);
+}
+
+.icon-btn:hover,
+.unit-toggle button:hover,
+.theme-toggle:hover {
+  background: var(--color-surface-alt);
+}
+
+.unit-toggle {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.unit-toggle button {
+  border: none;
+  border-radius: 0;
+}
+
+.unit-toggle button[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  font-weight: 700;
+}
+
+/* ---------- Tabs ---------- */
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.tab {
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-muted);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab:hover {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+.tab[aria-selected="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+.tool-panel[hidden] {
+  display: none;
+}
+
+.tool-panel h2 {
+  margin-top: 0;
+  font-size: var(--font-size-lg);
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+@media (min-width: 700px) {
+  .tool-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+/* ---------- Forms ---------- */
+
+.field {
+  margin-bottom: var(--space-4);
+}
+
+.field label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.field input[type="number"],
+.field input[type="text"],
+.field select {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.field input[type="range"] {
+  width: 100%;
+  min-height: var(--tap-min);
+}
+
+.stepper-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.stepper-row input {
+  text-align: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.stepper-btn {
+  flex: 0 0 auto;
+  width: var(--tap-min);
+  min-height: var(--tap-min);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  line-height: 1;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.stepper-btn:hover {
+  background: var(--color-surface-alt);
+}
+
+.stepper-btn:active {
+  transform: translateY(1px);
+}
+
+.radio-row,
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  border-color: var(--color-accent);
+  font-weight: 700;
+}
+
+.hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+  margin-top: var(--space-1);
+}
+
+/* ---------- Results ---------- */
+
+.results {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.result-hero {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  margin: 0 0 var(--space-2);
+}
+
+.result-hero .unit {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-muted);
+  margin-left: var(--space-1);
+}
+
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+table.data-table caption {
+  text-align: left;
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+table.data-table th,
+table.data-table td {
+  text-align: left;
+  padding: var(--space-2) var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+table.data-table tr.highlight td {
+  background: var(--color-surface-alt);
+  font-weight: 700;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem var(--space-2);
+  border-radius: 999px;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  background: var(--color-surface-alt);
+}
+
+.badge.warn {
+  color: var(--color-danger);
+}
+
+.badge.ok {
+  color: var(--color-ok);
+}
+
+.copy-link-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.copy-status {
+  font-size: var(--font-size-sm);
+  color: var(--color-ok);
+  min-height: 1.25em;
+}
+
+/* ---------- Barbell SVG ---------- */
+
+.barbell-wrap {
+  overflow-x: auto;
+  margin: var(--space-4) 0;
+}
+
+.barbell-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: 320px;
+}
+
+.barbell-svg text {
+  fill: var(--plate-label);
+  font-family: var(--font-family);
+  /* 19px bold clears the WCAG "large text" threshold (18.66px @ 700 weight),
+     which only needs 3:1 contrast instead of 4.5:1 - combined with the
+     per-plate-color overrides below (a single fixed --plate-label can't hit
+     4.5:1 against every plate color; several mid-saturation plates land
+     around 3-4:1 either way), every plate/theme combination now clears at
+     least the large-text floor, and most clear 4.5:1 too. */
+  font-size: 19px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+/* Per-plate label color override: whichever of the near-black/near-white
+   text tokens has the better contrast ratio against that plate's own
+   background, keyed off the same data-plate-color attribute the swatch
+   legend already uses (see .plate-legend .swatch rules below) - avoids an
+   inline style="..." attribute, which the page's CSP (style-src 'self', no
+   'unsafe-inline') would otherwise block. WCAG contrast ratios computed
+   against both this theme's plate colors (see :root / [data-theme="dark"]
+   above); values change per theme since the plate hex values themselves do. */
+.barbell-svg text[data-plate-color="--plate-25"],
+.barbell-svg text[data-plate-color="--plate-20"],
+.barbell-svg text[data-plate-color="--plate-10"] {
+  fill: #eceef1;
+}
+
+.barbell-svg text[data-plate-color="--plate-15"],
+.barbell-svg text[data-plate-color="--plate-5"],
+.barbell-svg text[data-plate-color="--plate-2_5"],
+.barbell-svg text[data-plate-color="--plate-1_25"] {
+  fill: #16181d;
+}
+
+.barbell-svg text[data-plate-color="--plate-other"] {
+  fill: var(--plate-label);
+}
+
+[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-25"],
+[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-20"],
+[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-15"],
+[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-10"] {
+  fill: #16181d;
+}
+
+[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-5"],
+[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-2_5"],
+[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-1_25"] {
+  fill: #eceef1;
+}
+
+[data-theme="dark"] .barbell-svg text[data-plate-color="--plate-other"] {
+  fill: #eceef1;
+}
+
+.barbell-svg .bar {
+  fill: var(--bar-color);
+}
+
+.plate-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.plate-legend .swatch {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  border-radius: 0.2em;
+  margin-right: 0.3em;
+  vertical-align: -0.1em;
+}
+
+/* Swatch color per plate denomination, keyed by the data-plate-color
+   attribute the JS legend renderer sets (js/ui/svg-barbell.js). Avoids an
+   inline style="..." attribute, which the page's CSP (style-src 'self',
+   no 'unsafe-inline') would otherwise block. */
+.plate-legend .swatch[data-plate-color="--plate-25"] { background: var(--plate-25); }
+.plate-legend .swatch[data-plate-color="--plate-20"] { background: var(--plate-20); }
+.plate-legend .swatch[data-plate-color="--plate-15"] { background: var(--plate-15); }
+.plate-legend .swatch[data-plate-color="--plate-10"] { background: var(--plate-10); }
+.plate-legend .swatch[data-plate-color="--plate-5"] { background: var(--plate-5); }
+.plate-legend .swatch[data-plate-color="--plate-2_5"] { background: var(--plate-2_5); }
+.plate-legend .swatch[data-plate-color="--plate-1_25"] { background: var(--plate-1_25); }
+.plate-legend .swatch[data-plate-color="--plate-other"] { background: var(--plate-other); }
+
+/* ---------- Footer ---------- */
+
+.app-footer {
+  padding: var(--space-6) var(--space-4) var(--space-12);
+  text-align: center;
+  color: var(--color-muted);
+  font-size: var(--font-size-sm);
+}
+
+.app-footer a {
+  color: var(--color-muted);
+  text-decoration: underline;
+}
+
+.offline-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.offline-indicator .dot {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: var(--color-ok);
+}
+
+.offline-indicator.is-offline .dot {
+  background: var(--color-danger);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.disclaimer {
+  border-left: 3px solid var(--color-accent);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+  margin-bottom: var(--space-4);
+}

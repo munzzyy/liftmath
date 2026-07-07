@@ -63,3 +63,13 @@ def test_brzycki_nan_above_36_reps_is_excluded():
 def test_reps_below_one_raises():
     with pytest.raises(ValueError):
         estimate_one_rm(100, 0)
+
+
+def test_zero_weight_raises():
+    with pytest.raises(ValueError):
+        estimate_one_rm(0, 5)
+
+
+def test_negative_weight_raises():
+    with pytest.raises(ValueError):
+        estimate_one_rm(-100, 5)

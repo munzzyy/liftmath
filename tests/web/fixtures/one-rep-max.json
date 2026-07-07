@@ -1,0 +1,385 @@
+[
+  {
+    "args": {
+      "reps": 1,
+      "unit": "lb",
+      "weight": 135
+    },
+    "expected": {
+      "consensus": 135,
+      "high": 135,
+      "highRepWarning": false,
+      "isExact": true,
+      "low": 135,
+      "perFormula": {
+        "exact": 135
+      },
+      "reps": 1,
+      "softEstimateWarning": false,
+      "unit": "lb",
+      "weight": 135
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 5,
+      "unit": "lb",
+      "weight": 225
+    },
+    "expected": {
+      "consensus": 259.1725323885638,
+      "high": 267.7740310159191,
+      "highRepWarning": false,
+      "isExact": false,
+      "low": 253.125,
+      "perFormula": {
+        "Brzycki": 253.125,
+        "Epley": 262.5,
+        "Lander": 255.84506477712767,
+        "Lombardi": 264.2892621948043,
+        "Mayhew": 267.7740310159191,
+        "O'Conner": 253.125
+      },
+      "reps": 5,
+      "softEstimateWarning": false,
+      "unit": "lb",
+      "weight": 225
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 8,
+      "unit": "lb",
+      "weight": 100
+    },
+    "expected": {
+      "consensus": 124.62357569192388,
+      "high": 126.66666666666666,
+      "highRepWarning": false,
+      "isExact": false,
+      "low": 120.0,
+      "perFormula": {
+        "Brzycki": 124.13793103448276,
+        "Epley": 126.66666666666666,
+        "Lander": 125.10922034936499,
+        "Lombardi": 123.11444133449163,
+        "Mayhew": 126.28634315137971,
+        "O'Conner": 120.0
+      },
+      "reps": 8,
+      "softEstimateWarning": false,
+      "unit": "lb",
+      "weight": 100
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 9,
+      "unit": "lb",
+      "weight": 100
+    },
+    "expected": {
+      "consensus": 128.60182352473817,
+      "high": 130.0,
+      "highRepWarning": false,
+      "isExact": false,
+      "low": 122.50000000000001,
+      "perFormula": {
+        "Brzycki": 128.57142857142858,
+        "Epley": 130.0,
+        "Lander": 129.4348756836265,
+        "Lombardi": 124.57309396155173,
+        "Mayhew": 128.63221847804775,
+        "O'Conner": 122.50000000000001
+      },
+      "reps": 9,
+      "softEstimateWarning": true,
+      "unit": "lb",
+      "weight": 100
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 10,
+      "unit": "lb",
+      "weight": 100
+    },
+    "expected": {
+      "consensus": 132.13380338043243,
+      "high": 134.0703628078088,
+      "highRepWarning": false,
+      "isExact": false,
+      "low": 125.0,
+      "perFormula": {
+        "Brzycki": 133.33333333333334,
+        "Epley": 133.33333333333331,
+        "Lander": 134.0703628078088,
+        "Lombardi": 125.89254117941672,
+        "Mayhew": 130.93427342753154,
+        "O'Conner": 125.0
+      },
+      "reps": 10,
+      "softEstimateWarning": true,
+      "unit": "lb",
+      "weight": 100
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 12,
+      "unit": "lb",
+      "weight": 100
+    },
+    "expected": {
+      "consensus": 137.69924175550506,
+      "high": 144.41425865517976,
+      "highRepWarning": false,
+      "isExact": false,
+      "low": 128.20888539868153,
+      "perFormula": {
+        "Brzycki": 144.0,
+        "Epley": 140.0,
+        "Lander": 144.41425865517976,
+        "Lombardi": 128.20888539868153,
+        "Mayhew": 135.39848351101014,
+        "O'Conner": 130.0
+      },
+      "reps": 12,
+      "softEstimateWarning": true,
+      "unit": "lb",
+      "weight": 100
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 13,
+      "unit": "lb",
+      "weight": 100
+    },
+    "expected": {
+      "consensus": 132.5,
+      "high": 143.33333333333334,
+      "highRepWarning": true,
+      "isExact": false,
+      "low": 129.23922207808317,
+      "perFormula": {
+        "Epley": 143.33333333333334,
+        "Lombardi": 129.23922207808317,
+        "O'Conner": 132.5
+      },
+      "reps": 13,
+      "softEstimateWarning": false,
+      "unit": "lb",
+      "weight": 100
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 20,
+      "unit": "lb",
+      "weight": 100
+    },
+    "expected": {
+      "consensus": 150.0,
+      "high": 166.66666666666666,
+      "highRepWarning": true,
+      "isExact": false,
+      "low": 134.92828476735633,
+      "perFormula": {
+        "Epley": 166.66666666666666,
+        "Lombardi": 134.92828476735633,
+        "O'Conner": 150.0
+      },
+      "reps": 20,
+      "softEstimateWarning": false,
+      "unit": "lb",
+      "weight": 100
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 30,
+      "unit": "lb",
+      "weight": 100
+    },
+    "expected": {
+      "consensus": 175.0,
+      "high": 200.0,
+      "highRepWarning": true,
+      "isExact": false,
+      "low": 140.5115826483646,
+      "perFormula": {
+        "Epley": 200.0,
+        "Lombardi": 140.5115826483646,
+        "O'Conner": 175.0
+      },
+      "reps": 30,
+      "softEstimateWarning": false,
+      "unit": "lb",
+      "weight": 100
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 3,
+      "unit": "lb",
+      "weight": 315
+    },
+    "expected": {
+      "consensus": 342.5625,
+      "high": 359.0695125945418,
+      "highRepWarning": false,
+      "isExact": false,
+      "low": 333.52941176470586,
+      "perFormula": {
+        "Brzycki": 333.52941176470586,
+        "Epley": 346.5,
+        "Lander": 337.6701254449876,
+        "Lombardi": 351.5787998206799,
+        "Mayhew": 359.0695125945418,
+        "O'Conner": 338.625
+      },
+      "reps": 3,
+      "softEstimateWarning": false,
+      "unit": "lb",
+      "weight": 315
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 1,
+      "unit": "lb",
+      "weight": 45
+    },
+    "expected": {
+      "consensus": 45,
+      "high": 45,
+      "highRepWarning": false,
+      "isExact": true,
+      "low": 45,
+      "perFormula": {
+        "exact": 45
+      },
+      "reps": 1,
+      "softEstimateWarning": false,
+      "unit": "lb",
+      "weight": 45
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 2,
+      "unit": "lb",
+      "weight": 500
+    },
+    "expected": {
+      "consensus": 529.1666666666667,
+      "high": 557.1933929139157,
+      "highRepWarning": false,
+      "isExact": false,
+      "low": 514.2857142857143,
+      "perFormula": {
+        "Brzycki": 514.2857142857143,
+        "Epley": 533.3333333333334,
+        "Lander": 521.0637955078882,
+        "Lombardi": 535.8867312681466,
+        "Mayhew": 557.1933929139157,
+        "O'Conner": 525.0
+      },
+      "reps": 2,
+      "softEstimateWarning": false,
+      "unit": "lb",
+      "weight": 500
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 7,
+      "unit": "lb",
+      "weight": 60.5
+    },
+    "expected": {
+      "consensus": 73.36978458875488,
+      "high": 74.95891354170791,
+      "highRepWarning": false,
+      "isExact": false,
+      "low": 71.0875,
+      "perFormula": {
+        "Brzycki": 72.6,
+        "Epley": 74.61666666666667,
+        "Lander": 73.24331951314622,
+        "Lombardi": 73.49624966436355,
+        "Mayhew": 74.95891354170791,
+        "O'Conner": 71.0875
+      },
+      "reps": 7,
+      "softEstimateWarning": false,
+      "unit": "lb",
+      "weight": 60.5
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 5,
+      "unit": "kg",
+      "weight": 100
+    },
+    "expected": {
+      "consensus": 115.18779217269504,
+      "high": 119.01068045151959,
+      "highRepWarning": false,
+      "isExact": false,
+      "low": 112.5,
+      "perFormula": {
+        "Brzycki": 112.5,
+        "Epley": 116.66666666666667,
+        "Lander": 113.70891767872341,
+        "Lombardi": 117.4618943088019,
+        "Mayhew": 119.01068045151959,
+        "O'Conner": 112.5
+      },
+      "reps": 5,
+      "softEstimateWarning": false,
+      "unit": "kg",
+      "weight": 100
+    },
+    "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "reps": 15,
+      "unit": "kg",
+      "weight": 60
+    },
+    "expected": {
+      "consensus": 82.5,
+      "high": 90.0,
+      "highRepWarning": true,
+      "isExact": false,
+      "low": 78.66116538238501,
+      "perFormula": {
+        "Epley": 90.0,
+        "Lombardi": 78.66116538238501,
+        "O'Conner": 82.5
+      },
+      "reps": 15,
+      "softEstimateWarning": false,
+      "unit": "kg",
+      "weight": 60
+    },
+    "fn": "estimateOneRm"
+  }
+]

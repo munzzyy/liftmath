@@ -3,6 +3,7 @@ import json
 import pytest
 
 from liftmath._serialize import to_dict, to_json
+from liftmath.bodycomp import ffmi
 from liftmath.onerm import estimate_one_rm
 from liftmath.plates import load_plates
 from liftmath.program import ExerciseSet, audit_program
@@ -58,3 +59,12 @@ def test_to_dict_passthrough_for_plain_values():
     assert to_dict(None) is None
     assert to_dict([1, 2, 3]) == [1, 2, 3]
     assert to_dict({"a": 1}) == {"a": 1}
+
+
+def test_to_dict_includes_read_only_property_on_new_v1_dataclass():
+    # FfmiResult.above_natural_reference_ceiling is a @property, not a field -
+    # confirms new v1.0.0 dataclasses integrate with the shared serializer
+    # the same way the original v0.1.0 ones do.
+    result = ffmi(100, 1.75, 10)
+    d = to_dict(result)
+    assert d["above_natural_reference_ceiling"] is True

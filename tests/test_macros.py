@@ -1,6 +1,6 @@
 import pytest
 
-from liftmath.macros import macro_targets
+from liftmath.macros import cunningham_tdee, macro_targets
 
 
 def test_cut_flags_shortfall_when_protein_and_fat_floor_exceeds_target():
@@ -69,3 +69,36 @@ def test_unknown_activity_raises():
 def test_nonpositive_bodyweight_raises():
     with pytest.raises(ValueError):
         macro_targets(0, "maintain", unit="kg", tdee=2500)
+
+
+def test_cunningham_rmr_reference_value_one():
+    # Lean mass 70kg -> RMR = 500 + 22*70 = 2040 kcal.
+    result = cunningham_tdee(70)
+    assert result.rmr_kcal == pytest.approx(2040.0)
+
+
+def test_cunningham_rmr_reference_value_two():
+    # Lean mass 60kg -> RMR = 500 + 22*60 = 1820 kcal.
+    result = cunningham_tdee(60)
+    assert result.rmr_kcal == pytest.approx(1820.0)
+
+
+def test_cunningham_rmr_reference_value_three():
+    # Lean mass 85kg -> RMR = 500 + 22*85 = 2370 kcal.
+    result = cunningham_tdee(85)
+    assert result.rmr_kcal == pytest.approx(2370.0)
+
+
+def test_cunningham_tdee_applies_activity_multiplier():
+    result = cunningham_tdee(70, activity="sedentary")
+    assert result.tdee == pytest.approx(2040.0 * 1.2)
+
+
+def test_cunningham_rejects_nonpositive_lean_mass():
+    with pytest.raises(ValueError):
+        cunningham_tdee(0)
+
+
+def test_cunningham_rejects_unknown_activity():
+    with pytest.raises(ValueError):
+        cunningham_tdee(70, activity="superhuman")

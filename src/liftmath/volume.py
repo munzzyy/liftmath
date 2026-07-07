@@ -5,13 +5,26 @@ adaptive volume, a productive range given as a low-high pair), and MRV
 (maximum recoverable volume) are population heuristics popularized by
 Dr. Mike Israetel and Renaissance Periodization's volume landmark framework.
 
+EVIDENCE TIER, stated explicitly: the specific per-muscle numbers in
+LANDMARKS below (e.g. chest MEV=10/MRV=22) come from Israetel's/RP's own
+coaching materials and popularized content, NOT a peer-reviewed table - a
+research pass specifically looking for a primary peer-reviewed source
+publishing these exact per-muscle MEV/MAV/MRV numbers did not find one. This
+is a PRACTITIONER FRAMEWORK / expert-consensus heuristic (tier 4), not
+peer-reviewed per-muscle data. Say so anywhere these numbers surface (CLI
+text, not just this module comment) - see cli.py's volume/program/meso
+output.
+
 These are starting points to titrate from, not fixed laws. Dose-response
 literature (Schoenfeld, Grgic & Krieger, 2017, meta-analysis in Journal of
 Sports Sciences; Baz-Valle et al., 2022, systematic review in PeerJ; Pelland,
 Robinson & Nuckols, 2024, review of set-volume dose-response) shows
 hypertrophy keeps rising with added volume with diminishing returns, and
 that high responders can productively exceed these numbers. Individualize
-by recovery and rate of progress.
+by recovery and rate of progress. That broader dose-response literature is
+established (peer-reviewed meta-analyses/systematic reviews); it's only the
+exact per-muscle MEV/MAV/MRV cutoffs below that are practitioner-tier, not
+the general "more volume helps, with diminishing returns" finding.
 
 A "hard set" is a working set taken to roughly 0-4 reps in reserve. A
 directly-trained isolation exercise counts fully toward a muscle's weekly
@@ -24,6 +37,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 # muscle -> (MV, MEV, MAV_low, MAV_high, MRV), all in weekly hard sets.
+# EVIDENCE TIER: practitioner consensus / expert heuristic (Israetel/RP), NOT
+# a peer-reviewed per-muscle table - no primary source publishes these exact
+# numbers. See module docstring.
 LANDMARKS: dict[str, tuple[int, int, int, int, int]] = {
     "chest":       (8, 10, 12, 20, 22),
     "back":        (8, 10, 14, 22, 25),

@@ -1,0 +1,80 @@
+name: Web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - "tools/gen_fixtures.py"
+      - "tools/gen_icons.py"
+      - "tools/check_dom_ids.py"
+      - "tests/web/**"
+      - "src/**"
+      - ".github/workflows/web.yml"
+  pull_request:
+    paths:
+      - "web/**"
+      - "tools/gen_fixtures.py"
+      - "tools/gen_icons.py"
+      - "tools/check_dom_ids.py"
+      - "tests/web/**"
+      - "src/**"
+      - ".github/workflows/web.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+
+      - name: Regenerate parity fixtures from the Python reference
+        run: python tools/gen_fixtures.py
+
+      - name: Fail if regenerated fixtures differ from what's committed
+        run: |
+          git diff --exit-code -- tests/web/fixtures || {
+            echo "::error::tests/web/fixtures is stale - run 'py tools/gen_fixtures.py' and commit the diff.";
+            exit 1;
+          }
+
+      - name: Run JS math parity tests (node:test, zero npm dependencies)
+        run: node --test "tests/web/*.test.mjs"
+
+      - name: Check every app.js DOM-id lookup has a matching id in index.html
+        run: python tools/check_dom_ids.py
+
+      - name: Regenerate PWA icons and confirm they're committed
+        run: |
+          python tools/gen_icons.py
+          git diff --exit-code -- web/icons || {
+            echo "::error::web/icons is stale - run 'py tools/gen_icons.py' and commit the diff.";
+            exit 1;
+          }
+
+      - name: Fail if a precached file changed without a sw.js CACHE_NAME bump
+        run: |
+          git fetch --depth=1 origin "${{ github.event.pull_request.base.sha || github.event.before }}" 2>/dev/null || true
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE" 2>/dev/null; then
+            echo "No usable base commit to diff against (e.g. first push) - skipping.";
+            exit 0;
+          fi
+          CHANGED=$(git diff --name-only "$BASE" -- web/index.html web/css/styles.css web/js/ web/manifest.json web/icons | wc -l)
+          SW_CHANGED=$(git diff --name-only "$BASE" -- web/sw.js | wc -l)
+          if [ "$CHANGED" -gt 0 ] && [ "$SW_CHANGED" -eq 0 ]; then
+            echo "::error::web/ precached files changed but web/sw.js wasn't touched - bump CACHE_NAME so installed PWAs pick up the change.";
+            exit 1;
+          fi

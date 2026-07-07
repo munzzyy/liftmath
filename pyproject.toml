@@ -4,11 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "liftmath"
-version = "0.1.0"
-description = "Evidence-based strength training math: 1RM, load charts, volume landmarks, macros, plates, warm-ups, Wilks/DOTS/IPF GL."
+version = "1.0.0"
+description = "Evidence-based strength training math: 1RM, RPE/RIR, volume landmarks, double progression, body composition, session load, macros, plates, warm-ups, and relative-strength scoring (Wilks/DOTS/IPF GL/McCulloch)."
 readme = "README.md"
-license = "MIT"
-license-files = ["LICENSE"]
+license = { text = "Prosperity Public License 3.0.0" }
 requires-python = ">=3.10"
 authors = [{ name = "Cole Munz" }]
 dependencies = []

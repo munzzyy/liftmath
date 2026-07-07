@@ -6,13 +6,16 @@ mirrors how Renaissance-Periodization-style volume counting treats compounds,
 so indirect arm/delt/hamstring volume from presses, rows, and squats is
 counted instead of ignored.
 
-Exercise name matching is longest-substring-first, so a more specific key like
-"leg curl" is preferred over a generic "curl", and "leg extension" over
-"extension". Unknown exercise names must supply explicit fractions.
+Exercise name matching is longest-key-first on a whole-word/whole-phrase basis
+(not raw substring), so a more specific key like "leg curl" is preferred over
+a generic "curl", "leg extension" over "extension", and a short key like
+"chin" doesn't fire inside an unrelated word like "machine". Unknown exercise
+names must supply explicit fractions.
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 from liftmath.volume import BAND_SHORT, LANDMARKS, band_for, resolve_muscle
@@ -96,7 +99,10 @@ def resolve_fractions(name: str, explicit: dict[str, float] | None = None) -> di
         return resolved
     lowered = name.lower()
     for key in sorted(EXERCISE_FRACTIONS, key=len, reverse=True):
-        if key in lowered:
+        # Whole-word/whole-phrase match only: a bare substring test would let a
+        # short key like "chin" fire inside an unrelated word like "machine".
+        pattern = r"(?<!\w)" + re.escape(key) + r"(?!\w)"
+        if re.search(pattern, lowered):
             return dict(EXERCISE_FRACTIONS[key])
     return {}
 

@@ -74,3 +74,19 @@ def test_preset_with_lb_unit_raises():
 def test_unknown_preset_raises():
     with pytest.raises(ValueError):
         load_plates(100, unit="kg", preset="not-a-real-preset")
+
+
+def test_explicit_empty_plates_means_no_plates_available():
+    # An explicitly empty plates=() must NOT fall back to DEFAULT_PLATES via
+    # Python truthiness - it means "I have no plates", so the full per-side
+    # amount should come back as shortfall on an empty bar.
+    result = load_plates(135, unit="lb", plates=())
+    assert result.plates == []
+    assert result.exact is False
+    assert result.shortfall == pytest.approx(45.0)
+
+
+def test_explicit_empty_plates_list_also_means_no_plates_available():
+    result = load_plates(135, unit="lb", plates=[])
+    assert result.plates == []
+    assert result.shortfall == pytest.approx(45.0)

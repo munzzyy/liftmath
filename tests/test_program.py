@@ -85,3 +85,30 @@ def test_new_curl_variants_do_not_break_hammer_curl():
     # hammer curl also trains forearms; make sure the new "curl" keys
     # (preacher, concentration) don't shadow the more specific hammer-curl match
     assert resolve_fractions("Hammer Curl") == {"biceps": 1.0, "forearms": 0.4}
+
+
+def test_machine_fly_resolves_to_chest_not_chin():
+    # "chin" is a substring of "machine"; word-boundary matching must not let
+    # it fire here, or this would wrongly resolve to back/biceps.
+    assert resolve_fractions("Machine Fly") == {"chest": 1.0}
+
+
+def test_machine_chest_press_resolves_to_chest_not_chin():
+    assert resolve_fractions("Machine Chest Press") == {
+        "chest": 1.0, "triceps": 0.5, "sidedelts": 0.3
+    }
+
+
+def test_pec_deck_machine_resolves_to_chest_not_chin():
+    assert resolve_fractions("Pec Deck Machine") == {"chest": 1.0}
+
+
+def test_bare_machine_with_no_other_keyword_is_unresolved():
+    assert resolve_fractions("Seated Machine") == {}
+
+
+def test_chin_up_still_resolves_to_back_and_biceps():
+    # Word-boundary matching must still match "chin" as a whole word/phrase,
+    # including across a hyphen or space, not just as an exact full string.
+    assert resolve_fractions("Chin-up") == {"back": 1.0, "biceps": 0.6}
+    assert resolve_fractions("Chin Up") == {"back": 1.0, "biceps": 0.6}

@@ -86,7 +86,9 @@ def load_plates(
         raise ValueError(f"target {target}{unit} is below the bar ({bar_weight}{unit})")
 
     per_side = (target - bar_weight) / 2.0
-    available = sorted(plates or DEFAULT_PLATES[unit], reverse=True)
+    # `is None` rather than falsy-or: an explicitly empty plates=() / plates=[]
+    # means "no plates available" and must not silently fall back to defaults.
+    available = sorted(plates if plates is not None else DEFAULT_PLATES[unit], reverse=True)
 
     remaining = per_side
     loaded: list[tuple[float, int]] = []

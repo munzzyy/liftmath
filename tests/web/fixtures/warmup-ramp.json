@@ -1,0 +1,219 @@
+[
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "weight": 315
+    },
+    "expected": {
+      "bar": 45,
+      "steps": [
+        {
+          "label": "bar x 8-10",
+          "load": 45
+        },
+        {
+          "label": "50% x 5",
+          "load": 160
+        },
+        {
+          "label": "70% x 3",
+          "load": 220
+        },
+        {
+          "label": "85% x 2",
+          "load": 270
+        },
+        {
+          "label": "~95% x 1",
+          "load": 300
+        }
+      ],
+      "unit": "lb",
+      "workingWeight": 315
+    },
+    "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "weight": 140
+    },
+    "expected": {
+      "bar": 20,
+      "steps": [
+        {
+          "label": "bar x 8-10",
+          "load": 20.0
+        },
+        {
+          "label": "50% x 5",
+          "load": 70.0
+        },
+        {
+          "label": "70% x 3",
+          "load": 97.5
+        },
+        {
+          "label": "85% x 2",
+          "load": 120.0
+        },
+        {
+          "label": "~95% x 1",
+          "load": 132.5
+        }
+      ],
+      "unit": "kg",
+      "workingWeight": 140
+    },
+    "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "weight": 135
+    },
+    "expected": {
+      "bar": 45,
+      "steps": [
+        {
+          "label": "bar x 8-10",
+          "load": 45
+        },
+        {
+          "label": "50% x 5",
+          "load": 70
+        },
+        {
+          "label": "70% x 3",
+          "load": 95
+        },
+        {
+          "label": "85% x 2",
+          "load": 115
+        },
+        {
+          "label": "~95% x 1",
+          "load": 130
+        }
+      ],
+      "unit": "lb",
+      "workingWeight": 135
+    },
+    "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "weight": 45
+    },
+    "expected": {
+      "bar": 45,
+      "steps": [
+        {
+          "label": "bar x 8-10",
+          "load": 45
+        },
+        {
+          "label": "50% x 5",
+          "load": 45
+        },
+        {
+          "label": "70% x 3",
+          "load": 45
+        },
+        {
+          "label": "85% x 2",
+          "load": 45
+        },
+        {
+          "label": "~95% x 1",
+          "load": 45
+        }
+      ],
+      "unit": "lb",
+      "workingWeight": 45
+    },
+    "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "weight": 60
+    },
+    "expected": {
+      "bar": 20,
+      "steps": [
+        {
+          "label": "bar x 8-10",
+          "load": 20.0
+        },
+        {
+          "label": "50% x 5",
+          "load": 30.0
+        },
+        {
+          "label": "70% x 3",
+          "load": 42.5
+        },
+        {
+          "label": "85% x 2",
+          "load": 50.0
+        },
+        {
+          "label": "~95% x 1",
+          "load": 57.5
+        }
+      ],
+      "unit": "kg",
+      "workingWeight": 60
+    },
+    "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
+        "bar": 35,
+        "unit": "lb"
+      },
+      "weight": 225
+    },
+    "expected": {
+      "bar": 35,
+      "steps": [
+        {
+          "label": "bar x 8-10",
+          "load": 35
+        },
+        {
+          "label": "50% x 5",
+          "load": 110
+        },
+        {
+          "label": "70% x 3",
+          "load": 160
+        },
+        {
+          "label": "85% x 2",
+          "load": 190
+        },
+        {
+          "label": "~95% x 1",
+          "load": 215
+        }
+      ],
+      "unit": "lb",
+      "workingWeight": 225
+    },
+    "fn": "warmupRamp"
+  }
+]
