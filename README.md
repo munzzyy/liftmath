@@ -1,7 +1,18 @@
 # liftmath
 
-Strength training math, done properly instead of eyeballed. Estimate a 1RM from
-any set, build a percentage-based load chart, look up weekly volume landmarks
+**Strength-training math you can actually check — done properly instead of eyeballed.**
+
+[![CI](https://github.com/munzzyy/liftmath/actions/workflows/ci.yml/badge.svg)](https://github.com/munzzyy/liftmath/actions/workflows/ci.yml)
+[![License: Prosperity 3.0.0](https://img.shields.io/badge/license-Prosperity--3.0.0-blue.svg)](LICENSE)
+![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
+
+<p align="center">
+  <a href="https://munzzyy.github.io/liftmath/"><img src="docs/media/app-dark.png" alt="liftmath web app: a six-formula consensus 1RM with the per-formula breakdown, plus tabs for load charts, volume, mesocycle, macros, plates, warm-up, and Wilks/DOTS/GL" width="380"></a>
+</p>
+
+A live screenshot, not a mockup — [open the web app](https://munzzyy.github.io/liftmath/) and it runs the same numbers on your phone in about five seconds, nothing to install.
+
+Estimate a 1RM from any set, build a percentage-based load chart, look up weekly volume landmarks
 per muscle, ramp a mesocycle, set macro targets, and figure out plate loading
 and warm-up ramps.
 
