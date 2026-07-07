@@ -172,3 +172,16 @@ def test_goblet_squat_resolves_to_quads_and_glutes():
         "quads": 1.0,
         "glutes": 0.6,
     }
+
+
+def test_copenhagen_plank_resolves_to_abs():
+    assert resolve_fractions("Copenhagen Plank") == {
+        "abs": 1.0,
+    }
+
+
+def test_cuban_press_resolves_to_delts():
+    assert resolve_fractions("Cuban Press") == {
+        "reardelts": 0.8,
+        "sidedelts": 0.5,
+    }

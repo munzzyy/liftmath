@@ -34,6 +34,7 @@ EXERCISE_FRACTIONS: dict[str, dict[str, float]] = {
     "shoulder press":     {"sidedelts": 1.0, "triceps": 0.5},
     "landmine press":     {"sidedelts": 1.0, "chest": 0.5, "triceps": 0.5},
     "ohp":                {"sidedelts": 1.0, "triceps": 0.5},
+    "cuban press":        {"reardelts": 0.8, "sidedelts": 0.5},
     "lateral raise":      {"sidedelts": 1.0},
     "lateral":            {"sidedelts": 1.0},
     "rear delt":          {"reardelts": 1.0},
@@ -78,6 +79,7 @@ EXERCISE_FRACTIONS: dict[str, dict[str, float]] = {
     "crunch":             {"abs": 1.0},
     "leg raise":          {"abs": 1.0},
     "plank":              {"abs": 1.0},
+    "copenhagen plank":   {"abs": 1.0},
     "shrug":              {"traps": 1.0},
     "wrist curl":         {"forearms": 1.0},
 }
