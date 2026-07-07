@@ -69,7 +69,7 @@ from liftmath.templates import (
 from liftmath.volume import LANDMARKS, MUSCLES, band_for, describe_band, resolve_muscle
 from liftmath.warmup import warmup_ramp
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 __all__ = [
     "estimate_one_rm",
