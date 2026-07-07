@@ -122,9 +122,9 @@ def test_pendlay_row_resolves_to_back():
     }
 
 
-def test_landmine_press_resolves_to_shoulders_chest_and_triceps():
+def test_landmine_press_resolves_to_delts_chest_and_triceps():
     assert resolve_fractions("Landmine Press") == {
-        "sidedelts": 0.8,
+        "sidedelts": 1.0,
         "chest": 0.5,
         "triceps": 0.5,
     }
@@ -142,4 +142,33 @@ def test_sissy_squat_resolves_to_quads_and_glutes():
     assert resolve_fractions("Sissy Squat") == {
         "quads": 1.0,
         "glutes": 0.2,
+    }
+
+
+def test_nordic_curl_resolves_to_hamstrings():
+    assert resolve_fractions("Nordic Curl") == {
+        "hamstrings": 1.0,
+    }
+
+
+def test_reverse_hyper_resolves_to_glutes_hamstrings_and_back():
+    assert resolve_fractions("Reverse Hyper") == {
+        "glutes": 1.0,
+        "hamstrings": 0.5,
+        "back": 0.3,
+    }
+
+
+def test_back_extension_resolves_to_back_glutes_and_hamstrings():
+    assert resolve_fractions("Back Extension") == {
+        "back": 1.0,
+        "glutes": 0.5,
+        "hamstrings": 0.3,
+    }
+
+
+def test_goblet_squat_resolves_to_quads_and_glutes():
+    assert resolve_fractions("Goblet Squat") == {
+        "quads": 1.0,
+        "glutes": 0.6,
     }
