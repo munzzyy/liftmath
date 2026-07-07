@@ -112,3 +112,34 @@ def test_chin_up_still_resolves_to_back_and_biceps():
     # including across a hyphen or space, not just as an exact full string.
     assert resolve_fractions("Chin-up") == {"back": 1.0, "biceps": 0.6}
     assert resolve_fractions("Chin Up") == {"back": 1.0, "biceps": 0.6}
+
+
+def test_pendlay_row_resolves_to_back():
+    assert resolve_fractions("Pendlay Row") == {
+        "back": 1.0,
+        "biceps": 0.5,
+        "reardelts": 0.3,
+    }
+
+
+def test_landmine_press_resolves_to_shoulders_chest_and_triceps():
+    assert resolve_fractions("Landmine Press") == {
+        "sidedelts": 0.8,
+        "chest": 0.5,
+        "triceps": 0.5,
+    }
+
+
+def test_meadows_row_resolves_to_back():
+    assert resolve_fractions("Meadows Row") == {
+        "back": 1.0,
+        "biceps": 0.5,
+        "reardelts": 0.3,
+    }
+
+
+def test_sissy_squat_resolves_to_quads_and_glutes():
+    assert resolve_fractions("Sissy Squat") == {
+        "quads": 1.0,
+        "glutes": 0.2,
+    }

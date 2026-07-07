@@ -72,6 +72,10 @@ EXERCISE_FRACTIONS: dict[str, dict[str, float]] = {
     "plank":              {"abs": 1.0},
     "shrug":              {"traps": 1.0},
     "wrist curl":         {"forearms": 1.0},
+    "pendlay row":        {"back": 1.0, "biceps": 0.5, "reardelts": 0.3},
+    "landmine press":     {"sidedelts": 0.8, "chest": 0.5, "triceps": 0.5},
+    "meadows row":        {"back": 1.0, "biceps": 0.5, "reardelts": 0.3}, 
+    "sissy squat":        {"quads": 1.0, "glutes": 0.2},
 }
 
 
