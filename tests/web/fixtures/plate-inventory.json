@@ -1,0 +1,291 @@
+[
+  {
+    "args": {
+      "inventory": {
+        "2.5": 1,
+        "5": 2,
+        "10": 2,
+        "25": 1,
+        "45": 4
+      },
+      "opts": {
+        "bar": 45,
+        "unit": "lb"
+      },
+      "target": 495
+    },
+    "expected": {
+      "achievable": 495.0,
+      "bar": 45,
+      "exact": true,
+      "inventory": {
+        "2.5": 1,
+        "5": 2,
+        "10": 2,
+        "25": 1,
+        "45": 4
+      },
+      "nearestAbove": 500.0,
+      "nearestBelow": null,
+      "perSide": 225.0,
+      "plates": [
+        [
+          45,
+          4
+        ],
+        [
+          25,
+          1
+        ],
+        [
+          10,
+          2
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 495,
+      "unit": "lb"
+    },
+    "fn": "loadPlatesFromInventory"
+  },
+  {
+    "args": {
+      "inventory": {
+        "2.5": 1,
+        "5": 2,
+        "10": 2,
+        "25": 1,
+        "45": 4
+      },
+      "opts": {
+        "bar": 45,
+        "unit": "lb"
+      },
+      "target": 500
+    },
+    "expected": {
+      "achievable": 500.0,
+      "bar": 45,
+      "exact": true,
+      "inventory": {
+        "2.5": 1,
+        "5": 2,
+        "10": 2,
+        "25": 1,
+        "45": 4
+      },
+      "nearestAbove": 505.0,
+      "nearestBelow": null,
+      "perSide": 227.5,
+      "plates": [
+        [
+          45,
+          4
+        ],
+        [
+          25,
+          1
+        ],
+        [
+          10,
+          2
+        ],
+        [
+          2.5,
+          1
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 500,
+      "unit": "lb"
+    },
+    "fn": "loadPlatesFromInventory"
+  },
+  {
+    "args": {
+      "inventory": {
+        "2.5": 1,
+        "5": 2,
+        "10": 2,
+        "25": 1,
+        "45": 4
+      },
+      "opts": {
+        "bar": 45,
+        "unit": "lb"
+      },
+      "target": 405
+    },
+    "expected": {
+      "achievable": 405.0,
+      "bar": 45,
+      "exact": true,
+      "inventory": {
+        "2.5": 1,
+        "5": 2,
+        "10": 2,
+        "25": 1,
+        "45": 4
+      },
+      "nearestAbove": 410.0,
+      "nearestBelow": null,
+      "perSide": 180.0,
+      "plates": [
+        [
+          45,
+          4
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 405,
+      "unit": "lb"
+    },
+    "fn": "loadPlatesFromInventory"
+  },
+  {
+    "args": {
+      "inventory": {
+        "45": 2
+      },
+      "opts": {
+        "bar": 45,
+        "unit": "lb"
+      },
+      "target": 245
+    },
+    "expected": {
+      "achievable": 225.0,
+      "bar": 45,
+      "exact": false,
+      "inventory": {
+        "45": 2
+      },
+      "nearestAbove": null,
+      "nearestBelow": 225,
+      "perSide": 100.0,
+      "plates": [
+        [
+          45,
+          2
+        ]
+      ],
+      "shortfall": 10.0,
+      "target": 245,
+      "unit": "lb"
+    },
+    "fn": "loadPlatesFromInventory"
+  },
+  {
+    "args": {
+      "inventory": {
+        "25": 1,
+        "45": 2
+      },
+      "opts": {
+        "bar": 45,
+        "unit": "lb"
+      },
+      "target": 190
+    },
+    "expected": {
+      "achievable": 185.0,
+      "bar": 45,
+      "exact": false,
+      "inventory": {
+        "25": 1,
+        "45": 2
+      },
+      "nearestAbove": 225,
+      "nearestBelow": 185,
+      "perSide": 72.5,
+      "plates": [
+        [
+          45,
+          1
+        ],
+        [
+          25,
+          1
+        ]
+      ],
+      "shortfall": 2.5,
+      "target": 190,
+      "unit": "lb"
+    },
+    "fn": "loadPlatesFromInventory"
+  },
+  {
+    "args": {
+      "inventory": {
+        "20": 2,
+        "25": 1
+      },
+      "opts": {
+        "bar": 80,
+        "unit": "lb"
+      },
+      "target": 160
+    },
+    "expected": {
+      "achievable": 160.0,
+      "bar": 80,
+      "exact": true,
+      "inventory": {
+        "20": 2,
+        "25": 1
+      },
+      "nearestAbove": 170,
+      "nearestBelow": null,
+      "perSide": 40.0,
+      "plates": [
+        [
+          20,
+          2
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 160,
+      "unit": "lb"
+    },
+    "fn": "loadPlatesFromInventory"
+  },
+  {
+    "args": {
+      "inventory": {
+        "10": 1,
+        "20": 2
+      },
+      "opts": {
+        "bar": 20,
+        "unit": "kg"
+      },
+      "target": 120
+    },
+    "expected": {
+      "achievable": 120.0,
+      "bar": 20,
+      "exact": true,
+      "inventory": {
+        "10": 1,
+        "20": 2
+      },
+      "nearestAbove": null,
+      "nearestBelow": null,
+      "perSide": 50.0,
+      "plates": [
+        [
+          20,
+          2
+        ],
+        [
+          10,
+          1
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 120,
+      "unit": "kg"
+    },
+    "fn": "loadPlatesFromInventory"
+  }
+]

@@ -446,3 +446,211 @@ def test_json_flag_before_subcommand_works_for_new_commands_too(capsys):
     assert code == 0
     data = json.loads(out)
     assert data["ffmi"] == pytest.approx(24.44, abs=0.01)
+
+
+# --- v1.1.0: custom plate inventory ------------------------------------------
+
+
+def test_plates_inventory_command(capsys):
+    argv = ["plates", "--target", "495", "--unit", "lb", "--bar", "45",
+            "--inventory", "45x4,25x1,10x2,5x2,2.5x1"]
+    code, out = run(capsys, argv)
+    assert code == 0
+    assert "4x45" in out
+    assert "from your inventory" in out
+
+
+def test_plates_inventory_unreachable_reports_nearest(capsys):
+    argv = ["plates", "--target", "190", "--unit", "lb", "--bar", "45",
+            "--inventory", "45x2,25x1"]
+    code, out = run(capsys, argv)
+    assert code == 0
+    assert "nearest achievable" in out
+
+
+def test_plates_inventory_bad_spec_errors(capsys):
+    argv = ["plates", "--target", "245", "--unit", "lb", "--inventory", "not-a-spec"]
+    code, out = run(capsys, argv)
+    assert code == 1
+
+
+def test_json_plates_inventory_command(capsys):
+    argv = ["plates", "--target", "495", "--unit", "lb", "--bar", "45",
+            "--inventory", "45x4,25x1,10x2,5x2,2.5x1", "--json"]
+    code, out = run(capsys, argv)
+    data = json.loads(out)
+    assert data["exact"] is True
+    assert data["plates"] == [[45.0, 4], [25.0, 1], [10.0, 2]]
+
+
+# --- v1.1.0: weighted bodyweight-movement 1RM --------------------------------
+
+
+def test_bw_onerm_command(capsys):
+    argv = ["bw-onerm", "--movement", "pullup", "--bodyweight", "180", "--added", "45",
+            "--reps", "5", "--unit", "lb"]
+    code, out = run(capsys, argv)
+    assert code == 0
+    assert "added-weight 1RM" in out
+
+
+def test_bw_onerm_assisted_command(capsys):
+    argv = ["bw-onerm", "--movement", "pullup", "--bodyweight", "180", "--added", "-60",
+            "--reps", "8", "--unit", "lb"]
+    code, out = run(capsys, argv)
+    assert code == 0
+    assert "Assisted" in out
+
+
+def test_bw_onerm_rejects_unknown_movement():
+    # --movement uses argparse choices=, so an unknown value is a parser-level
+    # SystemExit, same convention as e.g. `standards --sex unicorn`.
+    with pytest.raises(SystemExit):
+        main(["bw-onerm", "--movement", "muscleup", "--bodyweight", "180", "--added", "45",
+              "--reps", "5"])
+
+
+def test_bw_onerm_rejects_zero_bodyweight(capsys):
+    argv = ["bw-onerm", "--movement", "pullup", "--bodyweight", "0", "--added", "45", "--reps", "5"]
+    code, out = run(capsys, argv)
+    assert code == 1
+
+
+def test_json_bw_onerm_command(capsys):
+    argv = ["bw-onerm", "--movement", "pullup", "--bodyweight", "180", "--added", "45",
+            "--reps", "5", "--unit", "lb", "--json"]
+    code, out = run(capsys, argv)
+    data = json.loads(out)
+    assert data["total_load"] == pytest.approx(225.0)
+    assert data["added_weight_one_rm"] == pytest.approx(79.17, abs=0.01)
+
+
+# --- v1.1.0: lift-ratio symmetry ---------------------------------------------
+
+
+def test_symmetry_command(capsys):
+    argv = ["symmetry", "--squat", "315", "--bench", "225", "--deadlift", "405", "--sex", "male"]
+    code, out = run(capsys, argv)
+    assert code == 0
+    assert "lagging" in out
+
+
+def test_symmetry_with_ohp_flags_single_sourced(capsys):
+    argv = ["symmetry", "--squat", "315", "--bench", "225", "--deadlift", "405",
+            "--ohp", "135", "--sex", "male"]
+    code, out = run(capsys, argv)
+    assert code == 0
+    assert "single-sourced" in out
+
+
+def test_symmetry_rejects_bad_sex():
+    with pytest.raises(SystemExit):
+        main(["symmetry", "--squat", "315", "--bench", "225", "--deadlift", "405", "--sex", "unicorn"])
+
+
+def test_json_symmetry_command(capsys):
+    argv = ["symmetry", "--squat", "315", "--bench", "225", "--deadlift", "405", "--sex", "male", "--json"]
+    code, out = run(capsys, argv)
+    data = json.loads(out)
+    assert data["sex"] == "male"
+    assert "squat" in data["lifts"]
+    assert "ohp" not in data["lifts"]
+
+
+# --- v1.1.0: training max + named program templates --------------------------
+
+
+def test_tm_command(capsys):
+    code, out = run(capsys, ["tm", "--onerm", "315", "--unit", "lb"])
+    assert code == 0
+    assert "280" in out
+
+
+def test_tm_rejects_out_of_range_pct(capsys):
+    code, out = run(capsys, ["tm", "--onerm", "315", "--pct", "0.5"])
+    assert code == 1
+
+
+def test_json_tm_command(capsys):
+    code, out = run(capsys, ["tm", "--onerm", "315", "--unit", "lb", "--json"])
+    data = json.loads(out)
+    assert data["training_max"] == pytest.approx(280.0)
+
+
+def test_program531_week2_matches_pinned_worked_example(capsys):
+    code, out = run(capsys, ["program531", "--tm", "300", "--week", "2", "--unit", "lb"])
+    assert code == 0
+    assert "270" in out
+
+
+def test_program531_deload_week(capsys):
+    code, out = run(capsys, ["program531", "--tm", "300", "--week", "4", "--unit", "lb"])
+    assert code == 0
+    assert "Deload" in out
+
+
+def test_program531_rejects_bad_week():
+    # --week uses argparse choices=[1,2,3,4], so an out-of-range value is a
+    # parser-level SystemExit, same convention as e.g. `standards --sex unicorn`.
+    with pytest.raises(SystemExit):
+        main(["program531", "--tm", "300", "--week", "9"])
+
+
+def test_json_program531_command(capsys):
+    argv = ["program531", "--tm", "300", "--week", "2", "--json"]
+    code, out = run(capsys, argv)
+    data = json.loads(out)
+    assert data["sets"][-1]["weight"] == pytest.approx(270.0)
+    assert data["sets"][-1]["amrap"] is True
+
+
+def test_gzclp_command_made(capsys):
+    argv = ["gzclp", "--tier", "t1", "--stage", "5x3", "--weight", "300", "--made",
+            "--lift-type", "lower", "--unit", "lb"]
+    code, out = run(capsys, argv)
+    assert code == 0
+    assert "310" in out
+
+
+def test_gzclp_command_missed_last_stage_needs_retest(capsys):
+    argv = ["gzclp", "--tier", "t1", "--stage", "10x1", "--weight", "300", "--missed",
+            "--lift-type", "lower", "--unit", "lb"]
+    code, out = run(capsys, argv)
+    assert code == 0
+    assert "retest" in out.lower()
+
+
+def test_gzclp_t3_requires_amrap_reps(capsys):
+    argv = ["gzclp", "--tier", "t3", "--weight", "50", "--made"]
+    code, out = run(capsys, argv)
+    assert code == 1
+
+
+def test_json_gzclp_command(capsys):
+    argv = ["gzclp", "--tier", "t1", "--stage", "5x3", "--weight", "300", "--made",
+            "--lift-type", "lower", "--unit", "lb", "--json"]
+    code, out = run(capsys, argv)
+    data = json.loads(out)
+    assert data["next_weight"] == pytest.approx(310.0)
+
+
+def test_nsuns_command(capsys):
+    argv = ["nsuns", "--day", "squat_day2", "--tm", "300", "--unit", "lb"]
+    code, out = run(capsys, argv)
+    assert code == 0
+    assert "285" in out
+
+
+def test_nsuns_rejects_unknown_day():
+    # --day uses argparse choices=, so an unknown value is a parser-level
+    # SystemExit, same convention as e.g. `standards --sex unicorn`.
+    with pytest.raises(SystemExit):
+        main(["nsuns", "--day", "overhead_day5", "--tm", "300"])
+
+
+def test_json_nsuns_command(capsys):
+    argv = ["nsuns", "--day", "squat_day2", "--tm", "300", "--json"]
+    code, out = run(capsys, argv)
+    data = json.loads(out)
+    assert data["scheme"] == "B"
+    assert data["sets"][2]["amrap"] is True

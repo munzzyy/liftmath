@@ -1,86 +1,226 @@
 /* liftmath - design tokens + layout + component styles.
+   Identity: "steel and chalk" - a serious strength-training tool. Cool,
+   precision-machined surfaces, chalk-white ink, a hot-iron accent, and
+   confident tabular numerals wherever a load/rep/score appears - this app is
+   fundamentally about numbers, so numbers get the weight (pun intended).
    No webfont, no external asset - system font stack keeps the zero-CDN
    promise and avoids FOUT/layout shift entirely. */
 
 :root {
-  /* type scale */
-  --font-size-base: 1rem;       /* 16px */
+  color-scheme: light;
+
+  /* ---- type -------------------------------------------------------------
+     Display stack favors a font with real numeral presence (tabular figures,
+     confident weight axis) for headings and results; text stack is a plain
+     system sans for everything read as prose. Both are system-only - no
+     network font ever loads. */
+  --font-display: -apple-system, "Segoe UI", "Segoe UI Variable Display", Roboto, "Helvetica Neue",
+    Arial, system-ui, sans-serif;
+  --font-text: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "Segoe UI Mono", Consolas, "Liberation Mono",
+    Menlo, monospace;
+
+  --measure: 62ch;
+
+  /* type scale (1.2 minor-third-ish, clamped where it needs to flex) */
+  --font-size-xs: 0.8125rem;
   --font-size-sm: 0.875rem;
-  --font-size-lg: 1.25rem;
-  --font-size-xl: 1.75rem;
-  --font-size-2xl: clamp(1.75rem, 5vw + 1rem, 2.5rem); /* hero result number */
-  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-size-base: 1rem;
+  --font-size-md: 1.125rem;
+  --font-size-lg: 1.3rem;
+  --font-size-xl: clamp(1.5rem, 1.15rem + 1.4vw, 1.9rem);
+  --font-size-hero: clamp(1.9rem, 1.4rem + 2vw, 2.6rem);
+  --font-size-2xl: clamp(2.1rem, 1.5rem + 2.6vw, 3rem); /* result hero number */
 
   /* spacing scale: 4px base */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
+  --space-5: 1.25rem;
   --space-6: 1.5rem;
   --space-8: 2rem;
+  --space-10: 2.5rem;
   --space-12: 3rem;
 
   /* touch targets */
   --tap-min: 44px;
+  --tap-comfortable: 48px;
 
-  /* light theme (default) */
-  --color-bg: #ffffff;
-  --color-surface: #f4f5f7;
-  --color-surface-alt: #e9ebef;
-  --color-text: #16181d;
-  --color-muted: #5b616e;
-  --color-accent: #1a5fd6;
-  --color-accent-contrast: #ffffff;
-  --color-border: #d8dbe1;
-  --color-danger: #b3261e;
-  /* Slightly darker than a "pure" success green so .badge.ok (14px/700, under
-     the large-text threshold) clears WCAG AA 4.5:1 against --color-surface-alt
-     (previously #1e7e34 measured 4.30:1, failing by a small margin). */
-  --color-ok: #1b7530;
+  /* radius / shadow / motion */
+  --radius-sm: 0.35rem;
+  --radius-md: 0.6rem;
+  --radius-lg: 0.9rem;
+  --radius-xl: 1.25rem;
+  --shadow-sm: 0 1px 2px rgba(15, 17, 23, 0.08);
+  --shadow-md: 0 2px 6px rgba(15, 17, 23, 0.07), 0 8px 24px rgba(15, 17, 23, 0.06);
+  --shadow-inset: inset 0 1px 2px rgba(15, 17, 23, 0.08);
+
+  --dur-fast: 120ms;
+  --dur-med: 200ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* ---- light palette ------------------------------------------------------
+     Cool steel greys for surfaces (not warm paper - this is a shop-floor
+     tool, not a journal), near-black ink, one hot-iron accent used sparingly
+     for the interactive/primary signal. */
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-alt: #e8eaee;
+  --color-surface-sunken: #eceef2;
+  --color-text: #14161c;
+  --color-muted: #565c6b;
+  --color-faint: #6b7184;
+  --color-border: #d3d7e0;
+  --color-border-strong: #b6bbc9;
+
+  --color-accent: #c14b1f;
+  --color-accent-strong: #9c3a16;
+  --color-accent-tint: #fbe8de;
+  --color-accent-contrast: #fff7f2;
+
+  --color-danger: #af2a20;
+  --color-danger-tint: #fbe6e3;
+  --color-ok: #146c3f;
+  --color-ok-tint: #e2f2e8;
+
   --focus-ring: #1a5fd6;
 
-  --radius-sm: 0.35rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.85rem;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-card: var(--shadow-md);
 
   /* plate colors: IPF/IWF-standard, tuned per theme so light plates never
      wash out against their own canvas (see plates below for dark overrides) */
-  --plate-25: #d22b2b;
+  --plate-25: #c1281f;
   --plate-20: #1a5fd6;
-  --plate-15: #e0b400;
-  --plate-10: #1e7e34;
-  --plate-5: #e7e9ed;
-  --plate-2_5: #9aa1ab;
-  --plate-1_25: #c9cdd4;
-  --plate-other: #7a808c;
-  --plate-label: #16181d;
-  --bar-color: #8a909c;
+  --plate-15: #d69a00;
+  --plate-10: #146c3f;
+  --plate-5: #eef0f3;
+  --plate-2_5: #9096a5;
+  --plate-1_25: #ced2db;
+  --plate-other: #6d7386;
+  --plate-label: #14161c;
+  --bar-color: #8a8f9e;
+  --bar-color-dark: #4d5262;
 }
 
-[data-theme="dark"] {
-  --color-bg: #0f1115;
-  --color-surface: #1a1d24;
-  --color-surface-alt: #23262f;
-  --color-text: #eceef1;
-  --color-muted: #9aa1ab;
-  --color-accent: #5b9bff;
-  --color-accent-contrast: #0f1115;
-  --color-border: #2b2f38;
-  --color-danger: #ff6b64;
-  --color-ok: #4caf60;
-  --focus-ring: #7fb0ff;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-bg: #101216;
+    --color-surface: #1a1d24;
+    --color-surface-raised: #20232b;
+    --color-surface-alt: #262a34;
+    --color-surface-sunken: #14161b;
+    --color-text: #edeef2;
+    --color-muted: #a3a9b8;
+    --color-faint: #868c9c;
+    --color-border: #2e323d;
+    --color-border-strong: #3c4150;
 
-  --plate-25: #ff5a5a;
+    --color-accent: #e08347;
+    --color-accent-strong: #f0a06c;
+    --color-accent-tint: #3a2416;
+    --color-accent-contrast: #191008;
+
+    --color-danger: #ff6b64;
+    --color-danger-tint: #3a2321;
+    --color-ok: #4fbf7c;
+    --color-ok-tint: #16281f;
+
+    --focus-ring: #7fb0ff;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.32);
+    --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-card: var(--shadow-md);
+
+    --plate-25: #ff5a4f;
+    --plate-20: #5b9bff;
+    --plate-15: #f0c94a;
+    --plate-10: #4fbf7c;
+    --plate-5: #363a45;
+    --plate-2_5: #565c68;
+    --plate-1_25: #454a58;
+    --plate-other: #6b7280;
+    --plate-label: #edeef2;
+    --bar-color: #6b7280;
+    --bar-color-dark: #6b7280;
+  }
+}
+
+/* manual override wins over the media query either direction */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-alt: #e8eaee;
+  --color-surface-sunken: #eceef2;
+  --color-text: #14161c;
+  --color-muted: #565c6b;
+  --color-faint: #6b7184;
+  --color-border: #d3d7e0;
+  --color-border-strong: #b6bbc9;
+  --color-accent: #c14b1f;
+  --color-accent-strong: #9c3a16;
+  --color-accent-tint: #fbe8de;
+  --color-accent-contrast: #fff7f2;
+  --color-danger: #af2a20;
+  --color-danger-tint: #fbe6e3;
+  --color-ok: #146c3f;
+  --color-ok-tint: #e2f2e8;
+  --focus-ring: #1a5fd6;
+  --shadow-sm: 0 1px 2px rgba(15, 17, 23, 0.08);
+  --shadow-md: 0 2px 6px rgba(15, 17, 23, 0.07), 0 8px 24px rgba(15, 17, 23, 0.06);
+  --shadow-inset: inset 0 1px 2px rgba(15, 17, 23, 0.08);
+  --shadow-card: var(--shadow-md);
+  --plate-25: #c1281f;
+  --plate-20: #1a5fd6;
+  --plate-15: #d69a00;
+  --plate-10: #146c3f;
+  --plate-5: #eef0f3;
+  --plate-2_5: #9096a5;
+  --plate-1_25: #ced2db;
+  --plate-other: #6d7386;
+  --plate-label: #14161c;
+  --bar-color: #8a8f9e;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #101216;
+  --color-surface: #1a1d24;
+  --color-surface-raised: #20232b;
+  --color-surface-alt: #262a34;
+  --color-surface-sunken: #14161b;
+  --color-text: #edeef2;
+  --color-muted: #a3a9b8;
+  --color-faint: #868c9c;
+  --color-border: #2e323d;
+  --color-border-strong: #3c4150;
+  --color-accent: #e08347;
+  --color-accent-strong: #f0a06c;
+  --color-accent-tint: #3a2416;
+  --color-accent-contrast: #191008;
+  --color-danger: #ff6b64;
+  --color-danger-tint: #3a2321;
+  --color-ok: #4fbf7c;
+  --color-ok-tint: #16281f;
+  --focus-ring: #7fb0ff;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.32);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-card: var(--shadow-md);
+  --plate-25: #ff5a4f;
   --plate-20: #5b9bff;
   --plate-15: #f0c94a;
-  --plate-10: #4caf60;
-  --plate-5: #3a3f4a;
+  --plate-10: #4fbf7c;
+  --plate-5: #363a45;
   --plate-2_5: #565c68;
-  --plate-1_25: #454a55;
+  --plate-1_25: #454a58;
   --plate-other: #6b7280;
-  --plate-label: #eceef1;
+  --plate-label: #edeef2;
   --bar-color: #6b7280;
 }
 
@@ -92,6 +232,7 @@
 
 html {
   color-scheme: light dark;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -99,10 +240,11 @@ body {
   min-height: 100vh;
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: var(--font-family);
+  font-family: var(--font-text);
   font-size: var(--font-size-base);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -114,13 +256,51 @@ body {
   }
 }
 
+img, svg { display: block; max-width: 100%; }
+
 a {
+  color: var(--color-accent-strong);
+}
+a:hover {
   color: var(--color-accent);
 }
 
 :focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* skip link - visible on focus, matches the site's raised-surface language */
+.visually-hidden#skip-link:focus {
+  position: fixed;
+  width: auto;
+  height: auto;
+  clip: auto;
+  overflow: visible;
+  margin: 0;
+  top: var(--space-3);
+  inset-inline-start: var(--space-3);
+  z-index: 200;
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  padding: 0.7rem 1.1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+  font-weight: 600;
 }
 
 /* ---------- App shell ---------- */
@@ -131,23 +311,26 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-4);
+  padding: var(--space-4);
   border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .app-title {
   margin: 0;
+  font-family: var(--font-display);
   font-size: var(--font-size-lg);
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .app-title .accent {
-  color: var(--color-accent);
+  color: var(--color-accent-strong);
 }
 
 .header-controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
 }
@@ -158,19 +341,33 @@ a {
   min-width: var(--tap-min);
   min-height: var(--tap-min);
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--color-surface-alt);
   color: var(--color-text);
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
   font-family: inherit;
   cursor: pointer;
   padding: var(--space-2) var(--space-3);
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
 }
 
 .icon-btn:hover,
 .unit-toggle button:hover,
 .theme-toggle:hover {
-  background: var(--color-surface-alt);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-sunken);
+}
+
+.icon-btn:active,
+.unit-toggle button:active,
+.theme-toggle:active {
+  transform: scale(0.96);
+}
+
+.theme-toggle {
+  font-size: var(--font-size-md);
+  line-height: 1;
 }
 
 .unit-toggle {
@@ -190,6 +387,132 @@ a {
   color: var(--color-accent-contrast);
   font-weight: 700;
 }
+.unit-toggle button[aria-pressed="true"]:hover {
+  background: var(--color-accent-strong);
+}
+
+.lang-field {
+  margin-bottom: 0; /* .field's default margin-bottom doesn't apply in this inline header context */
+}
+
+#lang-select {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  cursor: pointer;
+  padding: var(--space-2) var(--space-3);
+}
+
+#lang-select:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-sunken);
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  padding: var(--space-8) var(--space-4) var(--space-6);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hero-inner {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-accent-strong);
+  margin: 0 0 var(--space-3);
+}
+
+.hero-eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 1px;
+  background: var(--color-accent);
+  transform: rotate(45deg);
+}
+
+.hero h1.hero-heading {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--font-size-hero);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-3);
+  max-width: 22ch;
+}
+
+.hero p.hero-tagline {
+  font-size: var(--font-size-md);
+  color: var(--color-muted);
+  max-width: var(--measure);
+  margin: 0 0 var(--space-5);
+  line-height: 1.5;
+}
+
+.hero-start-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Real <button> elements (not <a href="#...">) - each one changes in-page
+   tab-panel state via app.js rather than navigating, matching the pattern
+   already used by .tab/.chip elsewhere in this app. Needs an explicit UA
+   reset since browsers apply their own button chrome by default. */
+.hero-start-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+  min-height: var(--tap-min);
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface-alt);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+
+.hero-start-item:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-sunken);
+}
+
+.hero-start-item:active {
+  transform: scale(0.97);
+}
+
+.hero-start-item .hero-start-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--color-accent-strong);
+  font-size: 0.85em;
+}
 
 /* ---------- Tabs ---------- */
 
@@ -199,12 +522,17 @@ a {
   gap: var(--space-1);
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--color-surface-sunken);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tab {
   min-height: var(--tap-min);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   background: transparent;
@@ -213,6 +541,9 @@ a {
   font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
 }
 
 .tab:hover {
@@ -223,21 +554,41 @@ a {
 .tab[aria-selected="true"] {
   background: var(--color-accent);
   color: var(--color-accent-contrast);
+  box-shadow: var(--shadow-sm);
+}
+.tab[aria-selected="true"]:hover {
+  background: var(--color-accent-strong);
 }
 
 main {
   max-width: 960px;
   margin: 0 auto;
-  padding: var(--space-4);
+  padding: var(--space-6) var(--space-4) var(--space-4);
 }
 
 .tool-panel[hidden] {
   display: none;
 }
 
+.tool-panel {
+  animation: panel-in var(--dur-med) var(--ease);
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tool-panel { animation: none; }
+}
+
 .tool-panel h2 {
   margin-top: 0;
-  font-size: var(--font-size-lg);
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .tool-grid {
@@ -256,12 +607,13 @@ main {
 /* ---------- Forms ---------- */
 
 .field {
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
-.field label {
+.field label,
+.field > span:first-child {
   display: block;
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--space-2);
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-muted);
@@ -271,19 +623,59 @@ main {
 .field input[type="text"],
 .field select {
   width: 100%;
-  min-height: var(--tap-min);
+  min-height: var(--tap-comfortable);
   padding: var(--space-2) var(--space-3);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-md);
   font-family: inherit;
+  font-variant-numeric: tabular-nums;
   color: var(--color-text);
-  background: var(--color-bg);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+
+.field select {
+  font-variant-numeric: normal;
+  font-size: var(--font-size-base);
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: var(--color-border-strong);
+}
+
+.field input:focus-visible,
+.field select:focus-visible {
+  outline: none;
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring) 25%, transparent);
 }
 
 .field input[type="range"] {
   width: 100%;
   min-height: var(--tap-min);
+}
+
+details {
+  margin-bottom: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  background: var(--color-surface-alt);
+}
+
+details summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  min-height: var(--tap-min);
+  display: flex;
+  align-items: center;
+}
+
+details[open] summary {
+  margin-bottom: var(--space-2);
 }
 
 .stepper-row {
@@ -296,28 +688,33 @@ main {
   text-align: center;
   flex: 1;
   min-width: 0;
+  font-weight: 700;
 }
 
 .stepper-btn {
   flex: 0 0 auto;
-  width: var(--tap-min);
-  min-height: var(--tap-min);
-  font-size: var(--font-size-lg);
+  width: var(--tap-comfortable);
+  min-height: var(--tap-comfortable);
+  font-size: var(--font-size-xl);
   font-weight: 700;
   line-height: 1;
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--color-surface-alt);
   color: var(--color-text);
   border-radius: var(--radius-md);
   cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
 }
 
 .stepper-btn:hover {
-  background: var(--color-surface-alt);
+  background: var(--color-surface-sunken);
+  border-color: var(--color-border-strong);
 }
 
 .stepper-btn:active {
-  transform: translateY(1px);
+  transform: scale(0.94);
+  background: var(--color-accent-tint);
 }
 
 .radio-row,
@@ -329,14 +726,21 @@ main {
 
 .chip {
   min-height: var(--tap-min);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
+  border-radius: 999px;
+  background: var(--color-surface-alt);
   color: var(--color-text);
   font-family: inherit;
   font-size: var(--font-size-sm);
   cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.chip:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-sunken);
 }
 
 .chip[aria-pressed="true"] {
@@ -345,11 +749,16 @@ main {
   border-color: var(--color-accent);
   font-weight: 700;
 }
+.chip[aria-pressed="true"]:hover {
+  background: var(--color-accent-strong);
+  border-color: var(--color-accent-strong);
+}
 
 .hint {
   font-size: var(--font-size-sm);
   color: var(--color-muted);
   margin-top: var(--space-1);
+  line-height: 1.5;
 }
 
 /* ---------- Results ---------- */
@@ -358,61 +767,104 @@ main {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-4);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5);
+  /* Every result table (app.js writes <table class="data-table"> directly
+     into this container's innerHTML) reflows via horizontal scroll WITHIN
+     this card on narrow screens, rather than squeezing columns unreadably
+     or overflowing the page - this is the one place that needs the rule,
+     since every .data-table on the page lives inside a .results container. */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .result-hero {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
   font-size: var(--font-size-2xl);
   font-weight: 800;
-  margin: 0 0 var(--space-2);
+  letter-spacing: -0.02em;
+  color: var(--color-accent-strong);
+  margin: 0 0 var(--space-3);
+  line-height: 1;
 }
 
 .result-hero .unit {
-  font-size: var(--font-size-lg);
+  font-family: var(--font-text);
+  font-size: var(--font-size-md);
   font-weight: 600;
   color: var(--color-muted);
-  margin-left: var(--space-1);
+  margin-inline-start: var(--space-2);
+  letter-spacing: normal;
 }
 
 table.data-table {
   width: 100%;
+  min-width: 480px;
   border-collapse: collapse;
   font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
 }
 
 table.data-table caption {
-  text-align: left;
+  text-align: start;
   font-weight: 700;
+  font-variant-numeric: normal;
   margin-bottom: var(--space-2);
+  color: var(--color-text);
 }
 
 table.data-table th,
 table.data-table td {
-  text-align: left;
-  padding: var(--space-2) var(--space-2);
+  text-align: start;
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+table.data-table th {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-faint);
+  font-weight: 700;
+  font-variant-numeric: normal;
+}
+
+table.data-table tr:last-child td {
+  border-bottom: none;
 }
 
 table.data-table tr.highlight td {
-  background: var(--color-surface-alt);
+  background: var(--color-accent-tint);
   font-weight: 700;
+  color: var(--color-accent-strong);
 }
 
 .badge {
-  display: inline-block;
-  padding: 0.15rem var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.35rem 0.8rem;
   border-radius: 999px;
   font-size: var(--font-size-sm);
   font-weight: 700;
   background: var(--color-surface-alt);
+  margin: 0 0 var(--space-3);
+}
+
+.badge:last-child {
+  margin-bottom: 0;
 }
 
 .badge.warn {
   color: var(--color-danger);
+  background: var(--color-danger-tint);
 }
 
 .badge.ok {
   color: var(--color-ok);
+  background: var(--color-ok-tint);
 }
 
 .copy-link-row {
@@ -428,11 +880,20 @@ table.data-table tr.highlight td {
   min-height: 1.25em;
 }
 
-/* ---------- Barbell SVG ---------- */
+/* ---------- Barbell SVG ----------
+   Signature visual moment: crisp plate stack with a soft cast-iron gradient
+   look via a subtle inset shadow per plate, a graphite bar, and a hairline
+   knurl texture on the sleeve - all vector, all theme-aware via CSS custom
+   properties (var(--plate-*)) so nothing here needs a per-theme SVG swap. */
 
 .barbell-wrap {
   overflow-x: auto;
-  margin: var(--space-4) 0;
+  -webkit-overflow-scrolling: touch;
+  margin: var(--space-2) 0 var(--space-4);
+  padding: var(--space-4) 0;
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
 }
 
 .barbell-svg {
@@ -440,11 +901,38 @@ table.data-table tr.highlight td {
   width: 100%;
   height: auto;
   min-width: 320px;
+  padding: 0 var(--space-4);
+}
+
+.barbell-svg .plate {
+  transition: transform var(--dur-med) var(--ease);
+}
+
+/* Staggered settle-in: each plate group pops in slightly after the previous
+   one, reading as "loaded left to right" - a fixed set of :nth-child delay
+   steps (not a per-element inline style, which the page's CSP would block).
+   Caps out at the 8th+ plate sharing the last step rather than growing
+   unbounded. */
+@media (prefers-reduced-motion: no-preference) {
+  .barbell-svg .plate {
+    animation: plate-settle var(--dur-med) var(--ease) backwards;
+  }
+  .barbell-svg .plate:nth-child(2) { animation-delay: 30ms; }
+  .barbell-svg .plate:nth-child(3) { animation-delay: 60ms; }
+  .barbell-svg .plate:nth-child(4) { animation-delay: 90ms; }
+  .barbell-svg .plate:nth-child(5) { animation-delay: 120ms; }
+  .barbell-svg .plate:nth-child(6) { animation-delay: 150ms; }
+  .barbell-svg .plate:nth-child(n+7) { animation-delay: 180ms; }
+}
+
+@keyframes plate-settle {
+  from { opacity: 0; transform: scaleX(0.6); }
+  to { opacity: 1; transform: scaleX(1); }
 }
 
 .barbell-svg text {
   fill: var(--plate-label);
-  font-family: var(--font-family);
+  font-family: var(--font-mono);
   /* 19px bold clears the WCAG "large text" threshold (18.66px @ 700 weight),
      which only needs 3:1 contrast instead of 4.5:1 - combined with the
      per-plate-color overrides below (a single fixed --plate-label can't hit
@@ -454,6 +942,7 @@ table.data-table tr.highlight td {
   font-size: 19px;
   font-weight: 700;
   text-anchor: middle;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Per-plate label color override: whichever of the near-black/near-white
@@ -467,14 +956,14 @@ table.data-table tr.highlight td {
 .barbell-svg text[data-plate-color="--plate-25"],
 .barbell-svg text[data-plate-color="--plate-20"],
 .barbell-svg text[data-plate-color="--plate-10"] {
-  fill: #eceef1;
+  fill: #f5f6f8;
 }
 
 .barbell-svg text[data-plate-color="--plate-15"],
 .barbell-svg text[data-plate-color="--plate-5"],
 .barbell-svg text[data-plate-color="--plate-2_5"],
 .barbell-svg text[data-plate-color="--plate-1_25"] {
-  fill: #16181d;
+  fill: #14161c;
 }
 
 .barbell-svg text[data-plate-color="--plate-other"] {
@@ -485,17 +974,34 @@ table.data-table tr.highlight td {
 [data-theme="dark"] .barbell-svg text[data-plate-color="--plate-20"],
 [data-theme="dark"] .barbell-svg text[data-plate-color="--plate-15"],
 [data-theme="dark"] .barbell-svg text[data-plate-color="--plate-10"] {
-  fill: #16181d;
+  fill: #14161c;
 }
 
 [data-theme="dark"] .barbell-svg text[data-plate-color="--plate-5"],
 [data-theme="dark"] .barbell-svg text[data-plate-color="--plate-2_5"],
 [data-theme="dark"] .barbell-svg text[data-plate-color="--plate-1_25"] {
-  fill: #eceef1;
+  fill: #edeef2;
 }
 
 [data-theme="dark"] .barbell-svg text[data-plate-color="--plate-other"] {
-  fill: #eceef1;
+  fill: #edeef2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-25"],
+  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-20"],
+  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-15"],
+  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-10"] {
+    fill: #14161c;
+  }
+  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-5"],
+  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-2_5"],
+  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-1_25"] {
+    fill: #edeef2;
+  }
+  :root:not([data-theme="light"]) .barbell-svg text[data-plate-color="--plate-other"] {
+    fill: #edeef2;
+  }
 }
 
 .barbell-svg .bar {
@@ -506,8 +1012,9 @@ table.data-table tr.highlight td {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
   font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
 }
 
 .plate-legend .swatch {
@@ -515,8 +1022,9 @@ table.data-table tr.highlight td {
   width: 0.9em;
   height: 0.9em;
   border-radius: 0.2em;
-  margin-right: 0.3em;
+  margin-inline-end: 0.35em;
   vertical-align: -0.1em;
+  border: 1px solid var(--color-border-strong);
 }
 
 /* Swatch color per plate denomination, keyed by the data-plate-color
@@ -535,15 +1043,25 @@ table.data-table tr.highlight td {
 /* ---------- Footer ---------- */
 
 .app-footer {
-  padding: var(--space-6) var(--space-4) var(--space-12);
+  padding: var(--space-8) var(--space-4) var(--space-12);
   text-align: center;
   color: var(--color-muted);
   font-size: var(--font-size-sm);
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-8);
+}
+
+.app-footer p {
+  margin: 0 0 var(--space-2);
 }
 
 .app-footer a {
   color: var(--color-muted);
   text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.app-footer a:hover {
+  color: var(--color-accent-strong);
 }
 
 .offline-indicator {
@@ -563,24 +1081,78 @@ table.data-table tr.highlight td {
   background: var(--color-danger);
 }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 .disclaimer {
-  border-left: 3px solid var(--color-accent);
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-surface);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  border-inline-start: 3px solid var(--color-accent);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-alt);
+  /* Rounded on the two END corners only (the corners away from the accent
+     border) - border-radius's 4-value shorthand has no logical equivalent,
+     so this is spelled out as the two logical corner longhands instead of
+     the physical top-left/top-right/bottom-right/bottom-left it replaces. */
+  border-start-end-radius: var(--radius-md);
+  border-end-end-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   color: var(--color-muted);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
+  line-height: 1.55;
 }
+
+/* ---------- small screens (mobile-first hardening, ~375px target) ---------- */
+
+@media (max-width: 480px) {
+  .app-header { padding: var(--space-3); gap: var(--space-2); }
+  .app-title { font-size: var(--font-size-md); }
+  .header-controls { gap: var(--space-1); width: 100%; justify-content: space-between; }
+  .hero { padding: var(--space-6) var(--space-3) var(--space-5); }
+  .hero-inner { max-width: none; }
+  main { padding: var(--space-4) var(--space-3) var(--space-3); }
+  .tabs { padding: var(--space-2) var(--space-3); }
+  .tab { padding: var(--space-2) var(--space-3); font-size: var(--font-size-xs); }
+  .results { padding: var(--space-4); }
+  .result-hero { font-size: clamp(1.9rem, 8vw, 2.3rem); }
+  .stepper-btn { width: var(--tap-min); min-height: var(--tap-min); }
+  .app-footer { padding: var(--space-6) var(--space-3) var(--space-10); }
+}
+
+/* Small phones (~360px and under): tighten control gaps further still - the
+   header/header-controls flex-wrap from the base rules above already
+   guarantees no horizontal overflow at any width, this just keeps things
+   from feeling cramped once 4 controls + the title share ~340px. */
+@media (max-width: 360px) {
+  .header-controls { gap: 0.35rem; }
+  .icon-btn, .unit-toggle button, .theme-toggle, #lang-select {
+    padding-inline: var(--space-2);
+  }
+}
+
+/* ---------- RTL support ----------
+   The runtime (js/i18n/index.js's setLocale()) sets <html dir="rtl"> for
+   ar/he/fa and dir="ltr" otherwise. Most of this stylesheet already flips
+   correctly for free, without any [dir=rtl] override, because:
+     - Every multi-item row in this app is `display: flex` with the default
+       (never overridden) `flex-direction: row`, which per the flexbox spec
+       is direction-relative - it already reverses under dir="rtl" with zero
+       CSS changes (header controls, unit toggle, tab row, stepper rows,
+       radio/chip rows, plate legend, hero-start-list).
+     - Every directional physical property that WOULD need a manual
+       [dir=rtl] override (margin-left/right, border-left/right, text-align:
+       left, asymmetric border-radius) was converted above to its logical
+       equivalent (margin-inline-*, border-inline-start, text-align: start,
+       border-*-*-radius) - see .result-hero .unit, table.data-table
+       caption/th/td, .plate-legend .swatch, .disclaimer, .hero-eyebrow, and
+       #skip-link's inset-inline-start. A logical property IS the [dir=rtl]
+       handling; it needs no separate override block, which is why this file
+       has no large [dir=rtl] section despite the app going fully RTL for
+       Arabic/Hebrew/Farsi.
+   Two things were deliberately left as-is, not overlooked:
+     - The barbell SVG (js/ui/svg-barbell.js) draws a physical-object
+       diagram, not text - a barbell has no "reading direction," and its
+       plate-stack rendering is inherently left/right-symmetric by
+       construction (drawSide(-1) mirrors drawSide(1)). SVG content also
+       does not inherit the page's CSS `dir` into its internal coordinate
+       space, so this needs no [dir=rtl] handling and flipping it would
+       misrepresent the diagram, not fix it.
+     - Numbers/units embedded in translated Arabic/Hebrew/Farsi sentences
+       (e.g. "225 lb") render left-to-right within the right-to-left
+       sentence flow - this is correct Unicode bidi behavior (weak/neutral
+       characters and Latin unit abbreviations don't flip), not a bug. */

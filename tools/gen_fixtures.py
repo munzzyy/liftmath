@@ -32,7 +32,19 @@ FIXTURES_DIR = REPO_ROOT / "tests" / "web" / "fixtures"
 
 sys.path.insert(0, str(SRC))
 
-from liftmath import loads, macros, mesocycle, onerm, plates, standards, volume, warmup  # noqa: E402
+from liftmath import (  # noqa: E402
+    bodyweight,
+    loads,
+    macros,
+    mesocycle,
+    onerm,
+    plates,
+    standards,
+    symmetry,
+    templates,
+    volume,
+    warmup,
+)
 from liftmath._serialize import to_dict  # noqa: E402
 
 _CAMEL_RE = re.compile(r"_([a-zA-Z0-9])")
@@ -44,9 +56,15 @@ def _camel(key: str) -> str:
 
 
 def to_camel(obj):
-    """Recursively rewrite every dict key in `obj` from snake_case to camelCase."""
+    """Recursively rewrite every dict key in `obj` from snake_case to camelCase.
+
+    Only string keys are field names needing the snake_case->camelCase
+    rewrite (e.g. `InventoryPlateLoad.inventory`'s keys are plate SIZES, not
+    field names - JSON itself stringifies them, so pass them through as-is
+    rather than feeding a float through the snake_case regex).
+    """
     if isinstance(obj, dict):
-        return {_camel(k): to_camel(v) for k, v in obj.items()}
+        return {(_camel(k) if isinstance(k, str) else k): to_camel(v) for k, v in obj.items()}
     if isinstance(obj, list):
         return [to_camel(v) for v in obj]
     return obj
@@ -211,6 +229,51 @@ def gen_plate_loading() -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
+# plate-inventory.js <- liftmath.plates (load_plates_from_inventory)
+# ---------------------------------------------------------------------------
+
+def gen_plate_inventory() -> list[dict]:
+    cases = []
+    # exact match from the brief's own worked example inventory
+    inv_full = {45: 4, 25: 1, 10: 2, 5: 2, 2.5: 1}
+    for target, bar in [(495, 45), (500, 45), (405, 45)]:
+        cases.append({
+            "fn": "loadPlatesFromInventory",
+            "args": {"target": target, "inventory": inv_full, "opts": {"unit": "lb", "bar": bar}},
+            "expected": dump(plates.load_plates_from_inventory(target, inv_full, unit="lb", bar=bar)),
+        })
+    # finite-count ceiling: only 2x45 available, can't hit a target needing 3
+    inv_sparse = {45: 2}
+    cases.append({
+        "fn": "loadPlatesFromInventory",
+        "args": {"target": 245, "inventory": inv_sparse, "opts": {"unit": "lb", "bar": 45}},
+        "expected": dump(plates.load_plates_from_inventory(245, inv_sparse, unit="lb", bar=45)),
+    })
+    # unreachable target -> nearest above/below reported
+    inv_unreachable = {45: 2, 25: 1}
+    cases.append({
+        "fn": "loadPlatesFromInventory",
+        "args": {"target": 190, "inventory": inv_unreachable, "opts": {"unit": "lb", "bar": 45}},
+        "expected": dump(plates.load_plates_from_inventory(190, inv_unreachable, unit="lb", bar=45)),
+    })
+    # the documented greedy-would-be-wrong counterexample (see plates.py)
+    inv_counterexample = {25: 1, 20: 2}
+    cases.append({
+        "fn": "loadPlatesFromInventory",
+        "args": {"target": 160, "inventory": inv_counterexample, "opts": {"unit": "lb", "bar": 80}},
+        "expected": dump(plates.load_plates_from_inventory(160, inv_counterexample, unit="lb", bar=80)),
+    })
+    # kg case
+    inv_kg = {20: 2, 10: 1}
+    cases.append({
+        "fn": "loadPlatesFromInventory",
+        "args": {"target": 120, "inventory": inv_kg, "opts": {"unit": "kg", "bar": 20}},
+        "expected": dump(plates.load_plates_from_inventory(120, inv_kg, unit="kg", bar=20)),
+    })
+    return cases
+
+
+# ---------------------------------------------------------------------------
 # warmup-ramp.js <- liftmath.warmup
 # ---------------------------------------------------------------------------
 
@@ -275,15 +338,129 @@ def gen_strength_scores() -> list[dict]:
     return cases
 
 
+# ---------------------------------------------------------------------------
+# bodyweight-onerm.js <- liftmath.bodyweight
+# ---------------------------------------------------------------------------
+
+def gen_bodyweight_onerm() -> list[dict]:
+    cases = []
+    for movement, bw, added, reps, unit in [
+        ("pullup", 180, 45, 5, "lb"), ("pullup", 180, 45, 1, "lb"),  # reps=1 -> exact
+        ("pullup", 180, -60, 8, "lb"),  # assisted
+        ("dip", 200, 90, 3, "lb"),
+        ("chinup", 75, 20, 1, "kg"),
+        ("dip", 80, 0, 8, "kg"),  # bodyweight-only, no added weight
+        ("pullup", 90, 15, 12, "kg"),  # high-rep warning path
+    ]:
+        cases.append({
+            "fn": "weightedBodyweightOneRm",
+            "args": {"movement": movement, "bodyweight": bw, "added": added, "reps": reps,
+                     "opts": {"unit": unit}},
+            "expected": dump(bodyweight.weighted_bodyweight_one_rm(movement, bw, added, reps, unit=unit)),
+        })
+    return cases
+
+
+# ---------------------------------------------------------------------------
+# symmetry.js <- liftmath.symmetry
+# ---------------------------------------------------------------------------
+
+def gen_symmetry() -> list[dict]:
+    cases = []
+    for squat, bench, deadlift, sex, ohp, bw in [
+        (315, 225, 405, "male", None, None),
+        (315, 225, 405, "male", 135, 180),
+        (200, 110, 240, "female", None, 140),
+        (400, 250, 400, "male", None, None),  # ahead-of-expected squat
+        (348, 200, 400, "male", None, None),  # exact expected ratio -> balanced, 0 deviation
+        (161, 111, 193, "female", 75, None),
+    ]:
+        cases.append({
+            "fn": "scoreSymmetry",
+            "args": {"squat": squat, "bench": bench, "deadlift": deadlift, "sex": sex,
+                     "opts": {"ohp": ohp, "bodyweight": bw}},
+            "expected": dump(symmetry.score_symmetry(squat, bench, deadlift, sex, ohp=ohp, bodyweight=bw)),
+        })
+    return cases
+
+
+# ---------------------------------------------------------------------------
+# training-templates.js <- liftmath.templates
+# ---------------------------------------------------------------------------
+
+def gen_training_templates() -> list[dict]:
+    cases = []
+
+    for one_rm, pct, increment, unit in [
+        (315, 0.90, None, "lb"), (140, 0.90, None, "kg"), (315, 0.85, None, "lb"),
+        (315, 0.90, 10, "lb"), (300, 0.90, None, "lb"),
+    ]:
+        cases.append({
+            "fn": "trainingMax",
+            "args": {"oneRm": one_rm, "opts": {"pct": pct, "increment": increment, "unit": unit}},
+            "expected": dump(templates.training_max(one_rm, pct=pct, increment=increment, unit=unit)),
+        })
+
+    # 5/3/1: TM 300 all 4 weeks (week 2's top set is the brief's pinned worked
+    # example: 270lb x3+), plus a non-round-number TM and a kg increment case.
+    for tm, week, increment in [
+        (300, 1, 5.0), (300, 2, 5.0), (300, 3, 5.0), (300, 4, 5.0),
+        (285, 1, 5.0), (200, 2, 2.5),
+    ]:
+        cases.append({
+            "fn": "program531",
+            "args": {"tm": tm, "week": week, "opts": {"increment": increment}},
+            "expected": dump(templates.program_531(tm, week, increment=increment)),
+        })
+
+    # GZCLP: made/missed at every stage for T1 and T2, both lift types, plus T3.
+    for tier, stage, weight, made, lift_type, unit, amrap_reps in [
+        ("t1", "5x3", 300, True, "lower", "lb", None),
+        ("t1", "5x3", 200, True, "upper", "lb", None),
+        ("t1", "5x3", 300, False, "lower", "lb", None),
+        ("t1", "6x2", 300, False, "lower", "lb", None),
+        ("t1", "10x1", 300, False, "lower", "lb", None),  # needs_retest path
+        ("t2", "3x10", 150, True, "upper", "lb", None),
+        ("t2", "3x10", 150, False, "lower", "lb", None),
+        ("t2", "3x8", 150, False, "lower", "lb", None),
+        ("t2", "3x6", 150, False, "lower", "lb", None),  # restart-with-bump path
+        ("t3", "", 50, True, "upper", "lb", 25),
+        ("t3", "", 50, True, "upper", "lb", 24),
+    ]:
+        cases.append({
+            "fn": "gzclpNextSession",
+            "args": {"tier": tier, "stage": stage, "weight": weight, "made": made,
+                     "opts": {"liftType": lift_type, "unit": unit, "amrapReps": amrap_reps}},
+            "expected": dump(templates.gzclp_next_session(
+                tier, stage, weight, made, lift_type=lift_type, unit=unit, amrap_reps=amrap_reps,
+            )),
+        })
+
+    # nSuns LP 4-day: one T1 day per scheme, plus a non-round TM.
+    for day, tm in [("bench_day1", 200), ("squat_day2", 300), ("bench_day3", 250), ("deadlift_day4", 400),
+                    ("squat_day2", 287)]:
+        cases.append({
+            "fn": "nsunsDay",
+            "args": {"day": day, "tm": tm, "opts": {}},
+            "expected": dump(templates.nsuns_day(day, tm)),
+        })
+
+    return cases
+
+
 GENERATORS = {
     "one-rep-max": gen_one_rep_max,
     "load-chart": gen_load_chart,
     "volume-landmarks": gen_volume_landmarks,
     "macros": gen_macros,
     "plate-loading": gen_plate_loading,
+    "plate-inventory": gen_plate_inventory,
     "warmup-ramp": gen_warmup_ramp,
     "mesocycle-ramp": gen_mesocycle_ramp,
     "strength-scores": gen_strength_scores,
+    "bodyweight-onerm": gen_bodyweight_onerm,
+    "symmetry": gen_symmetry,
+    "training-templates": gen_training_templates,
 }
 
 

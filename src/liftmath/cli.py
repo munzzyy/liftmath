@@ -2,6 +2,8 @@
 
 Subcommands:
     1rm         Estimate 1RM from a weight x reps set (multi-formula consensus + range)
+    bw-onerm    Weighted bodyweight-movement 1RM (pull-up/chin-up/dip): total-load 1RM +
+                the equivalent added-weight 1RM at your bodyweight
     reps        Given a 1RM, print the %%1RM -> predicted-reps / RIR load chart
     target      Weight for a target rep/RIR count at a given 1RM
     rpe         %%1RM <-> RPE/RIR, derived from the same Epley-based model as `reps`/`target`
@@ -12,11 +14,17 @@ Subcommands:
     macros      Protein / calorie / fat / carb targets from bodyweight + goal
     cunningham  Cunningham (1980) lean-mass-based RMR/TDEE estimate
     bulkcut     Weekly bulk/cut rate-of-change target, banded by trainee tier
+    plates      Plate-loading math for a target barbell weight (add --inventory for a
+                finite per-side plate count instead of an unlimited supply)
+    warmup      Warm-up ramp sets up to a working weight
     ffmi        Fat-free mass index (Kouri 1995) + natural-reference-ceiling flag
     navybf      Navy tape-measure body-fat %% estimate (Hodgdon & Beckett 1984)
     sessionload Session load / weekly load / training monotony / strain (Foster 2001)
-    plates      Plate-loading math for a target barbell weight
-    warmup      Warm-up ramp sets up to a working weight
+    symmetry    Lift-ratio symmetry: squat/bench/deadlift (+ optional OHP) vs. expected ratios
+    tm          Training max: pct of a 1RM, rounded down to an increment (Wendler)
+    program531  Classic Wendler 5/3/1: one week's full percentage-based set list
+    gzclp       GZCLP next-session prescription from current stage/weight/result (Lefever)
+    nsuns       nSuns LP (4-day variant) T1 set list for one lift day
     standards   Relative-strength scoring: Wilks (original + 2020), DOTS, IPF GL points
     mcculloch   McCulloch age-adjusted total for masters lifters (WRPF)
 
@@ -35,18 +43,29 @@ from liftmath import __version__
 from liftmath._serialize import to_json
 from liftmath.bodycomp import ffmi as compute_ffmi
 from liftmath.bodycomp import navy_body_fat
+from liftmath.bodyweight import MOVEMENTS, weighted_bodyweight_one_rm
 from liftmath.bulkcut import TIERS, rate_target
 from liftmath.loads import load_chart, target_load
 from liftmath.macros import ACTIVITY_LEVELS, GOALS, cunningham_tdee, macro_targets
 from liftmath.mesocycle import ramp_mesocycle
 from liftmath.onerm import estimate_one_rm
-from liftmath.plates import PRESETS, load_plates
+from liftmath.plates import PRESETS, _parse_inventory_spec, load_plates, load_plates_from_inventory
 from liftmath.program import ExerciseSet, audit_program
 from liftmath.progression import next_progression_step
 from liftmath.rpe import pct_1rm_from_reps_and_rir, rpe_from_reps_and_pct
 from liftmath.sessionload import weekly_load
 from liftmath.standards import mcculloch_score
 from liftmath.standards import score as strength_score
+from liftmath.symmetry import score_symmetry
+from liftmath.templates import (
+    NSUNS_4DAY_SCHEME,
+    T1_STAGES,
+    T2_STAGES,
+    gzclp_next_session,
+    nsuns_day,
+    program_531,
+    training_max,
+)
 from liftmath.volume import LANDMARKS, landmarks_for
 from liftmath.warmup import warmup_ramp
 
@@ -87,6 +106,42 @@ def cmd_1rm(args: argparse.Namespace) -> int:
         print("    used the median, but treat this as soft. Test a heavier set of <=6 reps for a")
         print("    sharper estimate.")
     elif est.soft_estimate_warning:
+        print("\n[!] Best accuracy is at <=8 reps; treat this as approximate.")
+    return 0
+
+
+def cmd_bw_onerm(args: argparse.Namespace) -> int:
+    try:
+        r = weighted_bodyweight_one_rm(args.movement, args.bodyweight, args.added, args.reps,
+                                        unit=args.unit)
+    except (KeyError, ValueError) as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(r))
+        return 0
+
+    verb = "assisted by" if r.is_assisted else "with"
+    print(f"Weighted {args.movement}: {args.bodyweight:g}{args.unit} bodyweight {verb} "
+          f"{abs(args.added):g}{args.unit} x {args.reps} reps")
+    print(f"  total system load   {r.total_load:6.1f}{args.unit}")
+    est = r.total_load_estimate
+    if not est.is_exact:
+        print(f"  total-load 1RM      {est.consensus:6.1f}{args.unit}   "
+              f"(median; range {est.low:.1f}-{est.high:.1f})")
+    else:
+        print(f"  total-load 1RM      {est.consensus:6.1f}{args.unit}   (that set IS a 1RM)")
+    print(f"  added-weight 1RM    {r.added_weight_one_rm:6.1f}{args.unit}   "
+          f"(what you could add for 1 rep at this bodyweight)")
+    print(f"  added weight        {r.added_weight_pct_bodyweight:5.1f}%  of bodyweight")
+    if r.is_assisted:
+        print("\n[!] Assisted set: added weight is negative (net assistance), so the added-weight")
+        print("    1RM being negative just means you'd still need some assistance for 1 rep.")
+    elif not est.is_exact and est.high_rep_warning:
+        print("\n[!] r>12: rep-max equations lose accuracy on the total-load estimate; treat the")
+        print("    added-weight 1RM as soft too. Test a heavier set of <=6 reps for a sharper read.")
+    elif not est.is_exact and est.soft_estimate_warning:
         print("\n[!] Best accuracy is at <=8 reps; treat this as approximate.")
     return 0
 
@@ -390,6 +445,34 @@ def cmd_bulkcut(args: argparse.Namespace) -> int:
 
 
 def cmd_plates(args: argparse.Namespace) -> int:
+    if args.inventory:
+        try:
+            inventory = _parse_inventory_spec(args.inventory)
+            result = load_plates_from_inventory(args.target, inventory, unit=args.unit, bar=args.bar)
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+
+        if args.json:
+            print(to_json(result))
+            return 0
+
+        print(f"Load {args.target:g}{args.unit} on a {result.bar:g}{args.unit} bar "
+              f"(from your inventory):")
+        if result.plates:
+            detail = ", ".join(f"{n}x{p:g}" for p, n in result.plates)
+            print(f"  per side ({result.per_side:g}{args.unit}): {detail}")
+        else:
+            print("  (empty bar)")
+        if not result.exact:
+            print(f"  [!] can't make it exactly with this inventory - short "
+                  f"{result.shortfall:g}{args.unit}/side.")
+            if result.nearest_below is not None:
+                print(f"      nearest achievable below: {result.nearest_below:g}{args.unit}")
+            if result.nearest_above is not None:
+                print(f"      nearest achievable above: {result.nearest_above:g}{args.unit}")
+        return 0
+
     try:
         result = load_plates(args.target, unit=args.unit, bar=args.bar, plates=args.plates,
                               preset=args.preset)
@@ -550,6 +633,132 @@ def cmd_sessionload(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_symmetry(args: argparse.Namespace) -> int:
+    try:
+        report = score_symmetry(args.squat, args.bench, args.deadlift, args.sex,
+                                 ohp=args.ohp, bodyweight=args.bodyweight)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(report))
+        return 0
+
+    print(f"Lift-ratio symmetry ({args.sex}) - total {report.total:g}{args.unit}:")
+    print("-" * 62)
+    print(f"{'lift':<10}{'weight':>9}{'% of DL':>10}{'expected':>10}{'% of total':>12}   verdict")
+    print("-" * 62)
+    for lift in ("squat", "bench", "deadlift", "ohp"):
+        if lift not in report.lifts:
+            continue
+        lr = report.lifts[lift]
+        print(f"{lift:<10}{lr.weight:>8.1f}{lr.ratio_to_deadlift*100:>9.1f}%"
+              f"{lr.expected_ratio*100:>9.1f}%{lr.ratio_to_total*100:>11.1f}%   {lr.verdict}")
+    print("-" * 62)
+    if "ohp" in report.lifts:
+        print("[!] OHP's expected ratio is single-sourced (Strength Level only - Symmetric")
+        print("    Strength publishes no OHP figure to cross-check it against), unlike")
+        print("    squat/bench which are corroborated across two independent methodologies.")
+    print("[evidence tier] population heuristics from two independent secondary sources")
+    print("(Symmetric Strength's world-record-median method, Strength Level's >20M-lift")
+    print("intermediate-tier standards) - NOT a physiological law. Individual 'correct'")
+    print("ratios vary with limb length, technique, and training history.")
+    return 0
+
+
+def _print_set_table(sets, unit: str) -> None:
+    print(f"{'set':>4}{'%TM':>7}{'weight':>10}{'reps':>7}   amrap")
+    print("-" * 40)
+    for s in sets:
+        amrap = "yes (+)" if s.amrap else ""
+        print(f"{s.set_number:>4}{s.pct_tm*100:>6.0f}%{s.weight:>9.1f}{unit}{s.reps:>7}   {amrap}")
+
+
+def cmd_tm(args: argparse.Namespace) -> int:
+    try:
+        result = training_max(args.onerm, pct=args.pct, increment=args.increment, unit=args.unit)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(result))
+        return 0
+
+    print(f"Training max from a {args.onerm:g}{args.unit} 1RM at {result.pct*100:.0f}%:")
+    print(f"  {result.training_max:g}{args.unit}  (rounded down to the nearest {result.increment:g}{args.unit})")
+    print("Source: Wendler's 5/3/1 - 90% of a tested 1RM is the published default, kept")
+    print("deliberately submaximal so percentage-based sets stay achievable across a cycle.")
+    return 0
+
+
+def cmd_program531(args: argparse.Namespace) -> int:
+    try:
+        week = program_531(args.tm, args.week, increment=args.increment)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(week))
+        return 0
+
+    label = "deload" if week.is_deload else f"week {week.week}"
+    print(f"5/3/1 - {label} (TM {args.tm:g}{args.unit}):")
+    _print_set_table(week.sets, args.unit)
+    if not week.is_deload:
+        print("\n'+' sets are AMRAP (as many reps as possible at or past the listed count).")
+        print("Source: Wendler's 5/3/1. TM progression after a completed cycle (not applied")
+        print("automatically - it depends on your AMRAP result): +5lb/2.5kg upper, +10lb/5kg lower.")
+    else:
+        print("\nDeload week: no AMRAP sets, keep effort light - the point is to recover.")
+    return 0
+
+
+def cmd_gzclp(args: argparse.Namespace) -> int:
+    try:
+        result = gzclp_next_session(args.tier, args.stage, args.weight, args.made,
+                                     lift_type=args.lift_type, unit=args.unit,
+                                     amrap_reps=args.amrap_reps)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(result))
+        return 0
+
+    print(f"GZCLP {args.tier.upper()} ({args.lift_type}) - {result.note}")
+    print(f"  next: {result.next_stage} @ {result.next_weight:g}{args.unit}")
+    if result.needs_retest:
+        print("\n[!] A retest is a real training event this library can't compute for you -")
+        print("    go test a fresh 5RM, then start the next cycle at 85% of that number.")
+    print("Source: Cody Lefever's GZCL method / GZCLP. T1 stages 5x3->6x2->10x1, T2 stages")
+    print("3x10->3x8->3x6, T3 single-stage (progress by weight once the AMRAP hits 25 reps).")
+    return 0
+
+
+def cmd_nsuns(args: argparse.Namespace) -> int:
+    try:
+        day = nsuns_day(args.day, args.tm, increment=args.increment)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(day))
+        return 0
+
+    print(f"nSuns LP (4-day) - {args.day}, Scheme {day.scheme} (TM {args.tm:g}{args.unit}):")
+    _print_set_table(day.sets, args.unit)
+    print("\n'+' sets are AMRAP. T1 (this table) only - T2 (the paired secondary lift) isn't")
+    print("computed here; its exact per-set percentages couldn't be independently corroborated")
+    print("with the same confidence as T1's, so it's left out rather than guessed (see")
+    print("templates.py's module docstring).")
+    return 0
+
+
 def _json_parent(*, suppress_default: bool) -> argparse.ArgumentParser:
     """Shared --json flag, usable before or after the subcommand name.
 
@@ -578,6 +787,16 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--reps", type=int, required=True)
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_1rm)
+
+    s = sub.add_parser("bw-onerm", help="weighted bodyweight-movement 1RM (pull-up/chin-up/dip)",
+                        parents=[json_parent])
+    s.add_argument("--movement", required=True, choices=sorted(MOVEMENTS))
+    s.add_argument("--bodyweight", type=float, required=True)
+    s.add_argument("--added", type=float, required=True,
+                   help="external weight added for the tested set (negative = assisted)")
+    s.add_argument("--reps", type=int, required=True)
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_bw_onerm)
 
     s = sub.add_parser("reps", help="%%1RM load & effort chart from a known 1RM", parents=[json_parent])
     s.add_argument("--onerm", type=float, required=True)
@@ -656,6 +875,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--preset", choices=sorted(PRESETS),
                    help="named non-standard setup (kg-only): "
                         "'womens' = 15kg bar, 'metric-no-45' = metric gym with no 45lb-equivalent plate")
+    s.add_argument("--inventory", metavar="SPEC",
+                   help="finite per-side plate counts you actually have, as 'SIZExCOUNT,...' "
+                        "(e.g. '45x4,25x1,10x2,5x2,2.5x1') - overrides --plates/--preset and "
+                        "respects exact counts instead of assuming unlimited supply")
     s.set_defaults(func=cmd_plates)
 
     s = sub.add_parser("warmup", help="warm-up ramp to a working weight", parents=[json_parent])
@@ -688,6 +911,56 @@ def build_parser() -> argparse.ArgumentParser:
                    help="one load value per logged session (RPE * duration_minutes); "
                         "log same-day multiple sessions as separate values, not pre-summed")
     s.set_defaults(func=cmd_sessionload)
+
+    s = sub.add_parser("symmetry", help="lift-ratio symmetry: squat/bench/deadlift vs. expected ratios",
+                        parents=[json_parent])
+    s.add_argument("--squat", type=float, required=True)
+    s.add_argument("--bench", type=float, required=True)
+    s.add_argument("--deadlift", type=float, required=True)
+    s.add_argument("--ohp", type=float, help="overhead press best 1RM (optional)")
+    s.add_argument("--bodyweight", type=float, help="carried through on the report for context only")
+    s.add_argument("--sex", required=True, choices=["male", "female"])
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_symmetry)
+
+    s = sub.add_parser("tm", help="training max: pct of a 1RM, rounded down (Wendler)",
+                        parents=[json_parent])
+    s.add_argument("--onerm", type=float, required=True)
+    s.add_argument("--pct", type=float, default=0.90, help="training-max %% of 1RM, 0.80-1.00 (default 0.90)")
+    s.add_argument("--increment", type=float, help="rounding increment (default 5lb / 2.5kg)")
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_tm)
+
+    s = sub.add_parser("program531", help="classic Wendler 5/3/1: one week's full set list",
+                        parents=[json_parent])
+    s.add_argument("--tm", type=float, required=True, help="training max (see `tm`)")
+    s.add_argument("--week", type=int, required=True, choices=[1, 2, 3, 4],
+                   help="1-3 = working weeks, 4 = deload")
+    s.add_argument("--increment", type=float, default=5.0, help="rounding increment (default 5; use 2.5 for kg)")
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_program531)
+
+    s = sub.add_parser("gzclp", help="GZCLP next-session prescription from current state (Lefever)",
+                        parents=[json_parent])
+    s.add_argument("--tier", required=True, choices=["t1", "t2", "t3"])
+    s.add_argument("--stage", default="", help=f"current stage: {T1_STAGES} for t1, {T2_STAGES} for t2")
+    s.add_argument("--weight", type=float, required=True, help="weight used for the session just performed")
+    s.add_argument("--made", action="store_true", help="pass if the session's target was hit")
+    s.add_argument("--missed", dest="made", action="store_false", help="pass if the session was missed")
+    s.set_defaults(made=True)
+    s.add_argument("--lift-type", default="upper", choices=["upper", "lower"],
+                   help="selects which increment table applies")
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.add_argument("--amrap-reps", type=int, help="t3 only: total reps on the AMRAP set")
+    s.set_defaults(func=cmd_gzclp)
+
+    s = sub.add_parser("nsuns", help="nSuns LP (4-day) T1 set list for one lift day",
+                        parents=[json_parent])
+    s.add_argument("--day", required=True, choices=sorted(NSUNS_4DAY_SCHEME))
+    s.add_argument("--tm", type=float, required=True, help="training max (see `tm`)")
+    s.add_argument("--increment", type=float, default=5.0, help="rounding increment (default 5; use 2.5 for kg)")
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_nsuns)
 
     s = sub.add_parser("standards", help="relative-strength scoring: Wilks/DOTS/IPF GL",
                         parents=[json_parent])

@@ -11,3 +11,4 @@ venv/
 .coverage
 htmlcov/
 .mypy_cache/
+.claude/

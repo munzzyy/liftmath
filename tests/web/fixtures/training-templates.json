@@ -1,0 +1,968 @@
+[
+  {
+    "args": {
+      "oneRm": 315,
+      "opts": {
+        "increment": null,
+        "pct": 0.9,
+        "unit": "lb"
+      }
+    },
+    "expected": {
+      "increment": 5.0,
+      "oneRm": 315,
+      "pct": 0.9,
+      "trainingMax": 280.0,
+      "unit": "lb"
+    },
+    "fn": "trainingMax"
+  },
+  {
+    "args": {
+      "oneRm": 140,
+      "opts": {
+        "increment": null,
+        "pct": 0.9,
+        "unit": "kg"
+      }
+    },
+    "expected": {
+      "increment": 2.5,
+      "oneRm": 140,
+      "pct": 0.9,
+      "trainingMax": 125.0,
+      "unit": "kg"
+    },
+    "fn": "trainingMax"
+  },
+  {
+    "args": {
+      "oneRm": 315,
+      "opts": {
+        "increment": null,
+        "pct": 0.85,
+        "unit": "lb"
+      }
+    },
+    "expected": {
+      "increment": 5.0,
+      "oneRm": 315,
+      "pct": 0.85,
+      "trainingMax": 265.0,
+      "unit": "lb"
+    },
+    "fn": "trainingMax"
+  },
+  {
+    "args": {
+      "oneRm": 315,
+      "opts": {
+        "increment": 10,
+        "pct": 0.9,
+        "unit": "lb"
+      }
+    },
+    "expected": {
+      "increment": 10,
+      "oneRm": 315,
+      "pct": 0.9,
+      "trainingMax": 280,
+      "unit": "lb"
+    },
+    "fn": "trainingMax"
+  },
+  {
+    "args": {
+      "oneRm": 300,
+      "opts": {
+        "increment": null,
+        "pct": 0.9,
+        "unit": "lb"
+      }
+    },
+    "expected": {
+      "increment": 5.0,
+      "oneRm": 300,
+      "pct": 0.9,
+      "trainingMax": 270.0,
+      "unit": "lb"
+    },
+    "fn": "trainingMax"
+  },
+  {
+    "args": {
+      "opts": {
+        "increment": 5.0
+      },
+      "tm": 300,
+      "week": 1
+    },
+    "expected": {
+      "isDeload": false,
+      "sets": [
+        {
+          "amrap": false,
+          "pctTm": 0.65,
+          "reps": 5,
+          "setNumber": 1,
+          "weight": 195.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 5,
+          "setNumber": 2,
+          "weight": 225.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.85,
+          "reps": 5,
+          "setNumber": 3,
+          "weight": 255.0
+        }
+      ],
+      "week": 1
+    },
+    "fn": "program531"
+  },
+  {
+    "args": {
+      "opts": {
+        "increment": 5.0
+      },
+      "tm": 300,
+      "week": 2
+    },
+    "expected": {
+      "isDeload": false,
+      "sets": [
+        {
+          "amrap": false,
+          "pctTm": 0.7,
+          "reps": 3,
+          "setNumber": 1,
+          "weight": 210.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.8,
+          "reps": 3,
+          "setNumber": 2,
+          "weight": 240.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.9,
+          "reps": 3,
+          "setNumber": 3,
+          "weight": 270.0
+        }
+      ],
+      "week": 2
+    },
+    "fn": "program531"
+  },
+  {
+    "args": {
+      "opts": {
+        "increment": 5.0
+      },
+      "tm": 300,
+      "week": 3
+    },
+    "expected": {
+      "isDeload": false,
+      "sets": [
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 5,
+          "setNumber": 1,
+          "weight": 225.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.85,
+          "reps": 3,
+          "setNumber": 2,
+          "weight": 255.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.95,
+          "reps": 1,
+          "setNumber": 3,
+          "weight": 285.0
+        }
+      ],
+      "week": 3
+    },
+    "fn": "program531"
+  },
+  {
+    "args": {
+      "opts": {
+        "increment": 5.0
+      },
+      "tm": 300,
+      "week": 4
+    },
+    "expected": {
+      "isDeload": true,
+      "sets": [
+        {
+          "amrap": false,
+          "pctTm": 0.4,
+          "reps": 5,
+          "setNumber": 1,
+          "weight": 120.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.5,
+          "reps": 5,
+          "setNumber": 2,
+          "weight": 150.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.6,
+          "reps": 5,
+          "setNumber": 3,
+          "weight": 180.0
+        }
+      ],
+      "week": 4
+    },
+    "fn": "program531"
+  },
+  {
+    "args": {
+      "opts": {
+        "increment": 5.0
+      },
+      "tm": 285,
+      "week": 1
+    },
+    "expected": {
+      "isDeload": false,
+      "sets": [
+        {
+          "amrap": false,
+          "pctTm": 0.65,
+          "reps": 5,
+          "setNumber": 1,
+          "weight": 185.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 5,
+          "setNumber": 2,
+          "weight": 210.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.85,
+          "reps": 5,
+          "setNumber": 3,
+          "weight": 240.0
+        }
+      ],
+      "week": 1
+    },
+    "fn": "program531"
+  },
+  {
+    "args": {
+      "opts": {
+        "increment": 2.5
+      },
+      "tm": 200,
+      "week": 2
+    },
+    "expected": {
+      "isDeload": false,
+      "sets": [
+        {
+          "amrap": false,
+          "pctTm": 0.7,
+          "reps": 3,
+          "setNumber": 1,
+          "weight": 140.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.8,
+          "reps": 3,
+          "setNumber": 2,
+          "weight": 160.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.9,
+          "reps": 3,
+          "setNumber": 3,
+          "weight": 180.0
+        }
+      ],
+      "week": 2
+    },
+    "fn": "program531"
+  },
+  {
+    "args": {
+      "made": true,
+      "opts": {
+        "amrapReps": null,
+        "liftType": "lower",
+        "unit": "lb"
+      },
+      "stage": "5x3",
+      "tier": "t1",
+      "weight": 300
+    },
+    "expected": {
+      "made": true,
+      "needsRetest": false,
+      "nextStage": "5x3",
+      "nextWeight": 310.0,
+      "note": "made 5x3 - add 10lb, stay at 5x3",
+      "stage": "5x3",
+      "tier": "t1",
+      "weight": 300
+    },
+    "fn": "gzclpNextSession"
+  },
+  {
+    "args": {
+      "made": true,
+      "opts": {
+        "amrapReps": null,
+        "liftType": "upper",
+        "unit": "lb"
+      },
+      "stage": "5x3",
+      "tier": "t1",
+      "weight": 200
+    },
+    "expected": {
+      "made": true,
+      "needsRetest": false,
+      "nextStage": "5x3",
+      "nextWeight": 205.0,
+      "note": "made 5x3 - add 5lb, stay at 5x3",
+      "stage": "5x3",
+      "tier": "t1",
+      "weight": 200
+    },
+    "fn": "gzclpNextSession"
+  },
+  {
+    "args": {
+      "made": false,
+      "opts": {
+        "amrapReps": null,
+        "liftType": "lower",
+        "unit": "lb"
+      },
+      "stage": "5x3",
+      "tier": "t1",
+      "weight": 300
+    },
+    "expected": {
+      "made": false,
+      "needsRetest": false,
+      "nextStage": "6x2",
+      "nextWeight": 300,
+      "note": "missed 5x3 - move to 6x2 at the same 300lb",
+      "stage": "5x3",
+      "tier": "t1",
+      "weight": 300
+    },
+    "fn": "gzclpNextSession"
+  },
+  {
+    "args": {
+      "made": false,
+      "opts": {
+        "amrapReps": null,
+        "liftType": "lower",
+        "unit": "lb"
+      },
+      "stage": "6x2",
+      "tier": "t1",
+      "weight": 300
+    },
+    "expected": {
+      "made": false,
+      "needsRetest": false,
+      "nextStage": "10x1",
+      "nextWeight": 300,
+      "note": "missed 6x2 - move to 10x1 at the same 300lb",
+      "stage": "6x2",
+      "tier": "t1",
+      "weight": 300
+    },
+    "fn": "gzclpNextSession"
+  },
+  {
+    "args": {
+      "made": false,
+      "opts": {
+        "amrapReps": null,
+        "liftType": "lower",
+        "unit": "lb"
+      },
+      "stage": "10x1",
+      "tier": "t1",
+      "weight": 300
+    },
+    "expected": {
+      "made": false,
+      "needsRetest": true,
+      "nextStage": "5x3",
+      "nextWeight": 300,
+      "note": "missed 10x1, the last T1 stage - retest your 5RM, then restart 5x3 at 85% of that retested max (not computed here - a retest is a real training event)",
+      "stage": "10x1",
+      "tier": "t1",
+      "weight": 300
+    },
+    "fn": "gzclpNextSession"
+  },
+  {
+    "args": {
+      "made": true,
+      "opts": {
+        "amrapReps": null,
+        "liftType": "upper",
+        "unit": "lb"
+      },
+      "stage": "3x10",
+      "tier": "t2",
+      "weight": 150
+    },
+    "expected": {
+      "made": true,
+      "needsRetest": false,
+      "nextStage": "3x10",
+      "nextWeight": 152.5,
+      "note": "made 3x10 - add 2.5lb, stay at 3x10",
+      "stage": "3x10",
+      "tier": "t2",
+      "weight": 150
+    },
+    "fn": "gzclpNextSession"
+  },
+  {
+    "args": {
+      "made": false,
+      "opts": {
+        "amrapReps": null,
+        "liftType": "lower",
+        "unit": "lb"
+      },
+      "stage": "3x10",
+      "tier": "t2",
+      "weight": 150
+    },
+    "expected": {
+      "made": false,
+      "needsRetest": false,
+      "nextStage": "3x8",
+      "nextWeight": 150,
+      "note": "missed 3x10 - move to 3x8 at the same 150lb",
+      "stage": "3x10",
+      "tier": "t2",
+      "weight": 150
+    },
+    "fn": "gzclpNextSession"
+  },
+  {
+    "args": {
+      "made": false,
+      "opts": {
+        "amrapReps": null,
+        "liftType": "lower",
+        "unit": "lb"
+      },
+      "stage": "3x8",
+      "tier": "t2",
+      "weight": 150
+    },
+    "expected": {
+      "made": false,
+      "needsRetest": false,
+      "nextStage": "3x6",
+      "nextWeight": 150,
+      "note": "missed 3x8 - move to 3x6 at the same 150lb",
+      "stage": "3x8",
+      "tier": "t2",
+      "weight": 150
+    },
+    "fn": "gzclpNextSession"
+  },
+  {
+    "args": {
+      "made": false,
+      "opts": {
+        "amrapReps": null,
+        "liftType": "lower",
+        "unit": "lb"
+      },
+      "stage": "3x6",
+      "tier": "t2",
+      "weight": 150
+    },
+    "expected": {
+      "made": false,
+      "needsRetest": false,
+      "nextStage": "3x10",
+      "nextWeight": 160.0,
+      "note": "missed 3x6, the last T2 stage - restart 3x10 at 160lb (10lb above where 3x10 last started)",
+      "stage": "3x6",
+      "tier": "t2",
+      "weight": 150
+    },
+    "fn": "gzclpNextSession"
+  },
+  {
+    "args": {
+      "made": true,
+      "opts": {
+        "amrapReps": 25,
+        "liftType": "upper",
+        "unit": "lb"
+      },
+      "stage": "",
+      "tier": "t3",
+      "weight": 50
+    },
+    "expected": {
+      "made": true,
+      "needsRetest": false,
+      "nextStage": "3x15+",
+      "nextWeight": 52.5,
+      "note": "AMRAP hit 25 (>= 25) - add 2.5lb next time",
+      "stage": "3x15+",
+      "tier": "t3",
+      "weight": 50
+    },
+    "fn": "gzclpNextSession"
+  },
+  {
+    "args": {
+      "made": true,
+      "opts": {
+        "amrapReps": 24,
+        "liftType": "upper",
+        "unit": "lb"
+      },
+      "stage": "",
+      "tier": "t3",
+      "weight": 50
+    },
+    "expected": {
+      "made": true,
+      "needsRetest": false,
+      "nextStage": "3x15+",
+      "nextWeight": 50,
+      "note": "AMRAP hit 24 (< 25) - repeat 50lb",
+      "stage": "3x15+",
+      "tier": "t3",
+      "weight": 50
+    },
+    "fn": "gzclpNextSession"
+  },
+  {
+    "args": {
+      "day": "bench_day1",
+      "opts": {},
+      "tm": 200
+    },
+    "expected": {
+      "day": "bench_day1",
+      "scheme": "A",
+      "sets": [
+        {
+          "amrap": false,
+          "pctTm": 0.65,
+          "reps": 8,
+          "setNumber": 1,
+          "weight": 130.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 6,
+          "setNumber": 2,
+          "weight": 150.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.85,
+          "reps": 4,
+          "setNumber": 3,
+          "weight": 170.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.85,
+          "reps": 4,
+          "setNumber": 4,
+          "weight": 170.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.85,
+          "reps": 4,
+          "setNumber": 5,
+          "weight": 170.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.8,
+          "reps": 5,
+          "setNumber": 6,
+          "weight": 160.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 6,
+          "setNumber": 7,
+          "weight": 150.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.7,
+          "reps": 7,
+          "setNumber": 8,
+          "weight": 140.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.65,
+          "reps": 8,
+          "setNumber": 9,
+          "weight": 130.0
+        }
+      ],
+      "trainingMax": 200
+    },
+    "fn": "nsunsDay"
+  },
+  {
+    "args": {
+      "day": "squat_day2",
+      "opts": {},
+      "tm": 300
+    },
+    "expected": {
+      "day": "squat_day2",
+      "scheme": "B",
+      "sets": [
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 5,
+          "setNumber": 1,
+          "weight": 225.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.85,
+          "reps": 3,
+          "setNumber": 2,
+          "weight": 255.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.95,
+          "reps": 1,
+          "setNumber": 3,
+          "weight": 285.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.9,
+          "reps": 3,
+          "setNumber": 4,
+          "weight": 270.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.85,
+          "reps": 3,
+          "setNumber": 5,
+          "weight": 255.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.8,
+          "reps": 3,
+          "setNumber": 6,
+          "weight": 240.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 3,
+          "setNumber": 7,
+          "weight": 225.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.7,
+          "reps": 3,
+          "setNumber": 8,
+          "weight": 210.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.65,
+          "reps": 3,
+          "setNumber": 9,
+          "weight": 195.0
+        }
+      ],
+      "trainingMax": 300
+    },
+    "fn": "nsunsDay"
+  },
+  {
+    "args": {
+      "day": "bench_day3",
+      "opts": {},
+      "tm": 250
+    },
+    "expected": {
+      "day": "bench_day3",
+      "scheme": "B",
+      "sets": [
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 5,
+          "setNumber": 1,
+          "weight": 185.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.85,
+          "reps": 3,
+          "setNumber": 2,
+          "weight": 210.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.95,
+          "reps": 1,
+          "setNumber": 3,
+          "weight": 235.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.9,
+          "reps": 3,
+          "setNumber": 4,
+          "weight": 225.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.85,
+          "reps": 3,
+          "setNumber": 5,
+          "weight": 210.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.8,
+          "reps": 3,
+          "setNumber": 6,
+          "weight": 200.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 3,
+          "setNumber": 7,
+          "weight": 185.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.7,
+          "reps": 3,
+          "setNumber": 8,
+          "weight": 175.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.65,
+          "reps": 3,
+          "setNumber": 9,
+          "weight": 160.0
+        }
+      ],
+      "trainingMax": 250
+    },
+    "fn": "nsunsDay"
+  },
+  {
+    "args": {
+      "day": "deadlift_day4",
+      "opts": {},
+      "tm": 400
+    },
+    "expected": {
+      "day": "deadlift_day4",
+      "scheme": "B",
+      "sets": [
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 5,
+          "setNumber": 1,
+          "weight": 300.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.85,
+          "reps": 3,
+          "setNumber": 2,
+          "weight": 340.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.95,
+          "reps": 1,
+          "setNumber": 3,
+          "weight": 380.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.9,
+          "reps": 3,
+          "setNumber": 4,
+          "weight": 360.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.85,
+          "reps": 3,
+          "setNumber": 5,
+          "weight": 340.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.8,
+          "reps": 3,
+          "setNumber": 6,
+          "weight": 320.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 3,
+          "setNumber": 7,
+          "weight": 300.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.7,
+          "reps": 3,
+          "setNumber": 8,
+          "weight": 280.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.65,
+          "reps": 3,
+          "setNumber": 9,
+          "weight": 260.0
+        }
+      ],
+      "trainingMax": 400
+    },
+    "fn": "nsunsDay"
+  },
+  {
+    "args": {
+      "day": "squat_day2",
+      "opts": {},
+      "tm": 287
+    },
+    "expected": {
+      "day": "squat_day2",
+      "scheme": "B",
+      "sets": [
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 5,
+          "setNumber": 1,
+          "weight": 215.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.85,
+          "reps": 3,
+          "setNumber": 2,
+          "weight": 240.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.95,
+          "reps": 1,
+          "setNumber": 3,
+          "weight": 270.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.9,
+          "reps": 3,
+          "setNumber": 4,
+          "weight": 255.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.85,
+          "reps": 3,
+          "setNumber": 5,
+          "weight": 240.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.8,
+          "reps": 3,
+          "setNumber": 6,
+          "weight": 225.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.75,
+          "reps": 3,
+          "setNumber": 7,
+          "weight": 215.0
+        },
+        {
+          "amrap": false,
+          "pctTm": 0.7,
+          "reps": 3,
+          "setNumber": 8,
+          "weight": 200.0
+        },
+        {
+          "amrap": true,
+          "pctTm": 0.65,
+          "reps": 3,
+          "setNumber": 9,
+          "weight": 185.0
+        }
+      ],
+      "trainingMax": 287
+    },
+    "fn": "nsunsDay"
+  }
+]

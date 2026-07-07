@@ -97,10 +97,20 @@ export function renderBarbellSvg(stack) {
       const plateX = sign > 0 ? cursorX : cursorX - w;
       const colorVar = colorVarFor(weight);
       const label = weight % 1 === 0 ? String(weight) : weight.toFixed(2).replace(/0$/, "");
+      // No inline style="..." attribute (CSP is style-src 'self', no
+      // 'unsafe-inline') - the per-plate settle-in stagger comes from
+      // styles.css's :nth-child selectors on .plate (see the
+      // .barbell-svg .plate rule and its :nth-child(n) delay steps), keyed
+      // off DOM order alone, so this stays a plain class + data attribute.
       parts.push(
-        `<g>` +
+        `<g class="plate">` +
           `<rect x="${plateX}" y="${midY - d / 2}" width="${w}" height="${d}" rx="4" ` +
-          `fill="var(${colorVar})" stroke="var(--color-border)" stroke-width="1" />` +
+          `fill="var(${colorVar})" stroke="var(--color-border-strong)" stroke-width="1" />` +
+          // Thin top-edge highlight stripe (cast-steel rim catch-light) -
+          // purely decorative, drawn with the same fill so it stays
+          // theme-correct without a new custom property.
+          `<rect x="${plateX + 2}" y="${midY - d / 2 + 2}" width="${w - 4}" height="2" rx="1" ` +
+          `fill="var(${colorVar})" opacity="0.55" />` +
           `<text data-plate-color="${colorVar}" x="${plateX + w / 2}" y="${midY}" dominant-baseline="middle" ` +
           `transform="rotate(90 ${plateX + w / 2} ${midY})">${label}</text>` +
           `</g>`

@@ -8,6 +8,13 @@ and warm-up ramps.
 Pure Python standard library. No dependencies, no network calls, no accounts.
 Works as a library you import or a command you run.
 
+New here? The fastest way in is the web app — nothing to install, works on
+your phone at the gym, and the barbell loads itself as you type:
+**https://munzzyy.github.io/liftmath/**. Everything below is the same math for
+people who'd rather script it. Questions and contributions are genuinely
+welcome — see [CONTRIBUTING.md](CONTRIBUTING.md), and the issues tagged
+`good first issue` are a good place to start.
+
 ## Why
 
 Most lifting apps either hide the math behind a subscription or get it wrong
@@ -48,6 +55,7 @@ Requires Python 3.10+. Nothing else.
 
 ```
 liftmath 1rm --weight 225 --reps 5 --unit lb
+liftmath bw-onerm --movement pullup --bodyweight 175 --added 90 --reps 3 --unit lb
 liftmath reps --onerm 315 --unit lb
 liftmath target --onerm 315 --reps 8 --rir 2 --unit lb
 liftmath rpe --reps 5 --rpe 8
@@ -62,7 +70,13 @@ liftmath ffmi --weight 200 --unit lb --height 70 --bodyfat 12
 liftmath navybf --sex male --height 70 --neck 15 --waist 34
 liftmath sessionload --load 900 50 840 280 180 390 50 390 280
 liftmath plates --target 245 --unit lb
+liftmath plates --target 300 --inventory "45x4,25x1,10x1,5x1,2.5x1" --bar 45 --unit lb
 liftmath warmup --weight 275 --unit lb
+liftmath tm --onerm 315 --unit lb
+liftmath program531 --tm 280 --week 2 --unit lb
+liftmath gzclp --tier t1 --stage 5x3 --weight 245 --made --unit lb
+liftmath nsuns --day bench_day1 --tm 280 --unit lb
+liftmath symmetry --squat 405 --bench 275 --deadlift 495 --bodyweight 185 --sex male --unit lb
 liftmath standards --total 1100 --bodyweight 220 --sex male --unit lb
 liftmath mcculloch --total 300 --age 50 --unit kg
 ```
@@ -110,6 +124,28 @@ Estimated 1RM from 225lb x 5 reps
 Accuracy holds up best under about 8 reps. Past 12, the curvilinear formulas
 drift hard and get dropped from the consensus automatically, with a warning
 printed so you know the estimate is soft.
+
+### Weighted pull-up / dip 1RM
+
+`bw-onerm` does the thing barbell-only calculators can't: a 1RM for weighted
+calisthenics, where the load is your bodyweight *plus* the belt. It runs the
+same six-formula consensus on the total system load, then hands back the number
+you actually care about — how much you could strap on for a single rep.
+
+```
+$ liftmath bw-onerm --movement pullup --bodyweight 175 --added 90 --reps 3
+Weighted pullup: 175lb bodyweight with 90lb x 3 reps
+  total system load    265.0lb
+  total-load 1RM       288.2lb   (median; range 280.6-302.1)
+  added-weight 1RM     113.2lb   (what you could add for 1 rep at this bodyweight)
+  added weight         64.7%  of bodyweight
+```
+
+Covers pull-ups, chin-ups, and dips (all effectively full-bodyweight
+movements). Assisted work counts too — pass a negative `--added` for band or
+machine assistance. Push-ups are deliberately left out: the one measurement
+that exists (Ebben 2011) captures a different quantity than a weighted-push-up
+1RM would need, and the code won't invent a number it can't source.
 
 ### Load chart and target loads
 
@@ -199,6 +235,19 @@ metric-no-45` for a metric gym with no 45lb-equivalent plate, instead of
 spelling out `--bar`/`--plates` by hand - presets are kg-only, so pair them
 with `--unit kg`. `warmup` builds a five-step ramp up to a working weight.
 
+Most gyms don't have infinite plates, so `plates --inventory` solves against
+the plates you actually own — a per-side list like `45x4,25x1,10x1,5x1,2.5x1`
+and your real bar weight. It finds the closest weight your inventory can
+actually build (an exact search, not a greedy grab that misses reachable
+combinations), and tells you how far off it lands when the exact target can't
+be made.
+
+```
+$ liftmath plates --target 300 --inventory "45x4,25x1,10x1,5x1,2.5x1" --bar 45
+Load 300lb on a 45lb bar (from your inventory):
+  per side (127.5lb): 2x45, 1x25, 1x10, 1x2.5
+```
+
 ### Relative-strength scoring
 
 `standards` scores a competition total (or a single lift) against bodyweight
@@ -213,6 +262,64 @@ as gospel.
 coefficient table, ages 40-90), the same idea as the bodyweight-normalizing
 formulas above but normalizing for age instead.
 
+### Lift-ratio symmetry
+
+`symmetry` compares your squat, bench, and deadlift against the ratios a
+balanced lifter tends to hit, and tells you which lift is lagging and by how
+much — the same idea a whole standalone site is built around, bundled in here.
+
+```
+$ liftmath symmetry --squat 405 --bench 275 --deadlift 495 --bodyweight 185 --sex male
+Lift-ratio symmetry (male) - total 1175lb:
+--------------------------------------------------------------
+lift         weight   % of DL  expected  % of total   verdict
+--------------------------------------------------------------
+squat        405.0     81.8%     87.0%       34.5%   lagging ~5%
+bench        275.0     55.6%     65.0%       23.4%   lagging ~9%
+deadlift     495.0    100.0%    100.0%       42.1%   balanced
+--------------------------------------------------------------
+```
+
+Expected ratios come from symmetricstrength.com's published methodology,
+cross-checked against Strength Level's standards; they're population
+heuristics, not laws, and the output says so. Overhead press is optional
+(`--ohp`) and flagged as single-sourced, since only one reference publishes a
+bench-to-press ratio.
+
+### Training max and program templates
+
+`tm` turns a 1RM into a training max — the submaximal number percentage-based
+programs actually run off (Wendler's 90% default, rounded down to a real plate
+increment). Feed that number to the program builders:
+
+```
+$ liftmath program531 --tm 280 --week 2
+5/3/1 - week 2 (TM 280lb):
+ set    %TM    weight   reps   amrap
+----------------------------------------
+   1    70%    195.0lb      3
+   2    80%    220.0lb      3
+   3    90%    250.0lb      3   yes (+)
+```
+
+`program531` prints any of the four 5/3/1 weeks. `nsuns` prints an nSuns LP
+day's full set list (`--day bench_day1` and friends). `gzclp` is the
+progression-aware one: give it your current tier, stage, weight, and whether
+you made the session, and it tells you the next prescription — add weight, or
+drop to the next rep scheme.
+
+```
+$ liftmath gzclp --tier t1 --stage 5x3 --weight 245 --made
+GZCLP T1 (upper) - made 5x3 - add 5lb, stay at 5x3
+  next: 5x3 @ 250lb
+```
+
+The program numbers trace to their sources — Wendler's 5/3/1, Cody Lefever's
+GZCLP, and the nSuns LP spreadsheet — and where a program's canon is genuinely
+unsettled (GZCLP never fixes a starting weight; nSuns' T2 percentages aren't
+consistently documented), liftmath asks you for the input rather than guessing.
+nSuns prints T1 only for that reason, and says so in the output.
+
 ## Web app
 
 liftmath also ships as a static web app: the same math as the CLI, in your
@@ -225,12 +332,20 @@ works too.
 
 Everything runs client-side. No server, no account, no analytics, no ads, no
 CDN - open the page once and it works offline after that (it's a PWA, so you
-can add it to your home screen). Eight tools in one page, tab-switchable:
-1RM consensus, a %1RM/RIR load chart, weekly volume landmarks, a mesocycle
-set ramp, macro targets, plate loading (with an SVG barbell render and a
-women's-bar preset), a warm-up ramp, and Wilks/DOTS/IPF GL scores. Every
-input recomputes instantly - no submit button - and your inputs live in the
-URL so a result is just a link you can send someone.
+can add it to your home screen). Ten tools in one page, tab-switchable: 1RM
+consensus (with a weighted pull-up/dip mode), a %1RM/RIR load chart, weekly
+volume landmarks, a mesocycle set ramp, macro targets, plate loading (with an
+SVG barbell render, a women's-bar preset, and a "my plates" inventory mode), a
+warm-up ramp, Wilks/DOTS/IPF GL scores, lift-ratio symmetry, and a program
+builder (5/3/1, GZCLP, nSuns). Every input recomputes instantly - no submit
+button - and your inputs live in the URL so a result is just a link you can
+send someone.
+
+It reads in 32 languages, switchable from the header, with proper right-to-left
+layout for Arabic, Hebrew, and Persian. Only the interface is translated - the
+math and its cited sources are identical underneath, and the JavaScript is
+pinned to the Python either way (see below), so a Wilks score in Thai is the
+same number as in English.
 
 The JavaScript in `web/js/math/` is hand-mirrored from the Python in
 `src/liftmath/` and checked against it: `tools/gen_fixtures.py` runs the
@@ -274,14 +389,18 @@ The rest of the public API, one function/dataclass pair per feature:
 ```python
 from liftmath import (
     pct_1rm_from_reps_and_rpe, rpe_from_reps_and_pct,     # RPE/RIR <-> %1RM
+    weighted_bodyweight_one_rm,                             # weighted pull-up/dip 1RM
     next_progression_step,                                 # double progression
     cunningham_tdee,                                        # lean-mass TDEE
     rate_target,                                            # bulk/cut rate target
     ffmi, navy_body_fat,                                    # body composition
     weekly_load, session_load,                              # Foster session load/monotony/strain
+    load_plates_from_inventory,                             # solve against plates you own
     score, wilks_score, wilks_original_score,
     dots_score, ipf_gl_points,                              # relative-strength scoring
     mcculloch_score, mcculloch_coefficient,                 # masters age adjustment
+    score_symmetry,                                         # lift-ratio symmetry
+    training_max, program_531, gzclp_next_session, nsuns_day,  # program templates
 )
 
 rpe_est = pct_1rm_from_reps_and_rpe(reps=5, rpe=8)
@@ -307,9 +426,10 @@ print(to_json(estimate_one_rm(225, 5, unit="lb")))
 ```
 
 See the module docstrings in `src/liftmath/` for the full API; each module
-covers one area: `onerm.py`, `loads.py`, `rpe.py`, `volume.py`, `program.py`,
-`mesocycle.py`, `progression.py`, `macros.py`, `bulkcut.py`, `bodycomp.py`,
-`sessionload.py`, `plates.py`, `warmup.py`, `standards.py`.
+covers one area: `onerm.py`, `bodyweight.py`, `loads.py`, `rpe.py`,
+`volume.py`, `program.py`, `mesocycle.py`, `progression.py`, `macros.py`,
+`bulkcut.py`, `bodycomp.py`, `sessionload.py`, `plates.py`, `warmup.py`,
+`standards.py`, `symmetry.py`, `templates.py`.
 
 ## Where the numbers come from
 
@@ -364,6 +484,17 @@ coefficients (May 2020), the original and 2020-revised Wilks formula, and
 the DOTS formula introduced in 2019 as a bodyweight-independent alternative
 to Wilks. The McCulloch age-coefficient table for masters lifters comes from
 the WRPF's own published 2022 document.
+
+The weighted-movement bodyweight fractions treat pull-ups, chin-ups, and dips
+as full-bodyweight lifts; the push-up figure people cite (about 64% of
+bodyweight) is Ebben et al. (2011), a ground-reaction-force measurement, which
+is why `bodyweight.py` documents it but doesn't reuse it for a weighted 1RM.
+The lift-ratio symmetry benchmarks come from symmetricstrength.com's stated
+methodology, cross-checked against Strength Level's crowd-sourced standards
+tables. The program templates trace to their primary sources: Jim Wendler's
+5/3/1, Cody Lefever's GZCL/GZCLP method, and the nSuns LP spreadsheet — with
+the parts each program leaves genuinely unspecified handled as inputs rather
+than invented (see `templates.py`).
 
 Full citations are in the relevant module's docstring, not just this file.
 
