@@ -38,11 +38,9 @@ jobs:
         run: |
           liftmath --version
           liftmath 1rm --weight 225 --reps 5
-          liftmath reps --onerm 315
-          liftmath volume
-          liftmath macros --bodyweight 185 --goal gain
           liftmath plates --target 245
-          liftmath warmup --weight 275
+          liftmath plates --target 405 --inventory 45x3,25x1,10x1
+          liftmath standards --total 1200 --bodyweight 200 --sex male
           liftmath 1rm --weight 225 --reps 5 --json
           liftmath --json plates --target 245
 

@@ -1,7 +1,7 @@
-// kg/lb display-unit conversion. The canonical stored value is always kg
-// internally per the design plan (avoids compounding rounding error across
-// repeated toggles); these helpers only convert at the render/parse
-// boundary, matching how liftmath.macros.py treats bodyweight internally.
+// kg/lb display-unit conversion. Several of the math modules (strength
+// scores especially) are calibrated in kg regardless of which unit the user
+// is viewing, so these helpers convert at the render/parse boundary rather
+// than the math modules trying to be unit-aware themselves.
 
 export const LB_PER_KG = 2.2046226;
 

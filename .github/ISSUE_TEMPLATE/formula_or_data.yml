@@ -1,5 +1,5 @@
-name: Formula, volume landmark, or exercise-data proposal
-description: Propose a new/changed 1RM formula, volume landmark, macro constant, or an exercise for the program.py fraction table
+name: Formula or data proposal
+description: Propose a new/changed 1RM formula, plate-loading rule, or relative-strength coefficient
 labels: ["enhancement", "data"]
 body:
   - type: dropdown
@@ -8,9 +8,8 @@ body:
       label: What kind of change is this
       options:
         - New or changed 1RM formula
-        - New or changed volume landmark (MV/MEV/MAV/MRV)
-        - New or changed macro/nutrition constant
-        - New exercise for the EXERCISE_FRACTIONS table (program.py)
+        - New or changed plate-loading rule
+        - New or changed relative-strength coefficient (Wilks/DOTS/IPF GL)
         - Other
     validations:
       required: true
@@ -20,12 +19,10 @@ body:
     attributes:
       label: Source
       description: >-
-        Author, year, and where it was published (journal, book, framework name).
-        liftmath's whole premise is that every number traces to a named source,
-        so this is required, not optional. If this is an exercise-fraction
-        addition, cite the same reasoning style used elsewhere in program.py
-        (prime mover vs. synergist logic) rather than a formal paper.
-      placeholder: "Refalo et al. (2023), systematic review and meta-analysis, ..."
+        Author, year, and where it was published (journal, book, federation
+        name). liftmath's whole premise is that every number traces to a named
+        source, so this is required, not optional.
+      placeholder: "Brzycki, M. (1993). Strength testing... JOPERD 64(1), 88-90."
     validations:
       required: true
 

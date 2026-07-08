@@ -1,7 +1,7 @@
 {
-  "name": "liftmath - strength training calculators",
+  "name": "liftmath - 1RM, plates, strength score",
   "short_name": "liftmath",
-  "description": "1RM consensus, load charts, volume landmarks, macros, plate loading, warm-up ramps, and Wilks/DOTS/IPF GL scores. Free, offline-capable, no account.",
+  "description": "Three gym calculators: 1RM consensus, plate loading with a barbell diagram, and Wilks/DOTS/IPF GL strength scores. Free, works offline, no account.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -20,6 +20,23 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "1RM",
+      "url": "./index.html?tab=onerm",
+      "description": "Estimate a one-rep max"
+    },
+    {
+      "name": "Plates",
+      "url": "./index.html?tab=plates",
+      "description": "Work out plate loading"
+    },
+    {
+      "name": "Score",
+      "url": "./index.html?tab=score",
+      "description": "Wilks / DOTS / IPF GL score"
     }
   ]
 }

@@ -1,523 +1,114 @@
-/* liftmath - design tokens + layout + component styles.
-   Identity: "steel and chalk" - a serious strength-training tool. Cool,
-   precision-machined surfaces, chalk-white ink, a hot-iron accent, and
-   confident tabular numerals wherever a load/rep/score appears - this app is
-   fundamentally about numbers, so numbers get the weight (pun intended).
-   No webfont, no external asset - system font stack keeps the zero-CDN
-   promise and avoids FOUT/layout shift entirely. */
+/* liftmath - "steel and chalk": cool graphite surfaces, chalk-white ink, a
+   hot-iron accent. Dark is the default identity (a gym's ambient light is
+   rarely bright white); light is available as an explicit override and is
+   also honored automatically via prefers-color-scheme when no override has
+   been chosen yet. See js/app.js's tiny theme toggle for how [data-theme]
+   gets set - all the actual color values live here, keyed off that
+   attribute, so the JS stays a thin "which block applies" switch. */
 
 :root {
-  color-scheme: light;
+  --color-bg: #101216;
+  --color-surface: #181b21;
+  --color-surface-alt: #1f232b;
+  --color-border: #2a2f39;
+  --color-border-strong: #3a4150;
+  --color-ink: #f4f5f7;
+  --color-ink-dim: #c7cbd4;
+  --color-faint: #9aa1ad;
+  --color-accent: #e08347;
+  --color-accent-ink: #1a1006;
+  --color-danger: #ff8a80;
+  --color-focus: #e08347;
 
-  /* ---- type -------------------------------------------------------------
-     Display stack favors a font with real numeral presence (tabular figures,
-     confident weight axis) for headings and results; text stack is a plain
-     system sans for everything read as prose. Both are system-only - no
-     network font ever loads. */
-  --font-display: -apple-system, "Segoe UI", "Segoe UI Variable Display", Roboto, "Helvetica Neue",
-    Arial, system-ui, sans-serif;
-  --font-text: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "Cascadia Code", "Segoe UI Mono", Consolas, "Liberation Mono",
-    Menlo, monospace;
+  --plate-25: #d94f4f;
+  --plate-20: #4f7fd9;
+  --plate-15: #d9c34f;
+  --plate-10: #4fae5a;
+  --plate-5: #e8e8ea;
+  --plate-2_5: #202329;
+  --plate-1_25: #b7bdc7;
+  --plate-other: #7d8797;
+  --bar-steel: #7d8797;
 
-  --measure: 62ch;
-
-  /* type scale (1.2 minor-third-ish, clamped where it needs to flex) */
-  --font-size-xs: 0.8125rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-md: 1.125rem;
-  --font-size-lg: 1.3rem;
-  --font-size-xl: clamp(1.5rem, 1.15rem + 1.4vw, 1.9rem);
-  --font-size-hero: clamp(1.9rem, 1.4rem + 2vw, 2.6rem);
-  --font-size-2xl: clamp(2.1rem, 1.5rem + 2.6vw, 3rem); /* result hero number */
-
-  /* spacing scale: 4px base */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-
-  /* touch targets */
-  --tap-min: 44px;
-  --tap-comfortable: 48px;
-
-  /* radius / shadow / motion */
-  --radius-sm: 0.35rem;
-  --radius-md: 0.6rem;
-  --radius-lg: 0.9rem;
-  --radius-xl: 1.25rem;
-  --shadow-sm: 0 1px 2px rgba(15, 17, 23, 0.08);
-  --shadow-md: 0 2px 6px rgba(15, 17, 23, 0.07), 0 8px 24px rgba(15, 17, 23, 0.06);
-  --shadow-inset: inset 0 1px 2px rgba(15, 17, 23, 0.08);
-
-  --dur-fast: 120ms;
-  --dur-med: 200ms;
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-
-  /* ---- light palette ------------------------------------------------------
-     Cool steel greys for surfaces (not warm paper - this is a shop-floor
-     tool, not a journal), near-black ink, one hot-iron accent used sparingly
-     for the interactive/primary signal. */
-  --color-bg: #f4f5f7;
-  --color-surface: #ffffff;
-  --color-surface-raised: #ffffff;
-  --color-surface-alt: #e8eaee;
-  --color-surface-sunken: #eceef2;
-  --color-text: #14161c;
-  --color-muted: #565c6b;
-  --color-faint: #6b7184;
-  --color-border: #d3d7e0;
-  --color-border-strong: #b6bbc9;
-
-  --color-accent: #c14b1f;
-  --color-accent-strong: #9c3a16;
-  --color-accent-tint: #fbe8de;
-  --color-accent-contrast: #fff7f2;
-
-  --color-danger: #af2a20;
-  --color-danger-tint: #fbe6e3;
-  --color-ok: #146c3f;
-  --color-ok-tint: #e2f2e8;
-
-  --focus-ring: #1a5fd6;
-
-  --shadow-card: var(--shadow-md);
-
-  /* plate colors: IPF/IWF-standard, tuned per theme so light plates never
-     wash out against their own canvas (see plates below for dark overrides) */
-  --plate-25: #c1281f;
-  --plate-20: #1a5fd6;
-  --plate-15: #d69a00;
-  --plate-10: #146c3f;
-  --plate-5: #eef0f3;
-  --plate-2_5: #9096a5;
-  --plate-1_25: #ced2db;
-  --plate-other: #6d7386;
-  --plate-label: #14161c;
-  --bar-color: #8a8f9e;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --color-bg: #101216;
-    --color-surface: #1a1d24;
-    --color-surface-raised: #20232b;
-    --color-surface-alt: #262a34;
-    --color-surface-sunken: #14161b;
-    --color-text: #edeef2;
-    --color-muted: #a3a9b8;
-    --color-faint: #868c9c;
-    --color-border: #2e323d;
-    --color-border-strong: #3c4150;
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --color-bg: #f4f5f7;
+    --color-surface: #ffffff;
+    --color-surface-alt: #eceef1;
+    --color-border: #d7dae0;
+    --color-border-strong: #b7bdc7;
+    --color-ink: #171a1f;
+    --color-ink-dim: #3c4350;
+    --color-faint: #565e6b;
+    --color-accent: #c14b1f;
+    --color-accent-ink: #fff7f2;
+    --color-danger: #b3261e;
+    --color-focus: #c14b1f;
 
-    --color-accent: #e08347;
-    --color-accent-strong: #f0a06c;
-    --color-accent-tint: #3a2416;
-    --color-accent-contrast: #191008;
+    --plate-25: #c23b3b;
+    --plate-20: #3b63b3;
+    --plate-15: #b39c2f;
+    --plate-10: #3b8a46;
+    --plate-5: #e3e5e8;
+    --plate-2_5: #23262c;
+    --plate-1_25: #9aa1ad;
+    --plate-other: #6b7480;
+    --bar-steel: #6b7480;
 
-    --color-danger: #ff6b64;
-    --color-danger-tint: #3a2321;
-    --color-ok: #4fbf7c;
-    --color-ok-tint: #16281f;
-
-    --focus-ring: #7fb0ff;
-
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.32);
-    --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-card: var(--shadow-md);
-
-    --plate-25: #ff5a4f;
-    --plate-20: #5b9bff;
-    --plate-15: #f0c94a;
-    --plate-10: #4fbf7c;
-    --plate-5: #363a45;
-    --plate-2_5: #565c68;
-    --plate-1_25: #454a58;
-    --plate-other: #6b7280;
-    --plate-label: #edeef2;
-    --bar-color: #6b7280;
+    color-scheme: light;
   }
 }
 
-/* manual override wins over the media query either direction */
-:root[data-theme="light"] {
-  color-scheme: light;
+[data-theme="light"] {
   --color-bg: #f4f5f7;
   --color-surface: #ffffff;
-  --color-surface-raised: #ffffff;
-  --color-surface-alt: #e8eaee;
-  --color-surface-sunken: #eceef2;
-  --color-text: #14161c;
-  --color-muted: #565c6b;
-  --color-faint: #6b7184;
-  --color-border: #d3d7e0;
-  --color-border-strong: #b6bbc9;
+  --color-surface-alt: #eceef1;
+  --color-border: #d7dae0;
+  --color-border-strong: #b7bdc7;
+  --color-ink: #171a1f;
+  --color-ink-dim: #3c4350;
+  --color-faint: #565e6b;
   --color-accent: #c14b1f;
-  --color-accent-strong: #9c3a16;
-  --color-accent-tint: #fbe8de;
-  --color-accent-contrast: #fff7f2;
-  --color-danger: #af2a20;
-  --color-danger-tint: #fbe6e3;
-  --color-ok: #146c3f;
-  --color-ok-tint: #e2f2e8;
-  --focus-ring: #1a5fd6;
-  --shadow-sm: 0 1px 2px rgba(15, 17, 23, 0.08);
-  --shadow-md: 0 2px 6px rgba(15, 17, 23, 0.07), 0 8px 24px rgba(15, 17, 23, 0.06);
-  --shadow-inset: inset 0 1px 2px rgba(15, 17, 23, 0.08);
-  --shadow-card: var(--shadow-md);
-  --plate-25: #c1281f;
-  --plate-20: #1a5fd6;
-  --plate-15: #d69a00;
-  --plate-10: #146c3f;
-  --plate-5: #eef0f3;
-  --plate-2_5: #9096a5;
-  --plate-1_25: #ced2db;
-  --plate-other: #6d7386;
-  --plate-label: #14161c;
-  --bar-color: #8a8f9e;
-}
+  --color-accent-ink: #fff7f2;
+  --color-danger: #b3261e;
+  --color-focus: #c14b1f;
 
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --color-bg: #101216;
-  --color-surface: #1a1d24;
-  --color-surface-raised: #20232b;
-  --color-surface-alt: #262a34;
-  --color-surface-sunken: #14161b;
-  --color-text: #edeef2;
-  --color-muted: #a3a9b8;
-  --color-faint: #868c9c;
-  --color-border: #2e323d;
-  --color-border-strong: #3c4150;
-  --color-accent: #e08347;
-  --color-accent-strong: #f0a06c;
-  --color-accent-tint: #3a2416;
-  --color-accent-contrast: #191008;
-  --color-danger: #ff6b64;
-  --color-danger-tint: #3a2321;
-  --color-ok: #4fbf7c;
-  --color-ok-tint: #16281f;
-  --focus-ring: #7fb0ff;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.32);
-  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-card: var(--shadow-md);
-  --plate-25: #ff5a4f;
-  --plate-20: #5b9bff;
-  --plate-15: #f0c94a;
-  --plate-10: #4fbf7c;
-  --plate-5: #363a45;
-  --plate-2_5: #565c68;
-  --plate-1_25: #454a58;
-  --plate-other: #6b7280;
-  --plate-label: #edeef2;
-  --bar-color: #6b7280;
-}
+  --plate-25: #c23b3b;
+  --plate-20: #3b63b3;
+  --plate-15: #b39c2f;
+  --plate-10: #3b8a46;
+  --plate-5: #e3e5e8;
+  --plate-2_5: #23262c;
+  --plate-1_25: #9aa1ad;
+  --plate-other: #6b7480;
+  --bar-steel: #6b7480;
 
-/* ---- 6 more themes ------------------------------------------------------
-   Same mechanism as light/dark above (a full custom-property block keyed
-   off [data-theme]), nothing new architecturally - just more palettes.
-   Each is a deliberately distinct identity (own accent hue, own plate
-   colors, own shadow treatment), not a hue-rotated clone of light/dark.
-   Every pairing below was checked against real WCAG contrast math (relative
-   luminance / (L1+0.05)/(L2+0.05)), not eyeballed - body text clears 4.5:1,
-   focus rings and border-strong clear 3:1, same bar the light/dark palettes
-   above already had to clear. */
-
-/* Iron - true OLED black. Minimal, almost monochrome, one cold steel-blue
-   signal color. Built for AMOLED screens and late-night sessions where any
-   stray light is too much light. */
-:root[data-theme="iron"] {
-  color-scheme: dark;
-  --color-bg: #000000;
-  --color-surface: #0a0a0c;
-  --color-surface-raised: #101114;
-  --color-surface-alt: #17181c;
-  --color-surface-sunken: #000000;
-  --color-text: #f2f3f5;
-  --color-muted: #a8adba;
-  --color-faint: #8a90a0;
-  --color-border: #2c2d32;
-  --color-border-strong: #5b5e68;
-  --color-accent: #4da6ff;
-  --color-accent-strong: #8ecbff;
-  --color-accent-tint: #0d2436;
-  --color-accent-contrast: #00131f;
-  --color-danger: #ff6b6b;
-  --color-danger-tint: #2a1113;
-  --color-ok: #4ce08a;
-  --color-ok-tint: #0e2417;
-  --focus-ring: #8ecbff;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.55), 0 12px 30px rgba(0, 0, 0, 0.45);
-  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-card: var(--shadow-md);
-  --plate-25: #ff6259;
-  --plate-20: #63a4ff;
-  --plate-15: #ffd166;
-  --plate-10: #57cf88;
-  --plate-5: #1c1d21;
-  --plate-2_5: #4a4f5c;
-  --plate-1_25: #383c46;
-  --plate-other: #6b7280;
-  --plate-label: #f5f6f8;
-  --bar-color: #5b5e68;
-}
-
-/* Chalk - warm chalk-dust paper, near the color of an actual bag of gym
-   chalk. Deep charcoal ink, and a "chalk-line" blue accent (the snapped
-   carpenter's/lifter's chalk line) instead of light's hot-iron orange, so
-   it reads as its own warm-paper identity rather than a paler "light". */
-:root[data-theme="chalk"] {
   color-scheme: light;
-  --color-bg: #f2ede0;
-  --color-surface: #faf7ef;
-  --color-surface-raised: #fdfbf5;
-  --color-surface-alt: #ece4d1;
-  --color-surface-sunken: #e7ddc5;
-  --color-text: #2b2620;
-  --color-muted: #645a4c;
-  --color-faint: #756b5b;
-  --color-border: #ddd0ac;
-  --color-border-strong: #8c7b52;
-  --color-accent: #2557a7;
-  --color-accent-strong: #163e80;
-  --color-accent-tint: #dbe6f6;
-  --color-accent-contrast: #f7fbff;
-  --color-danger: #a3291f;
-  --color-danger-tint: #f6e2dd;
-  --color-ok: #2c6b3f;
-  --color-ok-tint: #e2ecdf;
-  --focus-ring: #8a5300;
-  --shadow-sm: 0 1px 2px rgba(43, 38, 32, 0.1);
-  --shadow-md: 0 2px 6px rgba(43, 38, 32, 0.08), 0 8px 24px rgba(43, 38, 32, 0.08);
-  --shadow-inset: inset 0 1px 2px rgba(43, 38, 32, 0.1);
-  --shadow-card: var(--shadow-md);
-  --plate-25: #b13224;
-  --plate-20: #1f4f8f;
-  --plate-15: #c4900a;
-  --plate-10: #2c6b3f;
-  --plate-5: #efe8d6;
-  --plate-2_5: #a89a7c;
-  --plate-1_25: #cfc3a3;
-  --plate-other: #7a6f5c;
-  --plate-label: #f5f6f8;
-  --bar-color: #8f8266;
 }
 
-/* Rust - oxidized steel and copper. Warm dark umber-brown surfaces (not
-   graphite-cool like Dark/Iron), a copper-penny accent, cream ink. */
-:root[data-theme="rust"] {
+[data-theme="dark"] {
   color-scheme: dark;
-  --color-bg: #1c1410;
-  --color-surface: #251c16;
-  --color-surface-raised: #2c211a;
-  --color-surface-alt: #34281f;
-  --color-surface-sunken: #170f0b;
-  --color-text: #f1e6d8;
-  --color-muted: #c2ab8f;
-  --color-faint: #ab9478;
-  --color-border: #453425;
-  --color-border-strong: #87694a;
-  --color-accent: #d9853b;
-  --color-accent-strong: #f0a25e;
-  --color-accent-tint: #3a2313;
-  --color-accent-contrast: #1d1006;
-  --color-danger: #ff7a63;
-  --color-danger-tint: #3a1f18;
-  --color-ok: #8fce6f;
-  --color-ok-tint: #20280f;
-  --focus-ring: #6fc2ff;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
-  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.45);
-  --shadow-card: var(--shadow-md);
-  --plate-25: #e0604a;
-  --plate-20: #5b9bd6;
-  --plate-15: #e0b04a;
-  --plate-10: #7fbf6a;
-  --plate-5: #2c211a;
-  --plate-2_5: #5c4a38;
-  --plate-1_25: #493a2c;
-  --plate-other: #8a7360;
-  --plate-label: #f5f6f8;
-  --bar-color: #6b5540;
 }
 
-/* Forest - deep pine-black surfaces, a dappled-sunlight amber accent kept
-   deliberately distinct from the leaf-green "ok" success color so the two
-   greens/warm tones never get confused for each other. */
-:root[data-theme="forest"] {
-  color-scheme: dark;
-  --color-bg: #0e1712;
-  --color-surface: #16231c;
-  --color-surface-raised: #1c2b22;
-  --color-surface-alt: #223327;
-  --color-surface-sunken: #0b120e;
-  --color-text: #e9f1ea;
-  --color-muted: #a8bdac;
-  --color-faint: #93a897;
-  --color-border: #2c4534;
-  --color-border-strong: #597a63;
-  --color-accent: #e0a940;
-  --color-accent-strong: #f0c26a;
-  --color-accent-tint: #3a2d10;
-  --color-accent-contrast: #1d1608;
-  --color-danger: #ff7a6e;
-  --color-danger-tint: #33201c;
-  --color-ok: #5bd074;
-  --color-ok-tint: #163322;
-  --focus-ring: #7fc4ff;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
-  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.45);
-  --shadow-card: var(--shadow-md);
-  --plate-25: #e0645a;
-  --plate-20: #5b9bd6;
-  --plate-15: #d9b54a;
-  --plate-10: #4fbf7c;
-  --plate-5: #1c2a20;
-  --plate-2_5: #3a5240;
-  --plate-1_25: #2c3e32;
-  --plate-other: #6b8074;
-  --plate-label: #14161c;
-  --bar-color: #4d6b56;
-}
-
-/* Contrast - maximum-contrast accessibility mode. Pure white/black, no
-   mid-tone subtlety, thick pure-black borders standing in for the soft
-   shadows every other theme uses (shadows are a low-contrast cue by
-   nature, so this theme leans on hard borders instead and turns them off). */
-:root[data-theme="contrast"] {
-  color-scheme: light;
-  --color-bg: #ffffff;
-  --color-surface: #ffffff;
-  --color-surface-raised: #ffffff;
-  --color-surface-alt: #e8e8e8;
-  --color-surface-sunken: #ececec;
-  --color-text: #000000;
-  --color-muted: #1f1f1f;
-  --color-faint: #2b2b2b;
-  --color-border: #000000;
-  --color-border-strong: #000000;
-  --color-accent: #0b3d91;
-  --color-accent-strong: #062a66;
-  --color-accent-tint: #cfe0ff;
-  --color-accent-contrast: #ffffff;
-  --color-danger: #b30000;
-  --color-danger-tint: #ffd9d9;
-  --color-ok: #056608;
-  --color-ok-tint: #d7f2d5;
-  --focus-ring: #8a5300;
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-inset: none;
-  --shadow-card: none;
-  --plate-25: #b30000;
-  --plate-20: #0b3d91;
-  --plate-15: #8a6400;
-  --plate-10: #056608;
-  --plate-5: #d8d8d8;
-  --plate-2_5: #9a9a9a;
-  --plate-1_25: #c4c4c4;
-  --plate-other: #444444;
-  --plate-label: #f5f6f8;
-  --bar-color: #333333;
-}
-
-/* Neon - a night-gym black-light identity: violet-black surfaces, a neon
-   magenta accent, neon-cyan focus ring kept a distinct hue from the accent
-   so focus is always unmistakable against the brightest palette here. */
-:root[data-theme="neon"] {
-  color-scheme: dark;
-  --color-bg: #0a0612;
-  --color-surface: #140f22;
-  --color-surface-raised: #1b1430;
-  --color-surface-alt: #241b3d;
-  --color-surface-sunken: #08050f;
-  --color-text: #f2eefc;
-  --color-muted: #b7aed6;
-  --color-faint: #9c92c2;
-  --color-border: #362c5c;
-  --color-border-strong: #6f5da3;
-  --color-accent: #ff2fb4;
-  --color-accent-strong: #ff6fd0;
-  --color-accent-tint: #3a1030;
-  --color-accent-contrast: #1a0313;
-  --color-danger: #ff5468;
-  --color-danger-tint: #3a1420;
-  --color-ok: #2ee6a8;
-  --color-ok-tint: #0d2e26;
-  --focus-ring: #2ee6ff;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
-  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.5), 0 12px 30px rgba(0, 0, 0, 0.4);
-  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-card: var(--shadow-md);
-  --plate-25: #ff4d6a;
-  --plate-20: #4dc4ff;
-  --plate-15: #ffd23f;
-  --plate-10: #39e6a5;
-  --plate-5: #241a3d;
-  --plate-2_5: #4a3d6b;
-  --plate-1_25: #372c54;
-  --plate-other: #7a6fa3;
-  --plate-label: #f5f6f8;
-  --bar-color: #6b5f94;
-}
-
-*,
-*::before,
-*::after {
+* {
   box-sizing: border-box;
 }
 
-html {
-  color-scheme: light dark;
-  -webkit-text-size-adjust: 100%;
+html,
+body {
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  min-height: 100vh;
   background: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-text);
-  font-size: var(--font-size-base);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-img, svg { display: block; max-width: 100%; }
-
-a {
-  color: var(--color-accent-strong);
-}
-a:hover {
-  color: var(--color-accent);
-}
-
-:focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
-  border-radius: 4px;
+  color: var(--color-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
 }
 
 .visually-hidden {
@@ -532,822 +123,375 @@ a:hover {
   border: 0;
 }
 
-/* skip link - visible on focus, matches the site's raised-surface language */
-.visually-hidden#skip-link:focus {
+a.visually-hidden:focus {
   position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
   width: auto;
   height: auto;
+  margin: 0;
+  padding: 0.6rem 1rem;
   clip: auto;
   overflow: visible;
-  margin: 0;
-  top: var(--space-3);
-  inset-inline-start: var(--space-3);
-  z-index: 200;
-  background: var(--color-surface-raised);
-  color: var(--color-text);
-  padding: 0.7rem 1.1rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-strong);
-  box-shadow: var(--shadow-md);
-  font-weight: 600;
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  border-radius: 0.5rem;
+  z-index: 1000;
 }
 
-/* ---------- App shell ---------- */
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- header ---------- */
 
 .app-header {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .app-title {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--font-size-lg);
+  font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
 .app-title .accent {
-  color: var(--color-accent-strong);
+  color: var(--color-accent);
 }
 
 .header-controls {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
-}
-
-.icon-btn,
-.unit-toggle button {
-  min-width: var(--tap-min);
-  min-height: var(--tap-min);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-alt);
-  color: var(--color-text);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-family: inherit;
-  cursor: pointer;
-  padding: var(--space-2) var(--space-3);
-  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease),
-    transform var(--dur-fast) var(--ease);
-}
-
-.icon-btn:hover,
-.unit-toggle button:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-sunken);
-}
-
-.icon-btn:active,
-.unit-toggle button:active {
-  transform: scale(0.96);
+  gap: 0.5rem;
 }
 
 .unit-toggle {
-  display: inline-flex;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  display: flex;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.6rem;
   overflow: hidden;
 }
 
 .unit-toggle button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 0.75rem;
   border: none;
-  border-radius: 0;
+  background: transparent;
+  color: var(--color-ink-dim);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
 }
 
 .unit-toggle button[aria-pressed="true"] {
   background: var(--color-accent);
-  color: var(--color-accent-contrast);
-  font-weight: 700;
-}
-.unit-toggle button[aria-pressed="true"]:hover {
-  background: var(--color-accent-strong);
+  color: var(--color-accent-ink);
 }
 
-.lang-field,
-.theme-field {
-  margin-bottom: 0; /* .field's default margin-bottom doesn't apply in this inline header context */
-}
-
-/* Theme picker: a native <select>, same control shape as the language
-   switcher right next to it (native selects are already keyboard-operable,
-   already open a one-handed-reachable native picker on mobile, and already
-   flip correctly under dir="rtl" - reusing the pattern means the compact
-   picker this app needs costs no new interaction code). Theme NAMES inside
-   are proper nouns and stay untranslated in every locale; only this
-   control's own visually-hidden <label> (js/i18n's theme.switcherLabel) and
-   the "Auto" option (theme.auto) are translated - see app.js's
-   populateThemeSelect(). */
-#lang-select,
-#theme-select {
-  min-width: var(--tap-min);
-  min-height: var(--tap-min);
-  border: 1px solid var(--color-border);
+.icon-btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.6rem;
   background: var(--color-surface-alt);
-  color: var(--color-text);
-  border-radius: var(--radius-md);
-  /* >=16px, not --font-size-sm (14px): iOS Safari auto-zooms the page on
-     focusing any form control whose computed font-size is under 16px -
-     these two <select>s are real form controls a phone user taps first
-     (language/theme), so they need the same 16px floor every text/number
-     input in this app already sits at (.field input/select above). */
-  font-size: var(--font-size-base);
-  font-family: inherit;
-  cursor: pointer;
-  padding: var(--space-2) var(--space-3);
-}
-
-#lang-select:hover,
-#theme-select:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-sunken);
-}
-
-/* ---------- Hero ---------- */
-
-.hero {
-  padding: var(--space-8) var(--space-4) var(--space-6);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.hero-inner {
-  max-width: 960px;
-  margin: 0 auto;
-}
-
-.hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
+  color: var(--color-ink);
+  font-size: 0.9rem;
   font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--color-accent-strong);
-  margin: 0 0 var(--space-3);
-}
-
-.hero-eyebrow::before {
-  content: "";
-  display: inline-block;
-  width: 0.55em;
-  height: 0.55em;
-  border-radius: 1px;
-  background: var(--color-accent);
-  transform: rotate(45deg);
-}
-
-.hero h1.hero-heading {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: var(--font-size-hero);
-  line-height: 1.08;
-  letter-spacing: -0.02em;
-  margin: 0 0 var(--space-3);
-  max-width: 22ch;
-}
-
-.hero p.hero-tagline {
-  font-size: var(--font-size-md);
-  color: var(--color-muted);
-  max-width: var(--measure);
-  margin: 0 0 var(--space-5);
-  line-height: 1.5;
-}
-
-.hero-start-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-/* Real <button> elements (not <a href="#...">) - each one changes in-page
-   tab-panel state via app.js rather than navigating, matching the pattern
-   already used by .tab/.chip elsewhere in this app. Needs an explicit UA
-   reset since browsers apply their own button chrome by default. */
-.hero-start-item {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.5em;
-  min-height: var(--tap-min);
-  padding: 0.55rem 0.9rem;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-surface-alt);
-  font-family: inherit;
-  font-size: var(--font-size-sm);
-  color: var(--color-text);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
-    transform var(--dur-fast) var(--ease);
 }
 
-.hero-start-item:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-sunken);
-}
-
-.hero-start-item:active {
-  transform: scale(0.97);
-}
-
-.hero-start-item .hero-start-num {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  color: var(--color-accent-strong);
-  font-size: 0.85em;
-}
-
-/* ---------- Tabs ---------- */
+/* ---------- tabs ---------- */
 
 .tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface-sunken);
+  gap: 0.4rem;
+  padding: 0.6rem;
+  background: var(--color-bg);
   position: sticky;
-  top: 0;
-  z-index: 10;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  top: 64px;
+  z-index: 9;
 }
 
 .tab {
-  min-height: var(--tap-min);
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-muted);
-  font-family: inherit;
-  font-size: var(--font-size-sm);
-  font-weight: 600;
+  flex: 1 1 0;
+  min-height: 48px;
+  border: 1px solid var(--color-border);
+  border-radius: 0.7rem;
+  background: var(--color-surface);
+  color: var(--color-ink-dim);
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
-  white-space: nowrap;
-  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
-    box-shadow var(--dur-fast) var(--ease);
-}
-
-.tab:hover {
-  background: var(--color-surface-alt);
-  color: var(--color-text);
 }
 
 .tab[aria-selected="true"] {
-  background: var(--color-accent);
-  color: var(--color-accent-contrast);
-  box-shadow: var(--shadow-sm);
+  background: var(--color-surface-alt);
+  border-color: var(--color-accent);
+  color: var(--color-ink);
 }
-.tab[aria-selected="true"]:hover {
-  background: var(--color-accent-strong);
-}
+
+/* ---------- main / panels ---------- */
 
 main {
-  max-width: 960px;
+  padding: 0.75rem 1rem 3rem;
+  max-width: 640px;
   margin: 0 auto;
-  padding: var(--space-6) var(--space-4) var(--space-4);
-}
-
-.tool-panel[hidden] {
-  display: none;
-}
-
-.tool-panel {
-  animation: panel-in var(--dur-med) var(--ease);
-}
-
-@keyframes panel-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tool-panel { animation: none; }
 }
 
 .tool-panel h2 {
-  margin-top: 0;
-  font-family: var(--font-display);
-  font-size: var(--font-size-xl);
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  margin: 0.25rem 0 0.25rem;
+  font-size: 1.15rem;
 }
 
-.tool-grid {
-  display: grid;
-  /* minmax(0, 1fr), not bare 1fr: a bare 1fr track's minimum width is its
-     content's min-content/max-content size (CSS Grid's default sizing), not
-     0 - a non-wrapping-enough child (e.g. the plates preset chip-row) then
-     forces the whole track, and with it the page, wider than the viewport.
-     minmax(0, 1fr) clamps the track's own minimum to 0 so wrapping/overflow
-     rules on its children (flex-wrap, .results' overflow-x) actually get a
-     chance to apply at the viewport width instead of being pre-empted by
-     grid auto-sizing. See the >=700px rule below, which already did this
-     for its two columns - this was only missing from the single-column
-     (mobile-default) case. */
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-6);
+.disclaimer {
+  margin: 0 0 1rem;
+  color: var(--color-ink-dim);
+  font-size: 0.9rem;
 }
 
-@media (min-width: 700px) {
-  .tool-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
-  }
+.hint {
+  margin: 0.35rem 0 0;
+  color: var(--color-ink-dim);
+  font-size: 0.85rem;
 }
 
-/* ---------- Forms ---------- */
+/* ---------- fields ---------- */
 
 .field {
-  margin-bottom: var(--space-5);
+  margin-bottom: 1rem;
 }
 
-.field label,
-.field > span:first-child {
+.field > label,
+.field > span {
   display: block;
-  margin-bottom: var(--space-2);
-  font-size: var(--font-size-sm);
+  margin-bottom: 0.35rem;
   font-weight: 600;
-  color: var(--color-muted);
+  font-size: 0.95rem;
+  color: var(--color-ink-dim);
 }
 
-.field input[type="number"],
-.field input[type="text"],
-.field select {
+input[type="number"],
+input[type="text"],
+select {
   width: 100%;
-  min-height: var(--tap-comfortable);
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--font-size-md);
-  font-family: inherit;
+  min-height: 48px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1.05rem;
   font-variant-numeric: tabular-nums;
-  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.6rem;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+  color: var(--color-ink);
 }
 
-.field select {
+select {
   font-variant-numeric: normal;
-  font-size: var(--font-size-base);
 }
 
-.field input:hover,
-.field select:hover {
-  border-color: var(--color-border-strong);
-}
-
-.field input:focus-visible,
-.field select:focus-visible {
-  outline: none;
-  border-color: var(--focus-ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring) 25%, transparent);
-}
-
-.field input[type="range"] {
-  width: 100%;
-  min-height: var(--tap-min);
-}
-
-details {
-  margin-bottom: var(--space-5);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-  background: var(--color-surface-alt);
-}
-
-details summary {
-  cursor: pointer;
-  font-weight: 600;
-  font-size: var(--font-size-sm);
-  min-height: var(--tap-min);
-  display: flex;
-  align-items: center;
-}
-
-details[open] summary {
-  margin-bottom: var(--space-2);
-}
+/* ---------- steppers ---------- */
 
 .stepper-row {
   display: flex;
   align-items: stretch;
-  gap: var(--space-2);
+  gap: 0.5rem;
 }
 
 .stepper-row input {
   text-align: center;
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
-  font-weight: 700;
 }
 
 .stepper-btn {
   flex: 0 0 auto;
-  width: var(--tap-comfortable);
-  min-height: var(--tap-comfortable);
-  font-size: var(--font-size-xl);
-  font-weight: 700;
+  width: 48px;
+  min-height: 48px;
+  font-size: 1.4rem;
   line-height: 1;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.6rem;
   background: var(--color-surface-alt);
-  color: var(--color-text);
-  border-radius: var(--radius-md);
+  color: var(--color-ink);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
-    transform var(--dur-fast) var(--ease);
-}
-
-.stepper-btn:hover {
-  background: var(--color-surface-sunken);
-  border-color: var(--color-border-strong);
 }
 
 .stepper-btn:active {
-  transform: scale(0.94);
-  background: var(--color-accent-tint);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
 }
 
-.radio-row,
-.chip-row {
+/* ---------- chips ---------- */
+
+.chip-row,
+.radio-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 0.5rem;
 }
 
 .chip {
-  min-height: var(--tap-min);
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-border);
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border: 1px solid var(--color-border-strong);
   border-radius: 999px;
-  background: var(--color-surface-alt);
-  color: var(--color-text);
-  font-family: inherit;
-  font-size: var(--font-size-sm);
+  background: var(--color-surface);
+  color: var(--color-ink-dim);
+  font-size: 0.92rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
-    color var(--dur-fast) var(--ease);
-}
-
-.chip:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-sunken);
 }
 
 .chip[aria-pressed="true"] {
   background: var(--color-accent);
-  color: var(--color-accent-contrast);
   border-color: var(--color-accent);
-  font-weight: 700;
-}
-.chip[aria-pressed="true"]:hover {
-  background: var(--color-accent-strong);
-  border-color: var(--color-accent-strong);
+  color: var(--color-accent-ink);
 }
 
-.hint {
-  font-size: var(--font-size-sm);
-  color: var(--color-muted);
-  margin-top: var(--space-1);
-  line-height: 1.5;
-}
-
-/* ---------- Results ---------- */
+/* ---------- results ---------- */
 
 .results {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  padding: var(--space-5);
-  /* Every result table (app.js writes <table class="data-table"> directly
-     into this container's innerHTML) reflows via horizontal scroll WITHIN
-     this card on narrow screens, rather than squeezing columns unreadably
-     or overflowing the page - this is the one place that needs the rule,
-     since every .data-table on the page lives inside a .results container. */
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  margin-top: 0.5rem;
 }
 
 .result-hero {
-  font-family: var(--font-display);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--font-size-2xl);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--color-accent-strong);
-  margin: 0 0 var(--space-3);
-  line-height: 1;
+  padding: 1rem;
+  border-radius: 0.8rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  margin-bottom: 0.75rem;
 }
 
-.result-hero .unit {
-  font-family: var(--font-text);
-  font-size: var(--font-size-md);
+.result-hero .result-label {
+  margin: 0 0 0.15rem;
+  color: var(--color-ink-dim);
+  font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-muted);
-  margin-inline-start: var(--space-2);
-  letter-spacing: normal;
-}
-
-table.data-table {
-  width: 100%;
-  min-width: 480px;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
-  font-variant-numeric: tabular-nums;
-}
-
-table.data-table caption {
-  text-align: start;
-  font-weight: 700;
-  font-variant-numeric: normal;
-  margin-bottom: var(--space-2);
-  color: var(--color-text);
-}
-
-table.data-table th,
-table.data-table td {
-  text-align: start;
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--color-border);
-  white-space: nowrap;
-}
-
-table.data-table th {
-  font-size: var(--font-size-xs);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.result-hero .result-value {
+  margin: 0;
+  font-size: 2.1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent);
+}
+
+.result-hero .result-sub {
+  margin: 0.35rem 0 0;
+  color: var(--color-ink-dim);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.notice {
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.6rem;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-ink-dim);
+  font-size: 0.88rem;
+  margin-bottom: 0.75rem;
+}
+
+.notice.notice-warn {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+table.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 0.75rem;
+}
+
+table.result-table th,
+table.result-table td {
+  padding: 0.5rem 0.4rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.95rem;
+}
+
+table.result-table th {
   color: var(--color-faint);
   font-weight: 700;
-  font-variant-numeric: normal;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
-table.data-table tr:last-child td {
-  border-bottom: none;
+table.result-table td.num {
+  text-align: right;
+  font-weight: 600;
 }
 
-table.data-table tr.highlight td {
-  background: var(--color-accent-tint);
-  font-weight: 700;
-  color: var(--color-accent-strong);
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-  padding: 0.35rem 0.8rem;
-  border-radius: 999px;
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  background: var(--color-surface-alt);
-  margin: 0 0 var(--space-3);
-}
-
-.badge:last-child {
-  margin-bottom: 0;
-}
-
-.badge.warn {
-  color: var(--color-danger);
-  background: var(--color-danger-tint);
-}
-
-.badge.ok {
-  color: var(--color-ok);
-  background: var(--color-ok-tint);
-}
-
-.copy-link-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-}
-
-.copy-status {
-  font-size: var(--font-size-sm);
-  color: var(--color-ok);
-  min-height: 1.25em;
-}
-
-/* ---------- Barbell SVG ----------
-   Signature visual moment: crisp plate stack with a soft cast-iron gradient
-   look via a subtle inset shadow per plate, a graphite bar, and a hairline
-   knurl texture on the sleeve - all vector, all theme-aware via CSS custom
-   properties (var(--plate-*)) so nothing here needs a per-theme SVG swap. */
+/* ---------- barbell ---------- */
 
 .barbell-wrap {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin: var(--space-2) 0 var(--space-4);
-  padding: var(--space-4) 0;
-  background: var(--color-surface-sunken);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
 }
 
 .barbell-svg {
-  display: block;
   width: 100%;
   height: auto;
   min-width: 320px;
-  padding: 0 var(--space-4);
-}
-
-.barbell-svg .plate {
-  transition: transform var(--dur-med) var(--ease);
-}
-
-/* Staggered settle-in: each plate group pops in slightly after the previous
-   one, reading as "loaded left to right" - a fixed set of :nth-child delay
-   steps (not a per-element inline style, which the page's CSP would block).
-   Caps out at the 8th+ plate sharing the last step rather than growing
-   unbounded. */
-@media (prefers-reduced-motion: no-preference) {
-  .barbell-svg .plate {
-    animation: plate-settle var(--dur-med) var(--ease) backwards;
-  }
-  .barbell-svg .plate:nth-child(2) { animation-delay: 30ms; }
-  .barbell-svg .plate:nth-child(3) { animation-delay: 60ms; }
-  .barbell-svg .plate:nth-child(4) { animation-delay: 90ms; }
-  .barbell-svg .plate:nth-child(5) { animation-delay: 120ms; }
-  .barbell-svg .plate:nth-child(6) { animation-delay: 150ms; }
-  .barbell-svg .plate:nth-child(n+7) { animation-delay: 180ms; }
-}
-
-@keyframes plate-settle {
-  from { opacity: 0; transform: scaleX(0.6); }
-  to { opacity: 1; transform: scaleX(1); }
-}
-
-.barbell-svg text {
-  fill: var(--plate-label);
-  font-family: var(--font-mono);
-  /* 19px bold clears the WCAG "large text" threshold (18.66px @ 700 weight),
-     which only needs 3:1 contrast instead of 4.5:1 - combined with the
-     per-plate-color overrides below (a single fixed --plate-label can't hit
-     4.5:1 against every plate color; several mid-saturation plates land
-     around 3-4:1 either way), every plate/theme combination now clears at
-     least the large-text floor, and most clear 4.5:1 too. */
-  font-size: 19px;
-  font-weight: 700;
-  text-anchor: middle;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Per-plate label color override: whichever of the near-black/near-white
-   text tokens has the better contrast ratio against that plate's own
-   background, keyed off the same data-plate-color attribute the swatch
-   legend already uses (see .plate-legend .swatch rules below) - avoids an
-   inline style="..." attribute, which the page's CSP (style-src 'self', no
-   'unsafe-inline') would otherwise block. WCAG contrast ratios computed
-   against every theme's own plate colors (see the [data-theme="..."] blocks
-   above); values change per theme since the plate hex values themselves do,
-   but every theme's plates group into one of only three shapes below, so
-   themes that land on the same shape share one rule via :is(...) instead of
-   repeating it - see each block's comment for which themes share which shape.
-   "Chalk" isn't mentioned anywhere below: its plates happen to need exactly
-   the same light/dark label split as this first, unscoped rule (the same
-   one light itself relies on), so it needs no override at all. */
-.barbell-svg text[data-plate-color="--plate-25"],
-.barbell-svg text[data-plate-color="--plate-20"],
-.barbell-svg text[data-plate-color="--plate-10"] {
-  fill: #f5f6f8;
-}
-
-.barbell-svg text[data-plate-color="--plate-15"],
-.barbell-svg text[data-plate-color="--plate-5"],
-.barbell-svg text[data-plate-color="--plate-2_5"],
-.barbell-svg text[data-plate-color="--plate-1_25"] {
-  fill: #14161c;
-}
-
-.barbell-svg text[data-plate-color="--plate-other"] {
-  fill: var(--plate-label);
-}
-
-/* Shape 2: the 4 main IPF denominations are all bright/saturated (need dark
-   labels) and the 3 small plates are all dark (need light labels) - true of
-   Dark itself, and (by design, not coincidence - each was tuned to read the
-   same way) of Iron/Rust/Forest/Neon too. */
-:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
-  .barbell-svg text[data-plate-color="--plate-25"],
-:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
-  .barbell-svg text[data-plate-color="--plate-20"],
-:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
-  .barbell-svg text[data-plate-color="--plate-15"],
-:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
-  .barbell-svg text[data-plate-color="--plate-10"] {
-  fill: #14161c;
-}
-
-:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
-  .barbell-svg text[data-plate-color="--plate-5"],
-:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
-  .barbell-svg text[data-plate-color="--plate-2_5"],
-:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
-  .barbell-svg text[data-plate-color="--plate-1_25"] {
-  fill: #edeef2;
-}
-
-:is([data-theme="dark"], [data-theme="iron"], [data-theme="rust"], [data-theme="forest"], [data-theme="neon"])
-  .barbell-svg text[data-plate-color="--plate-other"] {
-  fill: #edeef2;
-}
-
-/* Shape 3: Contrast's plate-15 (an unusually dark gold, chosen for its own
-   4.5:1 text/bg elsewhere) flips the grouping again - all 4 main
-   denominations want a LIGHT label here, all 3 small plates want DARK. */
-[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-25"],
-[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-20"],
-[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-15"],
-[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-10"] {
-  fill: #f5f6f8;
-}
-
-[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-5"],
-[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-2_5"],
-[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-1_25"] {
-  fill: #14161c;
-}
-
-[data-theme="contrast"] .barbell-svg text[data-plate-color="--plate-other"] {
-  fill: #f5f6f8;
-}
-
-/* Pre-JS / no-JS fallback only: before js/ui/theme.js's initTheme() runs (or
-   if script-blocked entirely), no [data-theme] attribute exists yet at all,
-   so this guard is deliberately ":not([data-theme])" (attribute ABSENT) and
-   not ":not([data-theme="light"])" (attribute present-but-not-light) - the
-   latter would also match every OTHER explicit theme name (chalk, contrast,
-   etc.), and being a more specific selector than each of those themes' own
-   [data-theme="..."] rules above, it would wrongly win the cascade and force
-   Dark's plate-label choice onto an explicitly-chosen light-based theme
-   whenever the OS happens to prefer dark. Scoping to "attribute absent"
-   makes this rule inert the instant JS sets any explicit theme, which is
-   the only state it was ever meant to cover. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-25"],
-  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-20"],
-  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-15"],
-  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-10"] {
-    fill: #14161c;
-  }
-  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-5"],
-  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-2_5"],
-  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-1_25"] {
-    fill: #edeef2;
-  }
-  :root:not([data-theme]) .barbell-svg text[data-plate-color="--plate-other"] {
-    fill: #edeef2;
-  }
+  display: block;
 }
 
 .barbell-svg .bar {
-  fill: var(--bar-color);
+  fill: var(--bar-steel);
+}
+
+.barbell-svg .plate text {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--color-bg);
+  font-variant-numeric: tabular-nums;
+}
+
+.barbell-svg .plate text[data-plate-color="--plate-2_5"] {
+  fill: var(--color-ink);
 }
 
 .plate-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
-  font-size: var(--font-size-sm);
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.88rem;
   font-variant-numeric: tabular-nums;
+  color: var(--color-ink-dim);
 }
 
 .plate-legend .swatch {
   display: inline-block;
-  width: 0.9em;
-  height: 0.9em;
+  width: 0.85em;
+  height: 0.85em;
   border-radius: 0.2em;
-  margin-inline-end: 0.35em;
+  margin-right: 0.35em;
   vertical-align: -0.1em;
   border: 1px solid var(--color-border-strong);
 }
 
-/* Swatch color per plate denomination, keyed by the data-plate-color
-   attribute the JS legend renderer sets (js/ui/svg-barbell.js). Avoids an
-   inline style="..." attribute, which the page's CSP (style-src 'self',
-   no 'unsafe-inline') would otherwise block. */
 .plate-legend .swatch[data-plate-color="--plate-25"] { background: var(--plate-25); }
 .plate-legend .swatch[data-plate-color="--plate-20"] { background: var(--plate-20); }
 .plate-legend .swatch[data-plate-color="--plate-15"] { background: var(--plate-15); }
@@ -1357,295 +501,13 @@ table.data-table tr.highlight td {
 .plate-legend .swatch[data-plate-color="--plate-1_25"] { background: var(--plate-1_25); }
 .plate-legend .swatch[data-plate-color="--plate-other"] { background: var(--plate-other); }
 
-/* ---------- Footer ---------- */
+/* ---------- footer ---------- */
 
 .app-footer {
-  padding: var(--space-8) var(--space-4) var(--space-12);
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1rem 1rem 2.5rem;
+  color: var(--color-faint);
+  font-size: 0.82rem;
   text-align: center;
-  color: var(--color-muted);
-  font-size: var(--font-size-sm);
-  border-top: 1px solid var(--color-border);
-  margin-top: var(--space-8);
 }
-
-.app-footer p {
-  margin: 0 0 var(--space-2);
-}
-
-.app-footer a {
-  color: var(--color-muted);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-.app-footer a:hover {
-  color: var(--color-accent-strong);
-}
-
-.offline-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.offline-indicator .dot {
-  width: 0.5em;
-  height: 0.5em;
-  border-radius: 50%;
-  background: var(--color-ok);
-}
-
-.offline-indicator.is-offline .dot {
-  background: var(--color-danger);
-}
-
-/* Footer "Glossary" trigger: styled to match the plain-text footer links
-   next to it, but a real <button> (opens the dialog below, doesn't
-   navigate). Padding + a matching negative margin gives it a full
-   --tap-min hit area without visually growing past the surrounding text -
-   the footer's own line-height already provides most of that height. */
-.footer-glossary-btn {
-  background: none;
-  border: none;
-  font: inherit;
-  font-size: inherit;
-  color: var(--color-muted);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--tap-min);
-  padding: var(--space-2);
-  margin: calc(var(--space-2) * -1);
-}
-.footer-glossary-btn:hover {
-  color: var(--color-accent-strong);
-}
-
-.disclaimer {
-  border-inline-start: 3px solid var(--color-accent);
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-surface-alt);
-  /* Rounded on the two END corners only (the corners away from the accent
-     border) - border-radius's 4-value shorthand has no logical equivalent,
-     so this is spelled out as the two logical corner longhands instead of
-     the physical top-left/top-right/bottom-right/bottom-left it replaces. */
-  border-start-end-radius: var(--radius-md);
-  border-end-end-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  color: var(--color-muted);
-  margin-bottom: var(--space-5);
-  line-height: 1.55;
-}
-
-/* ---------- Glossary ----------
-   A native <dialog> (showModal()) - keyboard/ESC-dismissible and
-   backdrop-clickable for free, no floating-positioned tooltip to hand-roll
-   under this page's strict style-src 'self' CSP (no inline styles). Sized
-   as a centered card on wide viewports, near-full-screen on narrow ones (see
-   the mobile block below) so it never needs its own horizontal scrollbar. */
-
-dialog#glossary-dialog {
-  width: min(560px, calc(100vw - var(--space-6)));
-  max-height: min(720px, calc(100vh - var(--space-6)));
-  margin: auto;
-  padding: var(--space-5);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface-raised);
-  color: var(--color-text);
-  box-shadow: var(--shadow-md);
-  overflow-y: auto;
-}
-
-dialog#glossary-dialog::backdrop {
-  background: rgba(10, 11, 14, 0.55);
-}
-
-dialog#glossary-dialog:not([open]) {
-  display: none;
-}
-
-.glossary-dialog-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  position: sticky;
-  top: calc(var(--space-5) * -1);
-  margin: calc(var(--space-5) * -1) calc(var(--space-5) * -1) var(--space-4);
-  padding: var(--space-4) var(--space-5);
-  background: var(--color-surface-raised);
-  border-bottom: 1px solid var(--color-border);
-  z-index: 1;
-}
-
-.glossary-dialog-header h2 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--font-size-lg);
-  font-weight: 800;
-}
-
-.glossary-entry {
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--color-border);
-  scroll-margin-top: var(--space-12);
-}
-
-.glossary-entry:last-child {
-  border-bottom: none;
-}
-
-.glossary-entry h3 {
-  margin: 0 0 var(--space-1);
-  font-family: var(--font-display);
-  font-size: var(--font-size-md);
-  font-weight: 700;
-}
-
-.glossary-entry .glossary-plain {
-  margin: 0 0 var(--space-1);
-}
-
-.glossary-entry .glossary-technical {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-muted);
-}
-
-/* Briefly highlighted after an inline trigger scrolls to it (see app.js's
-   openGlossary()) so the reader's eye lands on the right entry. */
-.glossary-entry.glossary-entry-highlight {
-  background: var(--color-accent-tint);
-  border-radius: var(--radius-md);
-}
-
-/* Inline "what does this mean?" trigger next to a jargon word/label.
-   Two-element target-size trick (Material Design's own recommended pattern
-   for a dense-UI icon smaller than 48dp: a small VISIBLE glyph inside a
-   larger INVISIBLE, real tappable box) rather than a flat compromise
-   between "meets --tap-min" and "doesn't visually dominate a 14px label":
-     - .glossary-trigger (the <button>, real hit box) is a full --tap-min
-       square - an element's OWN clickable area is always its border-box,
-       so this is what actually satisfies the 44px target, full stop.
-     - .glossary-trigger-dot (a child <span>, paint-only) is the small
-       circle that's actually drawn - `pointer-events: none` so every click
-       anywhere in the parent's 44px box is what fires, not just the dot.
-   The button's own negative margin pulls its LAYOUT footprint (how much
-   inline space it reserves next to the preceding text) back down to
-   roughly the dot's visual size, so a 44px tap box doesn't visually shove
-   neighboring text apart - the extra hit area simply overlaps into
-   whitespace the button already sits at the end of (every current usage is
-   the last thing in its label/heading/table-header). */
-.glossary-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--tap-min);
-  height: var(--tap-min);
-  margin: -8px -8px -8px -2px;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  vertical-align: middle;
-}
-
-.glossary-trigger-dot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.4em;
-  height: 1.4em;
-  min-width: 28px;
-  min-height: 28px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 50%;
-  background: var(--color-surface-alt);
-  color: var(--color-muted);
-  font-size: 0.8em;
-  font-weight: 700;
-  line-height: 1;
-  pointer-events: none;
-}
-
-.glossary-trigger:hover .glossary-trigger-dot {
-  background: var(--color-accent-tint);
-  color: var(--color-accent-strong);
-  border-color: var(--color-accent);
-}
-
-/* ---------- small screens (mobile-first hardening, ~375px target) ---------- */
-
-@media (max-width: 480px) {
-  .app-header { padding: var(--space-3); gap: var(--space-2); }
-  .app-title { font-size: var(--font-size-md); }
-  .header-controls { gap: var(--space-1); width: 100%; justify-content: space-between; }
-  .hero { padding: var(--space-6) var(--space-3) var(--space-5); }
-  .hero-inner { max-width: none; }
-  main { padding: var(--space-4) var(--space-3) var(--space-3); }
-  .tabs { padding: var(--space-2) var(--space-3); }
-  .tab { padding: var(--space-2) var(--space-3); font-size: var(--font-size-xs); }
-  .results { padding: var(--space-4); }
-  .result-hero { font-size: clamp(1.9rem, 8vw, 2.3rem); }
-  .stepper-btn { width: var(--tap-min); min-height: var(--tap-min); }
-  .app-footer { padding: var(--space-6) var(--space-3) var(--space-10); }
-  dialog#glossary-dialog {
-    width: 100vw;
-    max-height: 100vh;
-    height: 100vh;
-    max-width: 100vw;
-    margin: 0;
-    border-radius: 0;
-    padding: var(--space-4);
-  }
-  .glossary-dialog-header {
-    top: calc(var(--space-4) * -1);
-    margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) var(--space-3);
-    padding: var(--space-3) var(--space-4);
-  }
-}
-
-/* Small phones (~360px and under): tighten control gaps further still - the
-   header/header-controls flex-wrap from the base rules above already
-   guarantees no horizontal overflow at any width, this just keeps things
-   from feeling cramped once 4 controls + the title share ~340px. */
-@media (max-width: 360px) {
-  .header-controls { gap: 0.35rem; }
-  .icon-btn, .unit-toggle button, #lang-select, #theme-select {
-    padding-inline: var(--space-2);
-  }
-}
-
-/* ---------- RTL support ----------
-   The runtime (js/i18n/index.js's setLocale()) sets <html dir="rtl"> for
-   ar/he/fa and dir="ltr" otherwise. Most of this stylesheet already flips
-   correctly for free, without any [dir=rtl] override, because:
-     - Every multi-item row in this app is `display: flex` with the default
-       (never overridden) `flex-direction: row`, which per the flexbox spec
-       is direction-relative - it already reverses under dir="rtl" with zero
-       CSS changes (header controls, unit toggle, tab row, stepper rows,
-       radio/chip rows, plate legend, hero-start-list).
-     - Every directional physical property that WOULD need a manual
-       [dir=rtl] override (margin-left/right, border-left/right, text-align:
-       left, asymmetric border-radius) was converted above to its logical
-       equivalent (margin-inline-*, border-inline-start, text-align: start,
-       border-*-*-radius) - see .result-hero .unit, table.data-table
-       caption/th/td, .plate-legend .swatch, .disclaimer, .hero-eyebrow, and
-       #skip-link's inset-inline-start. A logical property IS the [dir=rtl]
-       handling; it needs no separate override block, which is why this file
-       has no large [dir=rtl] section despite the app going fully RTL for
-       Arabic/Hebrew/Farsi.
-   Two things were deliberately left as-is, not overlooked:
-     - The barbell SVG (js/ui/svg-barbell.js) draws a physical-object
-       diagram, not text - a barbell has no "reading direction," and its
-       plate-stack rendering is inherently left/right-symmetric by
-       construction (drawSide(-1) mirrors drawSide(1)). SVG content also
-       does not inherit the page's CSS `dir` into its internal coordinate
-       space, so this needs no [dir=rtl] handling and flipping it would
-       misrepresent the diagram, not fix it.
-     - Numbers/units embedded in translated Arabic/Hebrew/Farsi sentences
-       (e.g. "225 lb") render left-to-right within the right-to-left
-       sentence flow - this is correct Unicode bidi behavior (weak/neutral
-       characters and Latin unit abbreviations don't flip), not a bug. */

@@ -29,23 +29,15 @@ doesn't guarantee green everywhere, but it catches almost everything.
 liftmath's whole pitch is that every number traces back to a named source.
 That bar applies to contributions too, not just the existing code.
 
-**New or changed 1RM formulas, volume landmarks, nutrition targets, or
-relative-strength standards (Wilks/DOTS/IPF GL and anything like them)** need
-a citation: author, year, and where it was published, in the same style as
-the docstrings already in `onerm.py`, `volume.py`, and `standards.py`. An
-opinion or "this felt more accurate for me" isn't enough on its own, tie it
-to a source. Add a hand-checked reference value to the matching test file too
-(`tests/test_onerm.py`, `tests/test_volume.py`, `tests/test_standards.py`,
-etc.) alongside the code change. If you're not sure a formula belongs, open
-an issue first and we can figure it out before you write code.
-
-**Exercises missing from the `EXERCISE_FRACTIONS` table in `program.py`**
-are an easy, contained place to help. Pick a lift, figure out what it
-trains and roughly how much (prime mover 1.0, strong synergist ~0.3-0.7,
-matching the RP-style logic already in the module docstring), add it, and
-add a test in `tests/test_program.py`. Check the longest-match-wins rule
-doesn't collide with an existing key before you add one (see the module
-docstring).
+**New or changed 1RM formulas, plate-loading logic, or relative-strength
+standards (Wilks/DOTS/IPF GL and anything like them)** need a citation:
+author, year, and where it was published, in the same style as the docstrings
+already in `onerm.py`, `plates.py`, and `standards.py`. An opinion or "this
+felt more accurate for me" isn't enough on its own, tie it to a source. Add a
+hand-checked reference value to the matching test file too
+(`tests/test_onerm.py`, `tests/test_plates.py`, `tests/test_standards.py`)
+alongside the code change. If you're not sure a formula belongs, open an issue
+first and we can figure it out before you write code.
 
 **Bug fixes** are always welcome, obviously. Include a failing test that
 your fix makes pass.

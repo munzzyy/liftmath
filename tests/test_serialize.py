@@ -3,10 +3,9 @@ import json
 import pytest
 
 from liftmath._serialize import to_dict, to_json
-from liftmath.bodycomp import ffmi
 from liftmath.onerm import estimate_one_rm
 from liftmath.plates import load_plates
-from liftmath.program import ExerciseSet, audit_program
+from liftmath.standards import score
 
 
 def test_to_dict_plain_dataclass_includes_fields():
@@ -32,11 +31,12 @@ def test_to_dict_converts_tuples_in_lists_to_lists():
     assert d["exact"] is True
 
 
-def test_to_dict_handles_nested_dataclasses():
-    audit = audit_program([ExerciseSet(name="Bench Press", sets=4, frequency=2)])
-    d = to_dict(audit)
-    assert isinstance(d["rows"], list)
-    assert d["rows"][0]["muscle"] == "chest"
+def test_to_dict_strength_score_fields():
+    result = score(500, 90, "male")
+    d = to_dict(result)
+    assert d["sex"] == "male"
+    assert d["wilks"] == pytest.approx(383.498, abs=1e-2)
+    assert d["ipf_gl"] == pytest.approx(66.471, abs=1e-3)
 
 
 def test_to_json_produces_valid_json_string():
@@ -59,12 +59,3 @@ def test_to_dict_passthrough_for_plain_values():
     assert to_dict(None) is None
     assert to_dict([1, 2, 3]) == [1, 2, 3]
     assert to_dict({"a": 1}) == {"a": 1}
-
-
-def test_to_dict_includes_read_only_property_on_new_v1_dataclass():
-    # FfmiResult.above_natural_reference_ceiling is a @property, not a field -
-    # confirms new v1.0.0 dataclasses integrate with the shared serializer
-    # the same way the original v0.1.0 ones do.
-    result = ffmi(100, 1.75, 10)
-    d = to_dict(result)
-    assert d["above_natural_reference_ceiling"] is True

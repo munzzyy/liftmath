@@ -2,22 +2,21 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "liftmath"
 abstract: >-
-  Evidence-based strength training math: 1RM estimation, percentage-based
-  load charts, weekly volume landmarks per muscle group, mesocycle ramps,
-  macro targets, plate loading, warm-up ramps, and Wilks/DOTS/IPF GL
-  relative-strength scoring. Pure Python standard library, no runtime
-  dependencies.
+  A simple gym calculator: estimate a one-rep max from a weight x reps set,
+  work out which plates to load for a target barbell weight, and score
+  relative strength across bodyweights with Wilks (original + 2020), DOTS,
+  and IPF GL points. Pure Python standard library, no runtime dependencies.
 authors:
   - family-names: "Munz"
     given-names: "Cole"
-version: 1.5.0
+version: 2.0.0
 date-released: "2026-07-08"
 url: "https://github.com/munzzyy/liftmath"
 repository-code: "https://github.com/munzzyy/liftmath"
 license-url: "https://github.com/munzzyy/liftmath/blob/main/LICENSE"
 keywords:
-  - strength-training
   - one-rep-max
+  - plate-calculator
+  - wilks
+  - dots
   - powerlifting
-  - hypertrophy
-  - fitness
