@@ -289,6 +289,51 @@ GLOSSARY: dict[str, Term] = {
         "Weekly load x monotony (Foster et al., 2001); a descriptive training-diary number, not a "
         "validated injury-risk score.",
     ),
+    "tonnage": Term(
+        "tonnage",
+        "The total weight you actually moved in a session - every set's weight times its reps, "
+        "added up.",
+        "Volume-load: sigma(weight x reps) across a set of logged sets, optionally split by lift "
+        "or averaged against tagged %1RM values for an average-intensity read.",
+    ),
+    "prilepin": Term(
+        "Prilepin's table",
+        "A classic table matching how many reps to do at a given %1RM, built from decades of "
+        "Olympic weightlifters' training logs.",
+        "Hristov's (2005) transcription of Prilepin's %1RM-banded rep prescriptions - four zones "
+        "(<70%, 70-79%, 80-89%, >89%), each with a per-set rep range, a total-rep range, and an "
+        "optimal total.",
+    ),
+    "inol": Term(
+        "INOL",
+        "A single number for how much a session (or week) 'cost' at a given intensity - more reps "
+        "at a higher %1RM pushes it up fast.",
+        "Index of Number of Lifts (Hristov, 2005): reps / (100 - %1RM), summed across sets; banded "
+        "separately for a single workout and for a full week.",
+    ),
+    "attempt_selection": Term(
+        "opener/second/third",
+        "How much to load your three attempts at a powerlifting meet, worked out from the weight "
+        "you're aiming to hit on your last one.",
+        "Opener/second/third attempt weights as a % of the goal third attempt (91%/96%/100%, "
+        "Travis, Zourdos & Bazyler 2021), alongside the wider 88-93%/93-97% range coaches actually "
+        "use.",
+    ),
+    "skinfold": Term(
+        "skinfold / body density",
+        "A body-fat estimate from pinching skinfold thickness at a few spots with calipers, "
+        "instead of a scale or a scan.",
+        "Jackson & Pollock's generalized body-density regressions (3-site or 7-site, sex-specific) "
+        "fed into the Siri equation for %BF.",
+    ),
+    "e1rm_pr": Term(
+        "e1RM PR",
+        "A flag for when a new set's estimated max beats your best-ever estimated max, even "
+        "without testing an actual 1RM that day.",
+        "A comparison of two e1RM consensus estimates (`onerm.estimate_one_rm`) - a previous best "
+        "(tested 1RM or a set) vs. a new set - reporting whether the new one is higher and by how "
+        "much.",
+    ),
 }
 
 

@@ -654,3 +654,203 @@ def test_json_nsuns_command(capsys):
     data = json.loads(out)
     assert data["scheme"] == "B"
     assert data["sets"][2]["amrap"] is True
+
+
+# --- v1.5.0: Prilepin/INOL, attempts, skinfold, tonnage, PR, clubs, gainrate --
+
+
+def test_prilepin_zone_lookup(capsys):
+    code, out = run(capsys, ["prilepin", "--pct", "75"])
+    assert code == 0
+    assert "70-79%" in out
+
+
+def test_prilepin_scheme_evaluation(capsys):
+    code, out = run(capsys, ["prilepin", "--pct", "75", "--sets", "5", "--reps", "3"])
+    assert code == 0
+    assert "OPTIMAL" in out
+
+
+def test_prilepin_requires_both_sets_and_reps(capsys):
+    code, out = run(capsys, ["prilepin", "--pct", "75", "--sets", "5"])
+    assert code == 1
+
+
+def test_prilepin_rejects_nonpositive_pct(capsys):
+    code, out = run(capsys, ["prilepin", "--pct", "0"])
+    assert code == 1
+
+
+def test_json_prilepin_command(capsys):
+    code, out = run(capsys, ["prilepin", "--pct", "75", "--json"])
+    data = json.loads(out)
+    assert data["zone"]["label"] == "70-79%"
+    assert data["evaluation"] is None
+
+
+def test_inol_worked_example(capsys):
+    code, out = run(capsys, ["inol", "--set", "2x6@60", "--set", "5x3@75"])
+    assert code == 0
+    assert "0.90" in out
+
+
+def test_inol_requires_pct_tag(capsys):
+    code, out = run(capsys, ["inol", "--set", "6x4"])
+    assert code == 1
+
+
+def test_json_inol_command(capsys):
+    code, out = run(capsys, ["inol", "--set", "6x4@72", "--json"])
+    data = json.loads(out)
+    assert data["total"] == pytest.approx(24 / 28)
+
+
+def test_attempts_from_goal_third(capsys):
+    code, out = run(capsys, ["attempts", "--goal-third", "500", "--unit", "lb"])
+    assert code == 0
+    assert "455.0" in out
+    assert "480.0" in out
+
+
+def test_attempts_from_amrap(capsys):
+    code, out = run(capsys, ["attempts", "--amrap-weight", "405", "--amrap-reps", "3", "--unit", "lb"])
+    assert code == 0
+    assert "e1RM" in out
+
+
+def test_attempts_rejects_both_inputs(capsys):
+    argv = ["attempts", "--goal-third", "500", "--amrap-weight", "405", "--amrap-reps", "3"]
+    code, out = run(capsys, argv)
+    assert code == 1
+
+
+def test_attempts_rejects_no_input(capsys):
+    code, out = run(capsys, ["attempts"])
+    assert code == 1
+
+
+def test_json_attempts_command(capsys):
+    code, out = run(capsys, ["attempts", "--goal-third", "500", "--unit", "lb", "--json"])
+    data = json.loads(out)
+    assert data["opener"] == pytest.approx(455.0)
+    assert data["third"] == pytest.approx(500.0)
+
+
+def test_skinfold_men_3site(capsys):
+    argv = ["skinfold", "--sex", "male", "--method", "3-site", "--chest", "10", "--triceps", "12",
+            "--subscapular", "15", "--age", "30"]
+    code, out = run(capsys, argv)
+    assert code == 0
+    assert "15.2%" in out
+
+
+def test_skinfold_missing_sites_errors(capsys):
+    argv = ["skinfold", "--sex", "male", "--method", "3-site", "--chest", "10", "--age", "30"]
+    code, out = run(capsys, argv)
+    assert code == 1
+
+
+def test_json_skinfold_command(capsys):
+    argv = ["skinfold", "--sex", "female", "--method", "3-site", "--triceps", "15", "--thigh", "20",
+            "--suprailiac", "12", "--age", "28", "--json"]
+    code, out = run(capsys, argv)
+    data = json.loads(out)
+    assert data["bodyfat_pct"] == pytest.approx(19.635503077820374)
+
+
+def test_tonnage_basic(capsys):
+    code, out = run(capsys, ["tonnage", "--set", "225x5", "--set", "185x8"])
+    assert code == 0
+    assert "2605.0" in out
+
+
+def test_tonnage_with_average_intensity(capsys):
+    code, out = run(capsys, ["tonnage", "--set", "225x5@75"])
+    assert code == 0
+    assert "75.0%1RM" in out
+
+
+def test_tonnage_rejects_bad_spec(capsys):
+    code, out = run(capsys, ["tonnage", "--set", "notaspec"])
+    assert code == 1
+
+
+def test_json_tonnage_command(capsys):
+    code, out = run(capsys, ["tonnage", "--set", "225x5", "--json"])
+    data = json.loads(out)
+    assert data["total_tonnage"] == pytest.approx(1125.0)
+
+
+def test_pr_new_pr(capsys):
+    code, out = run(capsys, ["pr", "--previous-onerm", "300", "--new-weight", "275", "--new-reps", "1"])
+    assert code == 0
+    assert "PR" in out
+
+
+def test_pr_not_a_pr(capsys):
+    code, out = run(capsys, ["pr", "--previous-onerm", "400", "--new-weight", "300", "--new-reps", "5"])
+    assert code == 0
+    assert "Not a PR" in out
+
+
+def test_pr_rejects_both_previous_inputs(capsys):
+    argv = ["pr", "--previous-onerm", "300", "--previous-weight", "275", "--previous-reps", "5",
+            "--new-weight", "280", "--new-reps", "1"]
+    code, out = run(capsys, argv)
+    assert code == 1
+
+
+def test_json_pr_command(capsys):
+    argv = ["pr", "--previous-onerm", "300", "--new-weight", "320", "--new-reps", "1", "--json"]
+    code, out = run(capsys, argv)
+    data = json.loads(out)
+    assert data["is_pr"] is True
+    assert data["improvement"] == pytest.approx(20.0)
+
+
+def test_clubs_basic(capsys):
+    argv = ["clubs", "--squat", "405", "--bench", "315", "--deadlift", "495"]
+    code, out = run(capsys, argv)
+    assert code == 0
+    assert "YES" in out
+    assert "informal gym-culture" in out
+
+
+def test_clubs_with_ohp(capsys):
+    argv = ["clubs", "--squat", "300", "--bench", "200", "--deadlift", "350", "--ohp", "135"]
+    code, out = run(capsys, argv)
+    assert code == 0
+    assert "1-plate" in out
+
+
+def test_clubs_rejects_nonpositive_lift(capsys):
+    code, out = run(capsys, ["clubs", "--squat", "0", "--bench", "200", "--deadlift", "350"])
+    assert code == 1
+
+
+def test_json_clubs_command(capsys):
+    argv = ["clubs", "--squat", "405", "--bench", "315", "--deadlift", "495", "--json"]
+    code, out = run(capsys, argv)
+    data = json.loads(out)
+    assert data["two_three_four_club_achieved"] is True
+    assert data["thousand_lb_club"]["achieved"] is True
+
+
+def test_gainrate_basic(capsys):
+    code, out = run(capsys, ["gainrate", "--bodyweight", "180", "--level", "intermediate"])
+    assert code == 0
+    assert "Aragon/Helms" in out
+    assert "McDonald" in out
+
+
+def test_gainrate_rejects_unknown_level():
+    with pytest.raises(SystemExit):
+        main(["gainrate", "--bodyweight", "180", "--level", "elite"])
+
+
+def test_json_gainrate_command(capsys):
+    argv = ["gainrate", "--bodyweight", "170", "--level", "intermediate", "--json"]
+    code, out = run(capsys, argv)
+    data = json.loads(out)
+    assert data["monthly_low"] == pytest.approx(0.85)
+    assert data["monthly_high"] == pytest.approx(1.7)

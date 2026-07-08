@@ -28,6 +28,14 @@ Subcommands:
     standards   Relative-strength scoring: Wilks (original + 2020), DOTS, IPF GL points
     mcculloch   McCulloch age-adjusted total for masters lifters (WRPF)
     tier        Bodyweight-indexed strength tier (beginner->elite) for a total
+    prilepin    Prilepin's table: zone lookup for a %%1RM + scheme evaluation
+    inol        INOL (Hristov 2005): training-stress index from a set list
+    attempts    Powerlifting meet attempt selection (opener/second/third)
+    skinfold    Jackson-Pollock skinfold body density + Siri %%BF
+    tonnage     Volume-load (sigma weight x reps) per set list
+    pr          e1RM PR check: does a new set beat your previous best
+    clubs       Gym milestones (1000lb club, plate clubs, 2-3-4 club)
+    gainrate    Muscle-gain rate estimate (McDonald yearly + Aragon/Helms monthly)
     glossary    Plain-English + technical definitions for every term liftmath uses
 
 All loads are unit-agnostic (kg or lb) unless a subcommand needs the unit; pass --unit.
@@ -47,20 +55,31 @@ import sys
 
 from liftmath import __version__
 from liftmath._serialize import to_dict, to_json
+from liftmath.attempts import attempt_selection
 from liftmath.bodycomp import ffmi as compute_ffmi
 from liftmath.bodycomp import navy_body_fat
 from liftmath.bodyweight import MOVEMENTS, weighted_bodyweight_one_rm
 from liftmath.bulkcut import TIERS, rate_target
+from liftmath.clubs import evaluate_clubs
+from liftmath.gainrate import LEVELS, gain_rate
 from liftmath.glossary import GLOSSARY, glossary_entry
 from liftmath.loads import load_chart, target_load
 from liftmath.macros import ACTIVITY_LEVELS, GOALS, cunningham_tdee, macro_targets
 from liftmath.mesocycle import ramp_mesocycle
 from liftmath.onerm import estimate_one_rm
 from liftmath.plates import PRESETS, _parse_inventory_spec, load_plates, load_plates_from_inventory
+from liftmath.pr import check_pr
+from liftmath.prilepin import PRILEPIN_CAVEAT, evaluate_scheme, inol_total, zone_for_pct
 from liftmath.program import ExerciseSet, audit_program
 from liftmath.progression import next_progression_step
 from liftmath.rpe import pct_1rm_from_reps_and_rir, rpe_from_reps_and_pct
 from liftmath.sessionload import weekly_load
+from liftmath.skinfold import (
+    jackson_pollock_men_3site,
+    jackson_pollock_men_7site,
+    jackson_pollock_women_3site,
+    jackson_pollock_women_7site,
+)
 from liftmath.standards import mcculloch_score
 from liftmath.standards import score as strength_score
 from liftmath.symmetry import score_symmetry
@@ -74,6 +93,7 @@ from liftmath.templates import (
     training_max,
 )
 from liftmath.tiers import TIER_NAMES, classify_tier
+from liftmath.tonnage import TonnageSet, session_tonnage
 from liftmath.volume import LANDMARKS, landmarks_for
 from liftmath.warmup import warmup_ramp
 
@@ -301,6 +321,31 @@ def cmd_volume(args: argparse.Namespace) -> int:
     print("[evidence tier] Practitioner consensus/expert heuristic, NOT a peer-reviewed")
     print("per-muscle table - no primary source publishes these exact cutoffs.")
     return 0
+
+
+def _parse_set_spec(spec: str) -> tuple[float, int, float | None]:
+    """Parse a repeatable 'AxB' or 'AxB@C' --set spec into (A, B, C|None).
+
+    Shared by `tonnage` (A=weight, B=reps, C=optional %1RM tag) and `inol`
+    (A=num_sets, B=reps, C=required %1RM) - same shape as `_parse_inventory_
+    spec`'s 'SIZExCOUNT' terms, extended with an optional '@PCT' suffix.
+    """
+    spec = spec.strip()
+    pct: float | None = None
+    if "@" in spec:
+        spec, pct_s = spec.split("@", 1)
+        try:
+            pct = float(pct_s)
+        except ValueError:
+            raise ValueError(f"bad %1RM in '--set {spec}@{pct_s}' - want a number after '@'")
+    if "x" not in spec:
+        raise ValueError(f"bad --set '{spec}' - want 'AxB' or 'AxB@PCT' (e.g. '225x5' or '6x4@72')")
+    a_s, b_s = spec.split("x", 1)
+    try:
+        a, b = float(a_s), int(b_s)
+    except ValueError:
+        raise ValueError(f"bad --set '{spec}' - want 'AxB' or 'AxB@PCT' (e.g. '225x5' or '6x4@72')")
+    return a, b, pct
 
 
 def _parse_exercise_spec(spec: str) -> ExerciseSet:
@@ -988,6 +1033,283 @@ def cmd_nsuns(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_prilepin(args: argparse.Namespace) -> int:
+    try:
+        zone = zone_for_pct(args.pct)
+        evaluation = None
+        if args.sets is not None or args.reps is not None:
+            if args.sets is None or args.reps is None:
+                print("error: pass both --sets and --reps to evaluate a scheme, or neither for "
+                      "just a zone lookup", file=sys.stderr)
+                return 1
+            evaluation = evaluate_scheme(args.sets, args.reps, args.pct)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        payload = {"zone": to_dict(zone), "evaluation": to_dict(evaluation) if evaluation is not None else None}
+        print(json.dumps(payload, indent=2))
+        return 0
+
+    print(f"Prilepin's table - {args.pct:g}%1RM:")
+    _hint("prilepin")
+    print(f"  zone                {zone.label}")
+    print(f"  reps per set        {zone.reps_per_set_low}-{zone.reps_per_set_high}")
+    print(f"  total reps (range)  {zone.total_reps_low}-{zone.total_reps_high}")
+    print(f"  optimal total reps  {zone.optimal_total_reps}")
+    if evaluation is not None:
+        print(f"\n  your scheme: {args.sets}x{args.reps} @ {args.pct:g}%1RM = "
+              f"{evaluation.total_reps} total reps")
+        print(f"  verdict: {evaluation.verdict.upper()}  ({evaluation.reps_to_optimal:+d} reps vs. optimal)")
+        if not evaluation.reps_per_set_in_range:
+            print(f"  [!] {args.reps} reps/set is outside this zone's own "
+                  f"{zone.reps_per_set_low}-{zone.reps_per_set_high} rep-per-set prescription.")
+    print(f"\n[!] {PRILEPIN_CAVEAT}")
+    return 0
+
+
+def cmd_inol(args: argparse.Namespace) -> int:
+    try:
+        groups = []
+        for spec in args.set:
+            n, r, pct = _parse_set_spec(spec)
+            if pct is None:
+                raise ValueError(f"--set '{spec}' needs an '@PCT' (e.g. '5x3@75') for inol")
+            groups.append((int(n), r, pct))
+        result = inol_total(groups)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(result))
+        return 0
+
+    print(f"INOL over {len(result.groups)} set group(s):")
+    _hint("inol")
+    for g in result.groups:
+        print(f"  {g.num_sets}x{g.reps} @ {g.pct_1rm:g}%1RM  ->  INOL {g.inol:.2f}")
+    print("-" * 40)
+    print(f"  TOTAL INOL              {result.total:.2f}")
+    print(f"  per-workout guideline:  {result.workout_band}")
+    print(f"  weekly guideline:       {result.weekly_band}")
+    print("Source: Hristov (2005), same paper as Prilepin's table. INOL = reps / (100 - %1RM),")
+    print("summed across sets - use the per-workout guideline for one session's total at an")
+    print("exercise, the weekly guideline for that exercise's total across the whole week.")
+    return 0
+
+
+def cmd_attempts(args: argparse.Namespace) -> int:
+    goal_third = args.goal_third
+    derived_est = None
+    if goal_third is None:
+        if args.amrap_weight is None or args.amrap_reps is None:
+            print("error: pass --goal-third, or both --amrap-weight and --amrap-reps", file=sys.stderr)
+            return 1
+        try:
+            derived_est = estimate_one_rm(args.amrap_weight, args.amrap_reps, unit=args.unit)
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        goal_third = derived_est.consensus
+    elif args.amrap_weight is not None or args.amrap_reps is not None:
+        print("error: pass --goal-third, OR --amrap-weight/--amrap-reps, not both", file=sys.stderr)
+        return 1
+
+    try:
+        result = attempt_selection(goal_third, lift=args.lift, unit=args.unit, increment=args.increment)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(result))
+        return 0
+
+    if derived_est is not None:
+        print(f"AMRAP set {args.amrap_weight:g}{args.unit} x {args.amrap_reps} reps -> e1RM "
+              f"{derived_est.consensus:.1f}{args.unit} (used as the goal third)")
+    print(f"Attempt selection for {args.lift} - goal third {goal_third:.1f}{args.unit}:")
+    _hint("attempt_selection")
+    print(f"  opener   {result.opener:7.1f}{args.unit}   (91% headline; coach range "
+          f"{result.opener_range_low:.1f}-{result.opener_range_high:.1f}{args.unit})")
+    print(f"  second   {result.second:7.1f}{args.unit}   (96% headline; coach range "
+          f"{result.second_range_low:.1f}-{result.second_range_high:.1f}{args.unit})")
+    print(f"  third    {result.third:7.1f}{args.unit}   (100%, your goal)")
+    print("Source: Travis, Zourdos & Bazyler (2021) - lifters who went 9-for-9 at IPF Classic")
+    print("Worlds averaged these percentages of their eventual third attempt. Coach-consensus range")
+    print("from StrengthLog's calculator (citing Matt Gary, Boris Sheiko, Bryce Lewis, Alexander")
+    print("Eriksson). Rounded to the nearest achievable increment - a choice of this app, not part")
+    print("of either source.")
+    return 0
+
+
+def cmd_skinfold(args: argparse.Namespace) -> int:
+    men_7site = ("chest", "axilla", "triceps", "subscapular", "abdominal", "suprailiac", "thigh")
+    try:
+        if args.sex == "male" and args.method == "3-site":
+            needed = ("chest", "triceps", "subscapular")
+            missing = [n for n in needed if getattr(args, n) is None]
+            if missing:
+                print(f"error: --sex male --method 3-site needs --{', --'.join(missing)}", file=sys.stderr)
+                return 1
+            result = jackson_pollock_men_3site(args.chest, args.triceps, args.subscapular, args.age)
+        elif args.sex == "male" and args.method == "7-site":
+            missing = [n for n in men_7site if getattr(args, n) is None]
+            if missing:
+                print(f"error: --sex male --method 7-site needs --{', --'.join(missing)}", file=sys.stderr)
+                return 1
+            result = jackson_pollock_men_7site(args.chest, args.axilla, args.triceps, args.subscapular,
+                                                args.abdominal, args.suprailiac, args.thigh, args.age)
+        elif args.sex == "female" and args.method == "3-site":
+            needed = ("triceps", "thigh", "suprailiac")
+            missing = [n for n in needed if getattr(args, n) is None]
+            if missing:
+                print(f"error: --sex female --method 3-site needs --{', --'.join(missing)}", file=sys.stderr)
+                return 1
+            result = jackson_pollock_women_3site(args.triceps, args.thigh, args.suprailiac, args.age)
+        else:
+            missing = [n for n in men_7site if getattr(args, n) is None]
+            if missing:
+                print(f"error: --sex female --method 7-site needs --{', --'.join(missing)}", file=sys.stderr)
+                return 1
+            result = jackson_pollock_women_7site(args.chest, args.axilla, args.triceps, args.subscapular,
+                                                  args.abdominal, args.suprailiac, args.thigh, args.age)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(result))
+        return 0
+
+    print(f"Jackson-Pollock {result.method} ({result.sex}) - age {args.age:g}:")
+    _hint("skinfold")
+    sites = ", ".join(f"{k[:-3]}={v:g}mm" for k, v in result.sites_mm.items())
+    print(f"  sites: {sites}")
+    print(f"  sum of skinfolds   {result.sum_mm:6.1f} mm")
+    print(f"  body density       {result.body_density:.4f}")
+    print(f"  body fat %         {result.bodyfat_pct:5.1f}%  (Siri equation)")
+    if result.sex == "male" and result.method == "3-site":
+        print("[!] This is specifically the chest+triceps+subscapular 3-site combo - some sources")
+        print("    describe a DIFFERENT chest+abdomen+thigh 3-site equation under the same name;")
+        print("    this library only ships the combo above (see skinfold.py's module docstring).")
+    print("Source: Jackson & Pollock (1978, men) / Jackson, Pollock & Ward (1980, women) generalized")
+    print("body-density equations; Siri (1961) for %BF (assumes fat density 0.9, FFM density 1.10).")
+    return 0
+
+
+def cmd_tonnage(args: argparse.Namespace) -> int:
+    try:
+        sets = [TonnageSet(weight=w, reps=r, pct_1rm=p) for w, r, p in (_parse_set_spec(s) for s in args.set)]
+        report = session_tonnage(sets, unit=args.unit)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(report))
+        return 0
+
+    print(f"Tonnage (volume-load) over {len(report.sets)} logged set(s):")
+    _hint("tonnage")
+    for s in report.sets:
+        tag = f" @ {s.pct_1rm:g}%1RM" if s.pct_1rm is not None else ""
+        print(f"  {s.weight:g}{args.unit} x {s.reps}{tag}  =  {s.weight * s.reps:g}{args.unit}")
+    print("-" * 40)
+    print(f"  total tonnage       {report.total_tonnage:10.1f}{args.unit}")
+    if report.average_intensity_pct is not None:
+        print(f"  average intensity   {report.average_intensity_pct:10.1f}%1RM  "
+              "(reps-weighted, sets with a %1RM tag only)")
+    print("Complements session load (Foster 2001, RPE x duration): tonnage is the weight-actually-")
+    print("moved axis, session load is the how-hard-it-felt axis - neither substitutes for the other.")
+    return 0
+
+
+def cmd_pr(args: argparse.Namespace) -> int:
+    try:
+        result = check_pr(
+            unit=args.unit,
+            previous_one_rm=args.previous_onerm,
+            previous_weight=args.previous_weight,
+            previous_reps=args.previous_reps,
+            new_weight=args.new_weight,
+            new_reps=args.new_reps,
+        )
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(result))
+        return 0
+
+    print(f"Previous best e1RM: {result.previous_estimate.consensus:6.1f}{args.unit}")
+    print(f"New set e1RM:       {result.new_estimate.consensus:6.1f}{args.unit}")
+    _hint("e1rm_pr")
+    if result.is_pr:
+        print(f"\n  NEW e1RM PR: +{result.improvement:.1f}{args.unit} ({result.improvement_pct:+.1f}%)")
+    else:
+        print(f"\n  Not a PR: {result.improvement:.1f}{args.unit} ({result.improvement_pct:+.1f}%) vs. "
+              "previous best")
+    print("Both routed through the same six-formula consensus (see `1rm`) - a directly-tested 1RM")
+    print("counts as its own exact estimate, same convention `1rm`/`tm` already use.")
+    return 0
+
+
+def cmd_clubs(args: argparse.Namespace) -> int:
+    try:
+        report = evaluate_clubs(squat=args.squat, bench=args.bench, deadlift=args.deadlift,
+                                 ohp=args.ohp, unit=args.unit)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(report))
+        return 0
+
+    print(f"Gym milestones ({args.unit}):")
+    for club in report.plate_clubs:
+        mark = "YES" if club.achieved else f"{club.remaining:.1f}{args.unit} to go"
+        print(f"  {club.name:<10}{club.lift:<10}{club.threshold:8.1f}{args.unit}   {mark}")
+    t = report.thousand_lb_club
+    mark = "YES" if t.achieved else f"{t.remaining:.1f}{args.unit} to go"
+    print(f"  {'1000':<10}{'total':<10}{t.threshold:8.1f}{args.unit}   {mark}")
+    print(f"  2-3-4 club (2-plate bench / 3-plate squat / 4-plate deadlift): "
+          f"{'YES' if report.two_three_four_club_achieved else 'not yet'}")
+    print(f"\n{report.caveat}")
+    return 0
+
+
+def cmd_gainrate(args: argparse.Namespace) -> int:
+    try:
+        result = gain_rate(args.bodyweight, args.level, unit=args.unit)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(result))
+        return 0
+
+    print(f"Muscle-gain rate estimate for {args.bodyweight:g}{args.unit} ({args.level}):")
+    print(f"  Aragon/Helms: {result.monthly_low:.2f}-{result.monthly_high:.2f}{args.unit}/month "
+          f"({result.yearly_low:.1f}-{result.yearly_high:.1f}{args.unit}/year)")
+    print(f"  ({result.aragon_helms_source_label})")
+    print("\n  McDonald's yearly model (bodyrecomposition.com, fetched live 2026-07-08):")
+    print(f"    year 1   {result.mcdonald_year1_low:.1f}-{result.mcdonald_year1_high:.1f}{args.unit}")
+    print(f"    year 2   {result.mcdonald_year2_low:.1f}-{result.mcdonald_year2_high:.1f}{args.unit}")
+    print(f"    year 3   {result.mcdonald_year3_low:.1f}-{result.mcdonald_year3_high:.1f}{args.unit}")
+    print(f"    year 4+  {result.mcdonald_year4_plus_note}")
+    print("[!] A widely-circulated '20-25lb year 1' variant of McDonald's numbers could not be")
+    print("    traced to a current primary source and is deliberately NOT used here - see")
+    print("    gainrate.py's module docstring.")
+    print(f"\n{result.informational_note}")
+    return 0
+
+
 def cmd_glossary(args: argparse.Namespace) -> int:
     if args.term:
         entry = glossary_entry(args.term)
@@ -1274,6 +1596,85 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--sex", required=True, choices=["male", "female"])
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_tier)
+
+    s = sub.add_parser("prilepin", help="Prilepin's table: zone lookup + optional scheme evaluation",
+                        parents=[json_parent])
+    s.add_argument("--pct", type=float, required=True, help="%%1RM as a whole number (e.g. 75 for 75%%)")
+    s.add_argument("--sets", type=int, help="planned sets - combine with --reps to evaluate a scheme")
+    s.add_argument("--reps", type=int, help="planned reps per set - combine with --sets")
+    s.set_defaults(func=cmd_prilepin)
+
+    s = sub.add_parser("inol", help="INOL (Hristov 2005): training-stress index from a set list",
+                        parents=[json_parent])
+    s.add_argument("--set", action="append", required=True, metavar="NxR@PCT",
+                   help="one set group as 'num_setsxreps@pct1rm' (e.g. '5x3@75') - repeat per "
+                        "group; %%1RM is required here (unlike `tonnage`, INOL can't be computed "
+                        "without it)")
+    s.set_defaults(func=cmd_inol)
+
+    s = sub.add_parser("attempts", help="powerlifting meet attempt selection (opener/second/third)",
+                        parents=[json_parent])
+    s.add_argument("--goal-third", type=float,
+                   help="the weight you're aiming to hit on your third attempt (give this, OR "
+                        "--amrap-weight + --amrap-reps to derive an e1RM to use instead)")
+    s.add_argument("--amrap-weight", type=float,
+                   help="weight from a recent AMRAP/heavy set - combine with --amrap-reps instead "
+                        "of --goal-third to derive an e1RM used as the goal third")
+    s.add_argument("--amrap-reps", type=int, help="reps completed on that set")
+    s.add_argument("--lift", default="lift", help="label only, e.g. 'squat' (default 'lift')")
+    s.add_argument("--increment", type=float, help="rounding increment (default 5lb / 2.5kg)")
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_attempts)
+
+    s = sub.add_parser("skinfold", help="Jackson-Pollock skinfold body density + Siri %%BF",
+                        parents=[json_parent])
+    s.add_argument("--sex", required=True, choices=["male", "female"])
+    s.add_argument("--method", required=True, choices=["3-site", "7-site"])
+    s.add_argument("--age", type=float, required=True)
+    s.add_argument("--chest", type=float, help="chest skinfold, mm")
+    s.add_argument("--axilla", type=float, help="axilla (armpit) skinfold, mm - 7-site only")
+    s.add_argument("--triceps", type=float, help="triceps skinfold, mm")
+    s.add_argument("--subscapular", type=float, help="subscapular skinfold, mm")
+    s.add_argument("--abdominal", type=float, help="abdominal skinfold, mm - 7-site only")
+    s.add_argument("--suprailiac", type=float, help="suprailiac skinfold, mm")
+    s.add_argument("--thigh", type=float, help="thigh skinfold, mm")
+    s.set_defaults(func=cmd_skinfold)
+
+    s = sub.add_parser("tonnage", help="volume-load (sigma weight x reps) per set list", parents=[json_parent])
+    s.add_argument("--set", action="append", required=True, metavar="WEIGHTxREPS[@PCT]",
+                   help="one logged set as 'weightxreps' or 'weightxreps@pct1rm' (e.g. '225x5' or "
+                        "'225x5@75') - repeat per set; the optional '@pct1rm' tag is only used for "
+                        "the reps-weighted average-intensity figure")
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_tonnage)
+
+    s = sub.add_parser("pr", help="e1RM PR check: does a new set beat your previous best",
+                        parents=[json_parent])
+    s.add_argument("--previous-onerm", type=float,
+                   help="a known/tested previous 1RM (give this, OR --previous-weight + "
+                        "--previous-reps)")
+    s.add_argument("--previous-weight", type=float, help="a previous best logged as a set instead of a tested max")
+    s.add_argument("--previous-reps", type=int, help="reps completed on that previous set")
+    s.add_argument("--new-weight", type=float, required=True, help="weight for the new set to check")
+    s.add_argument("--new-reps", type=int, required=True, help="reps completed on the new set")
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_pr)
+
+    s = sub.add_parser("clubs", help="gym milestones (1000lb club, plate clubs, 2-3-4 club)",
+                        parents=[json_parent])
+    s.add_argument("--squat", type=float, required=True)
+    s.add_argument("--bench", type=float, required=True)
+    s.add_argument("--deadlift", type=float, required=True)
+    s.add_argument("--ohp", type=float, help="overhead press best (optional - adds the 1-plate club)")
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_clubs)
+
+    s = sub.add_parser("gainrate", help="muscle-gain rate estimate (McDonald yearly + Aragon/Helms monthly)",
+                        parents=[json_parent])
+    s.add_argument("--bodyweight", type=float, required=True)
+    s.add_argument("--level", default="intermediate", choices=list(LEVELS))
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_gainrate)
 
     s = sub.add_parser("glossary", help="plain-English + technical definitions for every term liftmath uses",
                         parents=[json_parent])
