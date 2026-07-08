@@ -113,6 +113,13 @@
   <button class="tab" role="tab" id="tab-btn-scores" aria-controls="tool-scores" aria-selected="false" tabindex="-1">Wilks/DOTS/GL</button>
   <button class="tab" role="tab" id="tab-btn-symmetry" aria-controls="tool-symmetry" aria-selected="false" tabindex="-1">Symmetry</button>
   <button class="tab" role="tab" id="tab-btn-programs" aria-controls="tool-programs" aria-selected="false" tabindex="-1">Programs</button>
+  <button class="tab" role="tab" id="tab-btn-prilepin" aria-controls="tool-prilepin" aria-selected="false" tabindex="-1">Prilepin/INOL</button>
+  <button class="tab" role="tab" id="tab-btn-attempts" aria-controls="tool-attempts" aria-selected="false" tabindex="-1">Attempts</button>
+  <button class="tab" role="tab" id="tab-btn-skinfold" aria-controls="tool-skinfold" aria-selected="false" tabindex="-1">Skinfold</button>
+  <button class="tab" role="tab" id="tab-btn-tonnage" aria-controls="tool-tonnage" aria-selected="false" tabindex="-1">Tonnage</button>
+  <button class="tab" role="tab" id="tab-btn-prcheck" aria-controls="tool-prcheck" aria-selected="false" tabindex="-1">PR check</button>
+  <button class="tab" role="tab" id="tab-btn-clubs" aria-controls="tool-clubs" aria-selected="false" tabindex="-1">Clubs</button>
+  <button class="tab" role="tab" id="tab-btn-gainrate" aria-controls="tool-gainrate" aria-selected="false" tabindex="-1">Gain rate</button>
 </nav>
 
 <main id="main-content">
@@ -711,6 +718,332 @@
         </div>
       </div>
       <div class="results" id="programs-gzclp-results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============ Prilepin's table + INOL ============ -->
+  <section class="tool-panel" id="tool-prilepin" role="tabpanel" aria-labelledby="tab-btn-prilepin" tabindex="0" hidden>
+    <h2 id="prilepin-heading">Prilepin's table &amp; INOL</h2>
+    <p class="disclaimer" id="prilepin-disclaimer">Enter a %1RM and a sets x reps scheme to see which Prilepin zone it falls in, whether it's
+      under/optimal/over that zone's total-rep range, and its INOL training-stress index.</p>
+    <div class="tool-grid">
+      <div>
+        <div class="field">
+          <label for="prilepin-pct" id="prilepin-pct-label">%1RM</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="prilepin-pct-dec" aria-label="Decrease %1RM">&minus;</button>
+            <input type="number" id="prilepin-pct" inputmode="decimal" value="75" min="1" max="100" step="1" />
+            <button class="stepper-btn" id="prilepin-pct-inc" aria-label="Increase %1RM">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="prilepin-sets" id="prilepin-sets-label">Sets</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="prilepin-sets-dec" aria-label="Decrease sets">&minus;</button>
+            <input type="number" id="prilepin-sets" inputmode="numeric" value="5" min="1" step="1" />
+            <button class="stepper-btn" id="prilepin-sets-inc" aria-label="Increase sets">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="prilepin-reps" id="prilepin-reps-label">Reps per set</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="prilepin-reps-dec" aria-label="Decrease reps per set">&minus;</button>
+            <input type="number" id="prilepin-reps" inputmode="numeric" value="3" min="1" step="1" />
+            <button class="stepper-btn" id="prilepin-reps-inc" aria-label="Increase reps per set">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="results" id="prilepin-results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============ Meet attempt selection ============ -->
+  <section class="tool-panel" id="tool-attempts" role="tabpanel" aria-labelledby="tab-btn-attempts" tabindex="0" hidden>
+    <h2 id="attempts-heading">Meet attempt selection</h2>
+    <p class="disclaimer" id="attempts-disclaimer">Opener/second/third as a % of the weight you're aiming to hit on your third attempt, shown
+      in both lb and kg so you can see how the rounding step changes each number.</p>
+    <div class="tool-grid">
+      <div>
+        <div class="field">
+          <label for="attempts-lift" id="attempts-lift-label">Lift (label only)</label>
+          <input type="text" id="attempts-lift" value="squat" />
+        </div>
+        <div class="field">
+          <span id="attempts-mode-label">Mode</span>
+          <div class="radio-row" role="radiogroup" aria-labelledby="attempts-mode-label" id="attempts-mode-group">
+            <button type="button" class="chip" data-mode="goal" aria-pressed="true" id="attempts-mode-goal-btn">Goal third attempt</button>
+            <button type="button" class="chip" data-mode="amrap" aria-pressed="false" id="attempts-mode-amrap-btn">Estimate from an AMRAP set</button>
+          </div>
+        </div>
+        <div id="attempts-goal-fields">
+          <div class="field">
+            <label for="attempts-goal" id="attempts-goal-label">Goal third attempt</label>
+            <div class="stepper-row">
+              <button class="stepper-btn" id="attempts-goal-dec" aria-label="Decrease goal third attempt">&minus;</button>
+              <input type="number" id="attempts-goal" inputmode="decimal" value="405" min="0" step="2.5" />
+              <button class="stepper-btn" id="attempts-goal-inc" aria-label="Increase goal third attempt">+</button>
+            </div>
+          </div>
+        </div>
+        <div id="attempts-amrap-fields" hidden>
+          <div class="field">
+            <label for="attempts-amrap-weight" id="attempts-amrap-weight-label">AMRAP weight</label>
+            <div class="stepper-row">
+              <button class="stepper-btn" id="attempts-amrap-weight-dec" aria-label="Decrease AMRAP weight">&minus;</button>
+              <input type="number" id="attempts-amrap-weight" inputmode="decimal" value="365" min="0" step="2.5" />
+              <button class="stepper-btn" id="attempts-amrap-weight-inc" aria-label="Increase AMRAP weight">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="attempts-amrap-reps" id="attempts-amrap-reps-label">Reps completed</label>
+            <div class="stepper-row">
+              <button class="stepper-btn" id="attempts-amrap-reps-dec" aria-label="Decrease reps completed">&minus;</button>
+              <input type="number" id="attempts-amrap-reps" inputmode="numeric" value="3" min="1" step="1" />
+              <button class="stepper-btn" id="attempts-amrap-reps-inc" aria-label="Increase reps completed">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="results" id="attempts-results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============ Skinfold body-fat estimate ============ -->
+  <section class="tool-panel" id="tool-skinfold" role="tabpanel" aria-labelledby="tab-btn-skinfold" tabindex="0" hidden>
+    <h2 id="skinfold-heading">Skinfold body-fat estimate</h2>
+    <p class="disclaimer" id="skinfold-disclaimer">Jackson-Pollock generalized body-density equations, fed into the Siri equation for %BF.
+      Enter the sites your method needs, in millimeters.</p>
+    <div class="tool-grid">
+      <div>
+        <div class="field">
+          <span id="skinfold-sex-label">Sex (equation set)</span>
+          <div class="radio-row" role="radiogroup" aria-labelledby="skinfold-sex-label" id="skinfold-sex-group">
+            <button type="button" class="chip" data-sex="male" aria-pressed="true" id="skinfold-sex-male-btn">Male</button>
+            <button type="button" class="chip" data-sex="female" aria-pressed="false" id="skinfold-sex-female-btn">Female</button>
+          </div>
+        </div>
+        <div class="field">
+          <span id="skinfold-method-label">Method</span>
+          <div class="radio-row" role="radiogroup" aria-labelledby="skinfold-method-label" id="skinfold-method-group">
+            <button type="button" class="chip" data-method="3-site" aria-pressed="true" id="skinfold-method-3site-btn">3-site</button>
+            <button type="button" class="chip" data-method="7-site" aria-pressed="false" id="skinfold-method-7site-btn">7-site</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="skinfold-age" id="skinfold-age-label">Age</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="skinfold-age-dec" aria-label="Decrease age">&minus;</button>
+            <input type="number" id="skinfold-age" inputmode="numeric" value="30" min="1" step="1" />
+            <button class="stepper-btn" id="skinfold-age-inc" aria-label="Increase age">+</button>
+          </div>
+        </div>
+        <div class="field" id="skinfold-chest-field">
+          <label for="skinfold-chest" id="skinfold-chest-label">Chest</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="skinfold-chest-dec" aria-label="Decrease chest skinfold">&minus;</button>
+            <input type="number" id="skinfold-chest" inputmode="decimal" value="10" min="0.1" step="0.5" />
+            <button class="stepper-btn" id="skinfold-chest-inc" aria-label="Increase chest skinfold">+</button>
+          </div>
+        </div>
+        <div class="field" id="skinfold-axilla-field" hidden>
+          <label for="skinfold-axilla" id="skinfold-axilla-label">Axilla (armpit)</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="skinfold-axilla-dec" aria-label="Decrease axilla skinfold">&minus;</button>
+            <input type="number" id="skinfold-axilla" inputmode="decimal" value="12" min="0.1" step="0.5" />
+            <button class="stepper-btn" id="skinfold-axilla-inc" aria-label="Increase axilla skinfold">+</button>
+          </div>
+        </div>
+        <div class="field" id="skinfold-triceps-field">
+          <label for="skinfold-triceps" id="skinfold-triceps-label">Triceps</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="skinfold-triceps-dec" aria-label="Decrease triceps skinfold">&minus;</button>
+            <input type="number" id="skinfold-triceps" inputmode="decimal" value="8" min="0.1" step="0.5" />
+            <button class="stepper-btn" id="skinfold-triceps-inc" aria-label="Increase triceps skinfold">+</button>
+          </div>
+        </div>
+        <div class="field" id="skinfold-subscapular-field">
+          <label for="skinfold-subscapular" id="skinfold-subscapular-label">Subscapular</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="skinfold-subscapular-dec" aria-label="Decrease subscapular skinfold">&minus;</button>
+            <input type="number" id="skinfold-subscapular" inputmode="decimal" value="12" min="0.1" step="0.5" />
+            <button class="stepper-btn" id="skinfold-subscapular-inc" aria-label="Increase subscapular skinfold">+</button>
+          </div>
+        </div>
+        <div class="field" id="skinfold-abdominal-field" hidden>
+          <label for="skinfold-abdominal" id="skinfold-abdominal-label">Abdominal</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="skinfold-abdominal-dec" aria-label="Decrease abdominal skinfold">&minus;</button>
+            <input type="number" id="skinfold-abdominal" inputmode="decimal" value="15" min="0.1" step="0.5" />
+            <button class="stepper-btn" id="skinfold-abdominal-inc" aria-label="Increase abdominal skinfold">+</button>
+          </div>
+        </div>
+        <div class="field" id="skinfold-suprailiac-field" hidden>
+          <label for="skinfold-suprailiac" id="skinfold-suprailiac-label">Suprailiac</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="skinfold-suprailiac-dec" aria-label="Decrease suprailiac skinfold">&minus;</button>
+            <input type="number" id="skinfold-suprailiac" inputmode="decimal" value="10" min="0.1" step="0.5" />
+            <button class="stepper-btn" id="skinfold-suprailiac-inc" aria-label="Increase suprailiac skinfold">+</button>
+          </div>
+        </div>
+        <div class="field" id="skinfold-thigh-field" hidden>
+          <label for="skinfold-thigh" id="skinfold-thigh-label">Thigh</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="skinfold-thigh-dec" aria-label="Decrease thigh skinfold">&minus;</button>
+            <input type="number" id="skinfold-thigh" inputmode="decimal" value="14" min="0.1" step="0.5" />
+            <button class="stepper-btn" id="skinfold-thigh-inc" aria-label="Increase thigh skinfold">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="results" id="skinfold-results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============ Tonnage (volume-load) ============ -->
+  <section class="tool-panel" id="tool-tonnage" role="tabpanel" aria-labelledby="tab-btn-tonnage" tabindex="0" hidden>
+    <h2 id="tonnage-heading">Tonnage (volume-load)</h2>
+    <p class="disclaimer" id="tonnage-disclaimer">Total weight actually moved: every set's weight times its reps, added up. Complements
+      session load (how hard it felt) rather than replacing it.</p>
+    <div class="field">
+      <label for="tonnage-sets" id="tonnage-sets-label">Sets</label>
+      <input type="text" id="tonnage-sets" inputmode="text" value="225x5,245x3@80,265x1@90" />
+      <p class="hint" id="tonnage-sets-hint">Format: WEIGHTxREPS or WEIGHTxREPS@PCT pairs separated by commas, e.g.
+        "225x5,245x3@80,265x1@90" - the optional @PCT tags a set's %1RM for the average-intensity read.</p>
+    </div>
+    <div class="results" id="tonnage-results" aria-live="polite"></div>
+  </section>
+
+  <!-- ============ e1RM PR check ============ -->
+  <section class="tool-panel" id="tool-prcheck" role="tabpanel" aria-labelledby="tab-btn-prcheck" tabindex="0" hidden>
+    <h2 id="prcheck-heading">e1RM PR check</h2>
+    <p class="disclaimer" id="prcheck-disclaimer">Compare a new set's estimated 1RM against your previous best - a tested 1RM or a previous
+      set both work.</p>
+    <div class="tool-grid">
+      <div>
+        <div class="field">
+          <span id="prcheck-mode-label">Previous best</span>
+          <div class="radio-row" role="radiogroup" aria-labelledby="prcheck-mode-label" id="prcheck-mode-group">
+            <button type="button" class="chip" data-mode="onerm" aria-pressed="true" id="prcheck-mode-onerm-btn">Tested 1RM</button>
+            <button type="button" class="chip" data-mode="set" aria-pressed="false" id="prcheck-mode-set-btn">Previous set (weight x reps)</button>
+          </div>
+        </div>
+        <div id="prcheck-onerm-fields">
+          <div class="field">
+            <label for="prcheck-previous-onerm" id="prcheck-previous-onerm-label">Previous 1RM</label>
+            <div class="stepper-row">
+              <button class="stepper-btn" id="prcheck-previous-onerm-dec" aria-label="Decrease previous 1RM">&minus;</button>
+              <input type="number" id="prcheck-previous-onerm" inputmode="decimal" value="315" min="0" step="2.5" />
+              <button class="stepper-btn" id="prcheck-previous-onerm-inc" aria-label="Increase previous 1RM">+</button>
+            </div>
+          </div>
+        </div>
+        <div id="prcheck-set-fields" hidden>
+          <div class="field">
+            <label for="prcheck-previous-weight" id="prcheck-previous-weight-label">Previous weight</label>
+            <div class="stepper-row">
+              <button class="stepper-btn" id="prcheck-previous-weight-dec" aria-label="Decrease previous weight">&minus;</button>
+              <input type="number" id="prcheck-previous-weight" inputmode="decimal" value="300" min="0" step="2.5" />
+              <button class="stepper-btn" id="prcheck-previous-weight-inc" aria-label="Increase previous weight">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="prcheck-previous-reps" id="prcheck-previous-reps-label">Previous reps</label>
+            <div class="stepper-row">
+              <button class="stepper-btn" id="prcheck-previous-reps-dec" aria-label="Decrease previous reps">&minus;</button>
+              <input type="number" id="prcheck-previous-reps" inputmode="numeric" value="5" min="1" step="1" />
+              <button class="stepper-btn" id="prcheck-previous-reps-inc" aria-label="Increase previous reps">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="prcheck-new-weight" id="prcheck-new-weight-label">New weight</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="prcheck-new-weight-dec" aria-label="Decrease new weight">&minus;</button>
+            <input type="number" id="prcheck-new-weight" inputmode="decimal" value="315" min="0" step="2.5" />
+            <button class="stepper-btn" id="prcheck-new-weight-inc" aria-label="Increase new weight">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="prcheck-new-reps" id="prcheck-new-reps-label">New reps</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="prcheck-new-reps-dec" aria-label="Decrease new reps">&minus;</button>
+            <input type="number" id="prcheck-new-reps" inputmode="numeric" value="5" min="1" step="1" />
+            <button class="stepper-btn" id="prcheck-new-reps-inc" aria-label="Increase new reps">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="results" id="prcheck-results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============ Gym milestones (clubs) ============ -->
+  <section class="tool-panel" id="tool-clubs" role="tabpanel" aria-labelledby="tab-btn-clubs" tabindex="0" hidden>
+    <h2 id="clubs-heading">Gym milestones (clubs)</h2>
+    <p class="disclaimer" id="clubs-disclaimer">Culture, not science - see the caveat below. Enter your current best lifts to see progress
+      toward the plate clubs, the 1000 lb club, and the 2-3-4 club.</p>
+    <div class="tool-grid">
+      <div>
+        <div class="field">
+          <label for="clubs-squat" id="clubs-squat-label">Squat</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="clubs-squat-dec" aria-label="Decrease squat">&minus;</button>
+            <input type="number" id="clubs-squat" inputmode="decimal" value="315" min="0" step="2.5" />
+            <button class="stepper-btn" id="clubs-squat-inc" aria-label="Increase squat">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="clubs-bench" id="clubs-bench-label">Bench</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="clubs-bench-dec" aria-label="Decrease bench">&minus;</button>
+            <input type="number" id="clubs-bench" inputmode="decimal" value="225" min="0" step="2.5" />
+            <button class="stepper-btn" id="clubs-bench-inc" aria-label="Increase bench">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="clubs-deadlift" id="clubs-deadlift-label">Deadlift</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="clubs-deadlift-dec" aria-label="Decrease deadlift">&minus;</button>
+            <input type="number" id="clubs-deadlift" inputmode="decimal" value="405" min="0" step="2.5" />
+            <button class="stepper-btn" id="clubs-deadlift-inc" aria-label="Increase deadlift">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="clubs-ohp" id="clubs-ohp-label">Overhead press (optional)</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="clubs-ohp-dec" aria-label="Decrease overhead press">&minus;</button>
+            <input type="number" id="clubs-ohp" inputmode="decimal" min="0" step="2.5" placeholder="leave blank to skip" />
+            <button class="stepper-btn" id="clubs-ohp-inc" aria-label="Increase overhead press">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="results" id="clubs-results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============ Muscle-gain rate estimate ============ -->
+  <section class="tool-panel" id="tool-gainrate" role="tabpanel" aria-labelledby="tab-btn-gainrate" tabindex="0" hidden>
+    <h2 id="gainrate-heading">Muscle-gain rate estimate</h2>
+    <p class="disclaimer" id="gainrate-disclaimer">Two independent, honestly-labeled models, shown side by side rather than picked as one
+      "correct" answer.</p>
+    <div class="tool-grid">
+      <div>
+        <div class="field">
+          <label for="gainrate-bodyweight" id="gainrate-bodyweight-label">Bodyweight</label>
+          <div class="stepper-row">
+            <button class="stepper-btn" id="gainrate-bodyweight-dec" aria-label="Decrease bodyweight">&minus;</button>
+            <input type="number" id="gainrate-bodyweight" inputmode="decimal" value="185" min="1" step="0.5" />
+            <button class="stepper-btn" id="gainrate-bodyweight-inc" aria-label="Increase bodyweight">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="gainrate-level" id="gainrate-level-label">Training level</label>
+          <select id="gainrate-level">
+            <option value="beginner" id="gainrate-level-beginner-opt">Beginner</option>
+            <option value="intermediate" selected id="gainrate-level-intermediate-opt">Intermediate</option>
+            <option value="advanced" id="gainrate-level-advanced-opt">Advanced</option>
+          </select>
+        </div>
+      </div>
+      <div class="results" id="gainrate-results" aria-live="polite"></div>
     </div>
   </section>
 

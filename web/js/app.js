@@ -24,7 +24,21 @@ import {
   gzclpNextSession,
   T1_STAGES,
   T2_STAGES,
+  DEFAULT_INCREMENT,
 } from "./math/training-templates.js";
+import { zoneForPct, evaluateScheme, inolTotal } from "./math/prilepin.js";
+import { attemptSelection } from "./math/attempts.js";
+import {
+  jacksonPollockMen3Site,
+  jacksonPollockMen7Site,
+  jacksonPollockWomen3Site,
+  jacksonPollockWomen7Site,
+} from "./math/skinfold.js";
+import { sessionTonnage } from "./math/tonnage.js";
+import { parseSetSpec } from "./math/set-spec.js";
+import { checkPr } from "./math/pr-check.js";
+import { evaluateClubs } from "./math/clubs.js";
+import { gainRate } from "./math/gain-rate.js";
 
 import { GLOSSARY_TERMS } from "./glossary.js";
 import { renderBarbellSvg, renderPlateLegend } from "./ui/svg-barbell.js";
@@ -45,6 +59,13 @@ const TABS = [
   "scores",
   "symmetry",
   "programs",
+  "prilepin",
+  "attempts",
+  "skinfold",
+  "tonnage",
+  "prcheck",
+  "clubs",
+  "gainrate",
 ];
 
 const state = {
@@ -136,6 +157,13 @@ function applyStaticText() {
   $("tab-btn-scores").textContent = t("tab.scores");
   $("tab-btn-symmetry").textContent = t("tab.symmetry");
   $("tab-btn-programs").textContent = t("tab.programs");
+  $("tab-btn-prilepin").textContent = t("tab.prilepin");
+  $("tab-btn-attempts").textContent = t("tab.attempts");
+  $("tab-btn-skinfold").textContent = t("tab.skinfold");
+  $("tab-btn-tonnage").textContent = t("tab.tonnage");
+  $("tab-btn-prcheck").textContent = t("tab.prcheck");
+  $("tab-btn-clubs").textContent = t("tab.clubs");
+  $("tab-btn-gainrate").textContent = t("tab.gainrate");
 
   // 1RM
   setLabelWithGlossaryTrigger("onerm-heading", "onerm.heading", "e1rm");
@@ -371,6 +399,127 @@ function applyStaticText() {
   $("programs-gzclp-result-label").textContent = t("programs.gzclp.resultLabel");
   $("programs-gzclp-result-made-btn").textContent = t("programs.gzclp.result.made");
   $("programs-gzclp-result-missed-btn").textContent = t("programs.gzclp.result.missed");
+
+  // Prilepin's table + INOL
+  setLabelWithGlossaryTrigger("prilepin-heading", "prilepin.heading", "prilepin");
+  $("prilepin-disclaimer").textContent = t("prilepin.disclaimer");
+  $("prilepin-pct-label").textContent = t("prilepin.pctLabel");
+  $("prilepin-pct-dec").setAttribute("aria-label", t("prilepin.pctDecAria"));
+  $("prilepin-pct-inc").setAttribute("aria-label", t("prilepin.pctIncAria"));
+  $("prilepin-sets-label").textContent = t("prilepin.setsLabel");
+  $("prilepin-sets-dec").setAttribute("aria-label", t("prilepin.setsDecAria"));
+  $("prilepin-sets-inc").setAttribute("aria-label", t("prilepin.setsIncAria"));
+  $("prilepin-reps-label").textContent = t("prilepin.repsLabel");
+  $("prilepin-reps-dec").setAttribute("aria-label", t("prilepin.repsDecAria"));
+  $("prilepin-reps-inc").setAttribute("aria-label", t("prilepin.repsIncAria"));
+
+  // Meet attempt selection
+  setLabelWithGlossaryTrigger("attempts-heading", "attempts.heading", "attemptSelection");
+  $("attempts-disclaimer").textContent = t("attempts.disclaimer");
+  $("attempts-lift-label").textContent = t("attempts.liftLabel");
+  $("attempts-lift").setAttribute("placeholder", t("attempts.liftPlaceholder"));
+  $("attempts-mode-label").textContent = t("attempts.modeLabel");
+  $("attempts-mode-goal-btn").textContent = t("attempts.mode.goal");
+  $("attempts-mode-amrap-btn").textContent = t("attempts.mode.amrap");
+  $("attempts-goal-label").textContent = t("attempts.goalLabel");
+  $("attempts-goal-dec").setAttribute("aria-label", t("attempts.goalDecAria"));
+  $("attempts-goal-inc").setAttribute("aria-label", t("attempts.goalIncAria"));
+  $("attempts-amrap-weight-label").textContent = t("attempts.amrapWeightLabel");
+  $("attempts-amrap-weight-dec").setAttribute("aria-label", t("attempts.amrapWeightDecAria"));
+  $("attempts-amrap-weight-inc").setAttribute("aria-label", t("attempts.amrapWeightIncAria"));
+  $("attempts-amrap-reps-label").textContent = t("attempts.amrapRepsLabel");
+  $("attempts-amrap-reps-dec").setAttribute("aria-label", t("attempts.amrapRepsDecAria"));
+  $("attempts-amrap-reps-inc").setAttribute("aria-label", t("attempts.amrapRepsIncAria"));
+
+  // Skinfold
+  setLabelWithGlossaryTrigger("skinfold-heading", "skinfold.heading", "skinfold");
+  $("skinfold-disclaimer").textContent = t("skinfold.disclaimer");
+  $("skinfold-sex-label").textContent = t("skinfold.sexLabel");
+  $("skinfold-sex-male-btn").textContent = t("skinfold.sex.male");
+  $("skinfold-sex-female-btn").textContent = t("skinfold.sex.female");
+  $("skinfold-method-label").textContent = t("skinfold.methodLabel");
+  $("skinfold-method-3site-btn").textContent = t("skinfold.method.3site");
+  $("skinfold-method-7site-btn").textContent = t("skinfold.method.7site");
+  $("skinfold-age-label").textContent = t("skinfold.ageLabel");
+  $("skinfold-age-dec").setAttribute("aria-label", t("skinfold.ageDecAria"));
+  $("skinfold-age-inc").setAttribute("aria-label", t("skinfold.ageIncAria"));
+  $("skinfold-chest-label").textContent = t("skinfold.site.chestLabel");
+  $("skinfold-chest-dec").setAttribute("aria-label", t("skinfold.site.chestDecAria"));
+  $("skinfold-chest-inc").setAttribute("aria-label", t("skinfold.site.chestIncAria"));
+  $("skinfold-axilla-label").textContent = t("skinfold.site.axillaLabel");
+  $("skinfold-axilla-dec").setAttribute("aria-label", t("skinfold.site.axillaDecAria"));
+  $("skinfold-axilla-inc").setAttribute("aria-label", t("skinfold.site.axillaIncAria"));
+  $("skinfold-triceps-label").textContent = t("skinfold.site.tricepsLabel");
+  $("skinfold-triceps-dec").setAttribute("aria-label", t("skinfold.site.tricepsDecAria"));
+  $("skinfold-triceps-inc").setAttribute("aria-label", t("skinfold.site.tricepsIncAria"));
+  $("skinfold-subscapular-label").textContent = t("skinfold.site.subscapularLabel");
+  $("skinfold-subscapular-dec").setAttribute("aria-label", t("skinfold.site.subscapularDecAria"));
+  $("skinfold-subscapular-inc").setAttribute("aria-label", t("skinfold.site.subscapularIncAria"));
+  $("skinfold-abdominal-label").textContent = t("skinfold.site.abdominalLabel");
+  $("skinfold-abdominal-dec").setAttribute("aria-label", t("skinfold.site.abdominalDecAria"));
+  $("skinfold-abdominal-inc").setAttribute("aria-label", t("skinfold.site.abdominalIncAria"));
+  $("skinfold-suprailiac-label").textContent = t("skinfold.site.suprailiacLabel");
+  $("skinfold-suprailiac-dec").setAttribute("aria-label", t("skinfold.site.suprailiacDecAria"));
+  $("skinfold-suprailiac-inc").setAttribute("aria-label", t("skinfold.site.suprailiacIncAria"));
+  $("skinfold-thigh-label").textContent = t("skinfold.site.thighLabel");
+  $("skinfold-thigh-dec").setAttribute("aria-label", t("skinfold.site.thighDecAria"));
+  $("skinfold-thigh-inc").setAttribute("aria-label", t("skinfold.site.thighIncAria"));
+
+  // Tonnage
+  setLabelWithGlossaryTrigger("tonnage-heading", "tonnage.heading", "tonnage");
+  $("tonnage-disclaimer").textContent = t("tonnage.disclaimer");
+  $("tonnage-sets-label").textContent = t("tonnage.setsLabel");
+  $("tonnage-sets-hint").textContent = t("tonnage.setsHint");
+
+  // PR check
+  setLabelWithGlossaryTrigger("prcheck-heading", "prcheck.heading", "e1rmPr");
+  $("prcheck-disclaimer").textContent = t("prcheck.disclaimer");
+  $("prcheck-mode-label").textContent = t("prcheck.modeLabel");
+  $("prcheck-mode-onerm-btn").textContent = t("prcheck.mode.onerm");
+  $("prcheck-mode-set-btn").textContent = t("prcheck.mode.set");
+  $("prcheck-previous-onerm-label").textContent = t("prcheck.previousOnermLabel");
+  $("prcheck-previous-onerm-dec").setAttribute("aria-label", t("prcheck.previousOnermDecAria"));
+  $("prcheck-previous-onerm-inc").setAttribute("aria-label", t("prcheck.previousOnermIncAria"));
+  $("prcheck-previous-weight-label").textContent = t("prcheck.previousWeightLabel");
+  $("prcheck-previous-weight-dec").setAttribute("aria-label", t("prcheck.previousWeightDecAria"));
+  $("prcheck-previous-weight-inc").setAttribute("aria-label", t("prcheck.previousWeightIncAria"));
+  $("prcheck-previous-reps-label").textContent = t("prcheck.previousRepsLabel");
+  $("prcheck-previous-reps-dec").setAttribute("aria-label", t("prcheck.previousRepsDecAria"));
+  $("prcheck-previous-reps-inc").setAttribute("aria-label", t("prcheck.previousRepsIncAria"));
+  $("prcheck-new-weight-label").textContent = t("prcheck.newWeightLabel");
+  $("prcheck-new-weight-dec").setAttribute("aria-label", t("prcheck.newWeightDecAria"));
+  $("prcheck-new-weight-inc").setAttribute("aria-label", t("prcheck.newWeightIncAria"));
+  $("prcheck-new-reps-label").textContent = t("prcheck.newRepsLabel");
+  $("prcheck-new-reps-dec").setAttribute("aria-label", t("prcheck.newRepsDecAria"));
+  $("prcheck-new-reps-inc").setAttribute("aria-label", t("prcheck.newRepsIncAria"));
+
+  // Clubs
+  $("clubs-heading").textContent = t("clubs.heading");
+  $("clubs-disclaimer").textContent = t("clubs.disclaimer");
+  $("clubs-squat-label").textContent = t("clubs.squatLabel");
+  $("clubs-squat-dec").setAttribute("aria-label", t("clubs.squatDecAria"));
+  $("clubs-squat-inc").setAttribute("aria-label", t("clubs.squatIncAria"));
+  $("clubs-bench-label").textContent = t("clubs.benchLabel");
+  $("clubs-bench-dec").setAttribute("aria-label", t("clubs.benchDecAria"));
+  $("clubs-bench-inc").setAttribute("aria-label", t("clubs.benchIncAria"));
+  $("clubs-deadlift-label").textContent = t("clubs.deadliftLabel");
+  $("clubs-deadlift-dec").setAttribute("aria-label", t("clubs.deadliftDecAria"));
+  $("clubs-deadlift-inc").setAttribute("aria-label", t("clubs.deadliftIncAria"));
+  $("clubs-ohp-label").textContent = t("clubs.ohpLabel");
+  $("clubs-ohp-dec").setAttribute("aria-label", t("clubs.ohpDecAria"));
+  $("clubs-ohp-inc").setAttribute("aria-label", t("clubs.ohpIncAria"));
+  $("clubs-ohp").setAttribute("placeholder", t("clubs.ohpPlaceholder"));
+
+  // Gain rate
+  $("gainrate-heading").textContent = t("gainrate.heading");
+  $("gainrate-disclaimer").textContent = t("gainrate.disclaimer");
+  $("gainrate-bodyweight-label").textContent = t("gainrate.bodyweightLabel");
+  $("gainrate-bodyweight-dec").setAttribute("aria-label", t("gainrate.bodyweightDecAria"));
+  $("gainrate-bodyweight-inc").setAttribute("aria-label", t("gainrate.bodyweightIncAria"));
+  $("gainrate-level-label").textContent = t("gainrate.levelLabel");
+  $("gainrate-level-beginner-opt").textContent = t("gainrate.level.beginner");
+  $("gainrate-level-intermediate-opt").textContent = t("gainrate.level.intermediate");
+  $("gainrate-level-advanced-opt").textContent = t("gainrate.level.advanced");
 
   // Footer
   $("footer-tagline").textContent = t("footer.tagline");
@@ -1679,6 +1828,541 @@ document.querySelectorAll("#programs-gzclp-result-group .chip").forEach((btn) =>
 });
 
 // ---------------------------------------------------------------------------
+// Prilepin's table + INOL
+// ---------------------------------------------------------------------------
+
+// Language-neutral token -> i18n-key maps for prilepin.js's returned tokens
+// (verdict / workoutBandToken / weeklyBandToken) - same TIER_LABEL_KEY
+// pattern used for strength tiers above: translate the stable token, never
+// the math module's own pinned English string (that string stays
+// byte-identical for the fixture parity check instead).
+const PRILEPIN_VERDICT_KEY = {
+  under: "prilepin.verdict.under",
+  optimal: "prilepin.verdict.optimal",
+  over: "prilepin.verdict.over",
+};
+const PRILEPIN_WORKOUT_BAND_KEY = {
+  under: "prilepin.inol.workout.under",
+  optimal: "prilepin.inol.workout.optimal",
+  tough: "prilepin.inol.workout.tough",
+  brutal: "prilepin.inol.workout.brutal",
+};
+const PRILEPIN_WEEKLY_BAND_KEY = {
+  easy: "prilepin.inol.weekly.easy",
+  tough: "prilepin.inol.weekly.tough",
+  brutal: "prilepin.inol.weekly.brutal",
+  insane: "prilepin.inol.weekly.insane",
+};
+
+function renderPrilepin() {
+  const pct = parseFloat($("prilepin-pct").value) || 0;
+  const sets = Math.max(1, parseInt($("prilepin-sets").value, 10) || 1);
+  const reps = Math.max(1, parseInt($("prilepin-reps").value, 10) || 1);
+
+  updateParamsDebounced({ tab: "prilepin", pctp: pct, setsp: sets, repsp: reps });
+
+  let evaluation;
+  try {
+    evaluation = evaluateScheme(sets, reps, pct);
+  } catch (err) {
+    $("prilepin-results").innerHTML = `<p class="badge warn">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+  const zone = evaluation.zone;
+
+  let inol = null;
+  let inolError = null;
+  try {
+    inol = inolTotal([[sets, reps, pct]]);
+  } catch (err) {
+    inolError = err.message;
+  }
+
+  const warnHtml = evaluation.repsPerSetInRange
+    ? ""
+    : `<p class="badge warn">${escapeHtml(
+        t("prilepin.warn.repsPerSetOutOfRange", { reps, low: zone.repsPerSetLow, high: zone.repsPerSetHigh })
+      )}</p>`;
+
+  const delta = evaluation.repsToOptimal;
+  const deltaStr = delta > 0 ? `+${delta}` : String(delta);
+
+  let inolHtml = "";
+  if (inol) {
+    inolHtml = `
+      <h3>${escapeHtml(t("prilepin.result.inolHeading"))}</h3>
+      <p class="result-hero">${fmt(inol.total, 2)}</p>
+      <p class="hint">${escapeHtml(
+        t("prilepin.result.workoutBandLabel", { band: t(PRILEPIN_WORKOUT_BAND_KEY[inol.workoutBandToken]) })
+      )}</p>
+      <p class="hint">${escapeHtml(
+        t("prilepin.result.weeklyBandLabel", { band: t(PRILEPIN_WEEKLY_BAND_KEY[inol.weeklyBandToken]) })
+      )}</p>
+    `;
+  } else if (inolError) {
+    inolHtml = `<p class="badge warn">${escapeHtml(t("prilepin.result.inolHeading"))}: ${escapeHtml(inolError)}</p>`;
+  }
+
+  $("prilepin-results").innerHTML = `
+    <h3>${escapeHtml(t("prilepin.result.zoneHeading"))}: ${escapeHtml(zone.label)}</h3>
+    <p>${escapeHtml(t("prilepin.result.zoneRepsPerSet", { low: zone.repsPerSetLow, high: zone.repsPerSetHigh }))}</p>
+    <p>${escapeHtml(t("prilepin.result.zoneTotalReps", { low: zone.totalRepsLow, high: zone.totalRepsHigh }))}</p>
+    <p>${escapeHtml(t("prilepin.result.zoneOptimal", { n: zone.optimalTotalReps }))}</p>
+    <h3>${escapeHtml(t("prilepin.result.schemeHeading"))}</h3>
+    <p class="badge ${evaluation.verdict === "optimal" ? "ok" : "warn"}">${escapeHtml(
+      t("prilepin.result.schemeSummary", { sets, reps, pct: fmt(pct, 0), total: evaluation.totalReps })
+    )} - ${escapeHtml(t(PRILEPIN_VERDICT_KEY[evaluation.verdict]))}</p>
+    <p class="hint">${escapeHtml(t("prilepin.result.repsToOptimal", { delta: deltaStr }))}</p>
+    ${warnHtml}
+    ${inolHtml}
+    <p class="hint">${escapeHtml(t("prilepin.sourceNote"))}</p>
+    <p class="disclaimer">${escapeHtml(t("prilepin.caveat"))}</p>
+  `;
+}
+
+// ---------------------------------------------------------------------------
+// Meet attempt selection
+// ---------------------------------------------------------------------------
+
+let attemptsMode = "goal";
+
+function attemptsUnitBlockHtml(result, unit) {
+  return `
+    <h3>${escapeHtml(t("attempts.result.unitHeading", { unit }))}</h3>
+    <table class="data-table">
+      <tbody>
+        <tr>
+          <td>${escapeHtml(t("attempts.result.opener"))}</td>
+          <td>${fmt(result.opener)} ${unit}</td>
+          <td class="hint">${escapeHtml(
+            t("attempts.result.attemptDetail", { pct: 91, low: fmt(result.openerRangeLow), high: fmt(result.openerRangeHigh), unit })
+          )}</td>
+        </tr>
+        <tr>
+          <td>${escapeHtml(t("attempts.result.second"))}</td>
+          <td>${fmt(result.second)} ${unit}</td>
+          <td class="hint">${escapeHtml(
+            t("attempts.result.attemptDetail", { pct: 96, low: fmt(result.secondRangeLow), high: fmt(result.secondRangeHigh), unit })
+          )}</td>
+        </tr>
+        <tr class="highlight">
+          <td>${escapeHtml(t("attempts.result.third"))}</td>
+          <td>${fmt(result.third)} ${unit}</td>
+          <td class="hint">${escapeHtml(t("attempts.result.thirdDetail"))}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="hint">${escapeHtml(t("attempts.result.incrementNote", { increment: fmt(result.increment), unit }))}</p>
+  `;
+}
+
+function renderAttempts() {
+  const lift = $("attempts-lift").value.trim() || "lift";
+  const unit = state.unit;
+
+  let goalThirdDisplay;
+  let derivedEst = null;
+
+  if (attemptsMode === "amrap") {
+    const amrapWeight = parseFloat($("attempts-amrap-weight").value) || 0;
+    const amrapReps = Math.max(1, parseInt($("attempts-amrap-reps").value, 10) || 1);
+    try {
+      derivedEst = estimateOneRm(amrapWeight, amrapReps, unit);
+    } catch (err) {
+      $("attempts-results").innerHTML = `<p class="badge warn">${escapeHtml(err.message)}</p>`;
+      return;
+    }
+    goalThirdDisplay = derivedEst.consensus;
+  } else {
+    goalThirdDisplay = parseFloat($("attempts-goal").value) || 0;
+  }
+
+  updateParamsDebounced({
+    tab: "attempts",
+    liftat: lift,
+    modeat: attemptsMode,
+    goalat: $("attempts-goal").value,
+    amwat: $("attempts-amrap-weight").value,
+    amrat: $("attempts-amrap-reps").value,
+  });
+
+  const goalThirdKg = fromUnit(goalThirdDisplay, unit);
+  const goalThirdLb = toUnit(goalThirdKg, "lb");
+
+  let resultLb, resultKg;
+  try {
+    resultLb = attemptSelection(goalThirdLb, { lift, unit: "lb" });
+    resultKg = attemptSelection(goalThirdKg, { lift, unit: "kg" });
+  } catch (err) {
+    $("attempts-results").innerHTML = `<p class="badge warn">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+
+  const derivedHtml = derivedEst
+    ? `<p class="hint">${escapeHtml(
+        t("attempts.result.derivedHint", {
+          weight: fmt(parseFloat($("attempts-amrap-weight").value) || 0),
+          unit,
+          reps: $("attempts-amrap-reps").value,
+          onerm: fmt(derivedEst.consensus),
+        })
+      )}</p>`
+    : "";
+
+  $("attempts-results").innerHTML = `
+    ${derivedHtml}
+    ${attemptsUnitBlockHtml(resultLb, "lb")}
+    ${attemptsUnitBlockHtml(resultKg, "kg")}
+    <p class="hint">${escapeHtml(t("attempts.sourceNote"))}</p>
+  `;
+}
+
+// ---------------------------------------------------------------------------
+// Skinfold body-fat estimate
+// ---------------------------------------------------------------------------
+
+let skinfoldSex = "male";
+let skinfoldMethod = "3-site";
+
+const SKINFOLD_SITES_NEEDED = {
+  "male:3-site": ["chest", "triceps", "subscapular"],
+  "male:7-site": ["chest", "axilla", "triceps", "subscapular", "abdominal", "suprailiac", "thigh"],
+  "female:3-site": ["triceps", "thigh", "suprailiac"],
+  "female:7-site": ["chest", "axilla", "triceps", "subscapular", "abdominal", "suprailiac", "thigh"],
+};
+
+const SKINFOLD_SITE_LABEL_KEY = {
+  chest: "skinfold.site.chestLabel",
+  axilla: "skinfold.site.axillaLabel",
+  triceps: "skinfold.site.tricepsLabel",
+  subscapular: "skinfold.site.subscapularLabel",
+  abdominal: "skinfold.site.abdominalLabel",
+  suprailiac: "skinfold.site.suprailiacLabel",
+  thigh: "skinfold.site.thighLabel",
+};
+
+const SKINFOLD_ALL_SITES = Object.keys(SKINFOLD_SITE_LABEL_KEY);
+
+function updateSkinfoldFieldVisibility() {
+  const needed = SKINFOLD_SITES_NEEDED[`${skinfoldSex}:${skinfoldMethod}`];
+  for (const site of SKINFOLD_ALL_SITES) {
+    $(`skinfold-${site}-field`).hidden = !needed.includes(site);
+  }
+}
+
+function renderSkinfold() {
+  updateSkinfoldFieldVisibility();
+  const needed = SKINFOLD_SITES_NEEDED[`${skinfoldSex}:${skinfoldMethod}`];
+  const age = parseFloat($("skinfold-age").value) || 0;
+  const values = {};
+  for (const site of needed) {
+    values[site] = parseFloat($(`skinfold-${site}`).value) || 0;
+  }
+
+  const params = { tab: "skinfold", sfsex: skinfoldSex, sfmethod: skinfoldMethod, sfage: $("skinfold-age").value };
+  for (const site of needed) params[`sf${site}`] = $(`skinfold-${site}`).value;
+  updateParamsDebounced(params);
+
+  let result;
+  try {
+    if (skinfoldSex === "male" && skinfoldMethod === "3-site") {
+      result = jacksonPollockMen3Site(values.chest, values.triceps, values.subscapular, age);
+    } else if (skinfoldSex === "male") {
+      result = jacksonPollockMen7Site(
+        values.chest, values.axilla, values.triceps, values.subscapular,
+        values.abdominal, values.suprailiac, values.thigh, age
+      );
+    } else if (skinfoldMethod === "3-site") {
+      result = jacksonPollockWomen3Site(values.triceps, values.thigh, values.suprailiac, age);
+    } else {
+      result = jacksonPollockWomen7Site(
+        values.chest, values.axilla, values.triceps, values.subscapular,
+        values.abdominal, values.suprailiac, values.thigh, age
+      );
+    }
+  } catch (err) {
+    $("skinfold-results").innerHTML = `<p class="badge warn">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+
+  // Plain label:value lines, not a <table class="data-table"> - that class
+  // carries a 480px min-width (see styles.css) meant for genuinely
+  // multi-column data, which would force an avoidable horizontal scroll for
+  // what's really just a 2-column list of "site: mm" pairs.
+  const siteLines = needed
+    .map((site) => `<p class="hint">${escapeHtml(t(SKINFOLD_SITE_LABEL_KEY[site]))}: ${fmt(values[site])} mm</p>`)
+    .join("");
+
+  const ambiguityHtml =
+    skinfoldSex === "male" && skinfoldMethod === "3-site"
+      ? `<p class="badge warn">${escapeHtml(t("skinfold.warn.men3SiteAmbiguity"))}</p>`
+      : "";
+
+  $("skinfold-results").innerHTML = `
+    <p class="result-hero">${fmt(result.bodyfatPct, 1)}<span class="unit">% BF</span></p>
+    <h3>${escapeHtml(t("skinfold.result.sitesHeading"))}</h3>
+    ${siteLines}
+    <p class="hint">${escapeHtml(t("skinfold.result.sumLabel"))}: ${fmt(result.sumMm)} mm</p>
+    <p class="hint">${escapeHtml(t("skinfold.result.densityLabel"))}: ${fmt(result.bodyDensity, 4)}</p>
+    ${ambiguityHtml}
+    <p class="hint">${escapeHtml(t("skinfold.sourceNote"))}</p>
+  `;
+}
+
+// ---------------------------------------------------------------------------
+// Tonnage (volume-load)
+// ---------------------------------------------------------------------------
+
+function renderTonnage() {
+  const spec = $("tonnage-sets").value;
+  const unit = state.unit;
+
+  updateParamsDebounced({ tab: "tonnage", tnspec: spec });
+
+  let sets;
+  try {
+    sets = spec
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((s) => {
+        const [weight, reps, pct] = parseSetSpec(s);
+        return { weight, reps, pct1rm: pct };
+      });
+  } catch (err) {
+    $("tonnage-results").innerHTML = `<p class="badge warn">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+
+  let report;
+  try {
+    report = sessionTonnage(sets, { unit });
+  } catch (err) {
+    $("tonnage-results").innerHTML = `<p class="badge warn">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+
+  // Plain lines, not a <table class="data-table"> - each row is really one
+  // composed sentence, not multi-column data, and the table class's 480px
+  // min-width (see styles.css) would force an avoidable horizontal scroll.
+  const rows = report.sets
+    .map((s) => {
+      const tag = s.pct1rm !== null ? t("tonnage.result.setPctTag", { pct: fmt(s.pct1rm, 0) }) : "";
+      const line = t("tonnage.result.setRow", {
+        weight: fmt(s.weight), reps: s.reps, tag, unit, load: fmt(s.weight * s.reps),
+      });
+      return `<p class="hint">${escapeHtml(line)}</p>`;
+    })
+    .join("");
+
+  let avgHtml = "";
+  if (report.averageIntensityPct !== null) {
+    avgHtml = `<p class="hint">${escapeHtml(t("tonnage.result.averageIntensityLabel"))}: ${fmt(
+      report.averageIntensityPct, 1
+    )}%1RM ${escapeHtml(t("tonnage.result.averageIntensityHint"))}</p>`;
+  }
+
+  $("tonnage-results").innerHTML = `
+    ${rows}
+    <p class="result-hero">${fmt(report.totalTonnage)}<span class="unit">${escapeHtml(unit)}</span></p>
+    <p class="hint">${escapeHtml(t("tonnage.result.totalLabel"))}</p>
+    ${avgHtml}
+  `;
+}
+
+// ---------------------------------------------------------------------------
+// e1RM PR check
+// ---------------------------------------------------------------------------
+
+let prcheckMode = "onerm";
+
+function renderPrCheck() {
+  const unit = state.unit;
+  const newWeight = parseFloat($("prcheck-new-weight").value) || 0;
+  const newReps = Math.max(1, parseInt($("prcheck-new-reps").value, 10) || 1);
+
+  const opts = { unit, newWeight, newReps };
+  if (prcheckMode === "onerm") {
+    opts.previousOneRm = parseFloat($("prcheck-previous-onerm").value) || 0;
+  } else {
+    opts.previousWeight = parseFloat($("prcheck-previous-weight").value) || 0;
+    opts.previousReps = Math.max(1, parseInt($("prcheck-previous-reps").value, 10) || 1);
+  }
+
+  updateParamsDebounced({
+    tab: "prcheck",
+    pcmode: prcheckMode,
+    pconerm: $("prcheck-previous-onerm").value,
+    pcweight: $("prcheck-previous-weight").value,
+    pcreps: $("prcheck-previous-reps").value,
+    pcnewweight: $("prcheck-new-weight").value,
+    pcnewreps: $("prcheck-new-reps").value,
+  });
+
+  let result;
+  try {
+    result = checkPr(opts);
+  } catch (err) {
+    $("prcheck-results").innerHTML = `<p class="badge warn">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+
+  const verdictHtml = result.isPr
+    ? `<p class="badge ok">${escapeHtml(
+        t("prcheck.result.isPr", { amount: fmt(result.improvement), unit, pct: `+${fmt(result.improvementPct, 1)}` })
+      )}</p>`
+    : `<p class="badge warn">${escapeHtml(
+        t("prcheck.result.notPr", { amount: fmt(result.improvement), unit, pct: fmt(result.improvementPct, 1) })
+      )}</p>`;
+
+  $("prcheck-results").innerHTML = `
+    <p class="hint">${escapeHtml(t("prcheck.result.previousLabel"))}: ${fmt(result.previousEstimate.consensus)} ${unit}</p>
+    <p class="hint">${escapeHtml(t("prcheck.result.newLabel"))}: ${fmt(result.newEstimate.consensus)} ${unit}</p>
+    ${verdictHtml}
+    <p class="hint">${escapeHtml(t("prcheck.sourceNote"))}</p>
+  `;
+}
+
+// ---------------------------------------------------------------------------
+// Gym milestones (clubs)
+// ---------------------------------------------------------------------------
+
+const CLUBS_NAME_KEY = {
+  "1-plate": "clubs.result.club.1-plate",
+  "2-plate": "clubs.result.club.2-plate",
+  "3-plate": "clubs.result.club.3-plate",
+  "4-plate": "clubs.result.club.4-plate",
+};
+
+function renderClubs() {
+  const unit = state.unit;
+  const squatDisplay = parseFloat($("clubs-squat").value) || 0;
+  const benchDisplay = parseFloat($("clubs-bench").value) || 0;
+  const deadliftDisplay = parseFloat($("clubs-deadlift").value) || 0;
+  const ohpRaw = $("clubs-ohp").value;
+  const ohpDisplay = ohpRaw === "" ? null : parseFloat(ohpRaw);
+
+  updateParamsDebounced({
+    tab: "clubs", clsqt: squatDisplay, clbch: benchDisplay, cldl: deadliftDisplay, clohp: ohpRaw,
+  });
+
+  let report;
+  try {
+    report = evaluateClubs({
+      squat: squatDisplay, bench: benchDisplay, deadlift: deadliftDisplay, ohp: ohpDisplay, unit,
+    });
+  } catch (err) {
+    $("clubs-results").innerHTML = `<p class="badge warn">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+
+  const plateRows = report.plateClubs
+    .map((c) => {
+      const status = c.achieved
+        ? `<span class="badge ok">${escapeHtml(t("clubs.result.achieved"))}</span>`
+        : escapeHtml(t("clubs.result.remaining", { amount: fmt(c.remaining), unit }));
+      return `<tr><td>${escapeHtml(t(CLUBS_NAME_KEY[c.name]))}</td><td>${fmt(c.threshold)} ${unit}</td><td>${status}</td></tr>`;
+    })
+    .join("");
+
+  const t1000 = report.thousandLbClub;
+  const t1000Status = t1000.achieved
+    ? `<span class="badge ok">${escapeHtml(t("clubs.result.achieved"))}</span>`
+    : escapeHtml(t("clubs.result.remaining", { amount: fmt(t1000.remaining), unit }));
+
+  const twoThreeFourStatus = report.twoThreeFourClubAchieved
+    ? t("clubs.result.twoThreeFourYes")
+    : t("clubs.result.twoThreeFourNo");
+
+  $("clubs-results").innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>${escapeHtml(t("clubs.result.tableClub"))}</th><th>${escapeHtml(t("clubs.result.tableThreshold"))}</th><th></th></tr></thead>
+      <tbody>
+        ${plateRows}
+        <tr class="highlight"><td>${escapeHtml(t("clubs.result.club.1000", { unit }))}</td><td>${fmt(t1000.threshold)} ${unit}</td><td>${t1000Status}</td></tr>
+      </tbody>
+    </table>
+    <p class="hint">${escapeHtml(t("clubs.result.twoThreeFourLabel"))}: ${escapeHtml(twoThreeFourStatus)}</p>
+    <p class="disclaimer">${escapeHtml(t("clubs.caveat"))}</p>
+  `;
+}
+
+// ---------------------------------------------------------------------------
+// Muscle-gain rate estimate
+// ---------------------------------------------------------------------------
+
+function renderGainRate() {
+  const unit = state.unit;
+  const bodyweightDisplay = parseFloat($("gainrate-bodyweight").value) || 0;
+  const level = $("gainrate-level").value;
+
+  updateParamsDebounced({ tab: "gainrate", grbw: bodyweightDisplay, grlvl: level });
+
+  let result;
+  try {
+    result = gainRate(bodyweightDisplay, level, { unit });
+  } catch (err) {
+    $("gainrate-results").innerHTML = `<p class="badge warn">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+
+  $("gainrate-results").innerHTML = `
+    <h3>${escapeHtml(t("gainrate.result.aragonHeading"))}</h3>
+    <p class="result-hero">${escapeHtml(
+      t("gainrate.result.aragonMonthly", { low: fmt(result.monthlyLow, 2), high: fmt(result.monthlyHigh, 2), unit })
+    )}</p>
+    <p class="hint">${escapeHtml(
+      t("gainrate.result.aragonYearly", { low: fmt(result.yearlyLow, 1), high: fmt(result.yearlyHigh, 1), unit })
+    )}</p>
+    <p class="hint">(${escapeHtml(t("gainrate.result.aragonSourceLabel"))})</p>
+    <h3>${escapeHtml(t("gainrate.result.mcdonaldHeading"))}</h3>
+    <p class="hint">${escapeHtml(t("gainrate.result.mcdonaldYear1", { low: fmt(result.mcdonaldYear1Low), high: fmt(result.mcdonaldYear1High), unit }))}</p>
+    <p class="hint">${escapeHtml(t("gainrate.result.mcdonaldYear2", { low: fmt(result.mcdonaldYear2Low), high: fmt(result.mcdonaldYear2High), unit }))}</p>
+    <p class="hint">${escapeHtml(t("gainrate.result.mcdonaldYear3", { low: fmt(result.mcdonaldYear3Low), high: fmt(result.mcdonaldYear3High), unit }))}</p>
+    <p class="hint">${escapeHtml(t("gainrate.result.mcdonaldYear4Plus", { note: t("gainrate.result.mcdonaldYear4PlusNote") }))}</p>
+    <p class="disclaimer">${escapeHtml(t("gainrate.informationalNote"))}</p>
+  `;
+}
+
+// ---- Chip-toggle wiring for the new tabs -----------------------------------
+
+document.querySelectorAll("#attempts-mode-group .chip").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    attemptsMode = btn.dataset.mode;
+    document.querySelectorAll("#attempts-mode-group .chip").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+    $("attempts-goal-fields").hidden = attemptsMode !== "goal";
+    $("attempts-amrap-fields").hidden = attemptsMode !== "amrap";
+    renderAttempts();
+  });
+});
+
+document.querySelectorAll("#skinfold-sex-group .chip").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    skinfoldSex = btn.dataset.sex;
+    document.querySelectorAll("#skinfold-sex-group .chip").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+    renderSkinfold();
+  });
+});
+
+document.querySelectorAll("#skinfold-method-group .chip").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    skinfoldMethod = btn.dataset.method;
+    document.querySelectorAll("#skinfold-method-group .chip").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+    renderSkinfold();
+  });
+});
+
+document.querySelectorAll("#prcheck-mode-group .chip").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    prcheckMode = btn.dataset.mode;
+    document.querySelectorAll("#prcheck-mode-group .chip").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+    $("prcheck-onerm-fields").hidden = prcheckMode !== "onerm";
+    $("prcheck-set-fields").hidden = prcheckMode !== "set";
+    renderPrCheck();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Dispatch + wiring
 // ---------------------------------------------------------------------------
 
@@ -1693,6 +2377,13 @@ const RENDERERS = {
   scores: renderScores,
   symmetry: renderSymmetry,
   programs: renderPrograms,
+  prilepin: renderPrilepin,
+  attempts: renderAttempts,
+  skinfold: renderSkinfold,
+  tonnage: renderTonnage,
+  prcheck: renderPrCheck,
+  clubs: renderClubs,
+  gainrate: renderGainRate,
 };
 
 function renderActiveTab() {
@@ -1724,6 +2415,8 @@ const STEPPER_NO_UNIT_SUBSTRINGS = [
   "bodyfat", // a percent, not a weight in the global lb/kg unit
   "age", // a count of years
   "height", // its own in/cm unit, not the global lb/kg one
+  "pct", // a %1RM, not a weight in the global lb/kg unit
+  "skinfold", // millimeters (or years, for skinfold-age) - never the global lb/kg unit
 ];
 
 function wireAllSteppers() {
@@ -1763,6 +2456,30 @@ function wireAllSteppers() {
     ["programs-nsuns-increment", 0.5],
     ["programs-gzclp-weight", 2.5],
     ["programs-gzclp-amrap", 1],
+    ["prilepin-pct", 1],
+    ["prilepin-sets", 1],
+    ["prilepin-reps", 1],
+    ["attempts-goal", 2.5],
+    ["attempts-amrap-weight", 2.5],
+    ["attempts-amrap-reps", 1],
+    ["skinfold-age", 1],
+    ["skinfold-chest", 0.5],
+    ["skinfold-axilla", 0.5],
+    ["skinfold-triceps", 0.5],
+    ["skinfold-subscapular", 0.5],
+    ["skinfold-abdominal", 0.5],
+    ["skinfold-suprailiac", 0.5],
+    ["skinfold-thigh", 0.5],
+    ["prcheck-previous-onerm", 2.5],
+    ["prcheck-previous-weight", 2.5],
+    ["prcheck-previous-reps", 1],
+    ["prcheck-new-weight", 2.5],
+    ["prcheck-new-reps", 1],
+    ["clubs-squat", 5],
+    ["clubs-bench", 5],
+    ["clubs-deadlift", 5],
+    ["clubs-ohp", 5],
+    ["gainrate-bodyweight", 5],
   ];
   for (const [id, step] of specs) {
     const input = $(id);
@@ -1905,6 +2622,71 @@ function applyInitialParams() {
     );
   }
   if (params.amrapgz) $("programs-gzclp-amrap").value = params.amrapgz;
+
+  // Prilepin's table + INOL
+  if (params.pctp) $("prilepin-pct").value = params.pctp;
+  if (params.setsp) $("prilepin-sets").value = params.setsp;
+  if (params.repsp) $("prilepin-reps").value = params.repsp;
+
+  // Meet attempt selection
+  if (params.liftat) $("attempts-lift").value = params.liftat;
+  if (params.modeat === "goal" || params.modeat === "amrap") {
+    attemptsMode = params.modeat;
+    document.querySelectorAll("#attempts-mode-group .chip").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.mode === attemptsMode))
+    );
+    $("attempts-goal-fields").hidden = attemptsMode !== "goal";
+    $("attempts-amrap-fields").hidden = attemptsMode !== "amrap";
+  }
+  if (params.goalat) $("attempts-goal").value = params.goalat;
+  if (params.amwat) $("attempts-amrap-weight").value = params.amwat;
+  if (params.amrat) $("attempts-amrap-reps").value = params.amrat;
+
+  // Skinfold
+  if (params.sfsex === "male" || params.sfsex === "female") {
+    skinfoldSex = params.sfsex;
+    document.querySelectorAll("#skinfold-sex-group .chip").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.sex === skinfoldSex))
+    );
+  }
+  if (params.sfmethod === "3-site" || params.sfmethod === "7-site") {
+    skinfoldMethod = params.sfmethod;
+    document.querySelectorAll("#skinfold-method-group .chip").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.method === skinfoldMethod))
+    );
+  }
+  if (params.sfage) $("skinfold-age").value = params.sfage;
+  for (const site of SKINFOLD_ALL_SITES) {
+    if (params[`sf${site}`]) $(`skinfold-${site}`).value = params[`sf${site}`];
+  }
+
+  // Tonnage
+  if (params.tnspec) $("tonnage-sets").value = params.tnspec;
+
+  // PR check
+  if (params.pcmode === "onerm" || params.pcmode === "set") {
+    prcheckMode = params.pcmode;
+    document.querySelectorAll("#prcheck-mode-group .chip").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.mode === prcheckMode))
+    );
+    $("prcheck-onerm-fields").hidden = prcheckMode !== "onerm";
+    $("prcheck-set-fields").hidden = prcheckMode !== "set";
+  }
+  if (params.pconerm) $("prcheck-previous-onerm").value = params.pconerm;
+  if (params.pcweight) $("prcheck-previous-weight").value = params.pcweight;
+  if (params.pcreps) $("prcheck-previous-reps").value = params.pcreps;
+  if (params.pcnewweight) $("prcheck-new-weight").value = params.pcnewweight;
+  if (params.pcnewreps) $("prcheck-new-reps").value = params.pcnewreps;
+
+  // Clubs
+  if (params.clsqt) $("clubs-squat").value = params.clsqt;
+  if (params.clbch) $("clubs-bench").value = params.clbch;
+  if (params.cldl) $("clubs-deadlift").value = params.cldl;
+  if (params.clohp) $("clubs-ohp").value = params.clohp;
+
+  // Gain rate
+  if (params.grbw) $("gainrate-bodyweight").value = params.grbw;
+  if (params.grlvl) $("gainrate-level").value = params.grlvl;
 
   return params.tab && TABS.includes(params.tab) ? params.tab : TABS[0];
 }
