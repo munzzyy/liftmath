@@ -78,3 +78,23 @@ def test_navy_bf_invalid_sex_raises():
 def test_navy_bf_error_band_is_documented():
     result = navy_body_fat("male", 70, 15, 34)
     assert result.error_band_pct == pytest.approx(3.5)
+
+
+def test_navy_bf_flags_less_reliable_when_very_lean():
+    # Height 72in, neck 16in, waist 30in lands well under 12% BF for a man.
+    result = navy_body_fat("male", 72, 16, 30)
+    assert result.bodyfat_pct < 12.0
+    assert result.less_reliable_at_extremes is True
+
+
+def test_navy_bf_flags_less_reliable_when_very_high():
+    # Height 68in, neck 15in, waist 46in lands well over 25% BF for a man.
+    result = navy_body_fat("male", 68, 15, 46)
+    assert result.bodyfat_pct > 25.0
+    assert result.less_reliable_at_extremes is True
+
+
+def test_navy_bf_does_not_flag_middle_of_range():
+    result = navy_body_fat("male", 70, 15, 34)
+    assert 12.0 <= result.bodyfat_pct <= 25.0
+    assert result.less_reliable_at_extremes is False

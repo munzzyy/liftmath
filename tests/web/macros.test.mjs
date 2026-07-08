@@ -14,8 +14,8 @@ const fixtures = JSON.parse(readFileSync(path.join(here, "fixtures", "macros.jso
 
 for (const [i, fixture] of fixtures.entries()) {
   test(`macros #${i}: macroTargets(${JSON.stringify(fixture.args)})`, () => {
-    const { bodyweight, goal, unit, tdee, activity } = fixture.args;
-    const actual = macroTargets(bodyweight, goal, { unit, tdee, activity });
+    const { bodyweight, goal, unit, tdee, activity, age, heightM, sex, bodyfatPct } = fixture.args;
+    const actual = macroTargets(bodyweight, goal, { unit, tdee, activity, age, heightM, sex, bodyfatPct });
     assertParity(actual, fixture.expected);
   });
 }

@@ -14,14 +14,21 @@ number - see the citations below for what's actually been measured vs.
 extrapolated.
 
 Sources:
-    Garthe, I., Raastad, T., Refsnes, P.E., Koivisto, A., Sundgot-Borgen, J.
-        (2013). Effect of two different weight-loss rates on body
-        composition and strength and power-related performance in elite
-        athletes. International Journal of Sport Nutrition and Exercise
-        Metabolism / this bulk-phase companion work in European Journal of
-        Sport Science. Elite athletes gaining at 0.38%/week partitioned
-        ~60-65% lean : ~30-35% fat; a slower 0.16%/week condition
-        partitioned ~85% lean : ~15% fat.
+    Garthe, I., Raastad, T., Refsnes, P.E., Sundgot-Borgen, J. (2013).
+        Effect of nutritional intervention on body composition and
+        performance in elite athletes. European Journal of Sport Science,
+        13(3), 295-303. PMID 23679146. Two supervised bulking groups: a
+        slower ~0.16%/week condition (the paper's ALG group) gained ~1.2 kg
+        lean : ~0.2 kg fat (~86% lean by mass); a faster ~0.38%/week
+        condition (the paper's NCG group) gained ~1.7 kg lean : ~1.1 kg fat
+        (~61% lean by mass) - slower bulks partitioned leaner. These
+        group-mean kg changes are derived from Garthe 2013's reported
+        tables per two independent secondary reviews (Iraki et al., 2019,
+        Sports, 7(7), 154; MacroFactor's published analysis of the same
+        trial), since the primary table itself is paywalled and wasn't
+        independently re-verified against the original PDF here. Small n,
+        high variance - read the partition split as directional (slower =
+        leaner), not a precise percentage.
     Rozenek, R. et al. (2002). Effects of high-calorie supplements on body
         composition and muscular strength following resistance training.
         Journal of Sports Medicine and Physical Fitness. Comparing surplus
@@ -58,7 +65,11 @@ CUT_RATE_PCT_BY_TIER = {
 TIERS = tuple(BULK_RATE_PCT_BY_TIER)
 
 # Garthe (2013) bulk-phase partition anchors: (rate_pct_per_week, lean_fraction, fat_fraction).
-GARTHE_2013_FAST_BULK = {"rate_pct_per_week": 0.38, "lean_fraction": 0.625, "fat_fraction": 0.375}
+# Derived from the paper's reported group-mean kg changes (see module docstring):
+# NCG (fast, ~0.38%/wk) +1.7kg lean / +1.1kg fat = 60.7/39.3, rounded to 61/39.
+# ALG (slow, ~0.16%/wk) +1.2kg lean / +0.2kg fat = 85.7/14.3, rounded to 85/15.
+# Directional, not precise - small n, high variance, secondary-source-derived.
+GARTHE_2013_FAST_BULK = {"rate_pct_per_week": 0.38, "lean_fraction": 0.61, "fat_fraction": 0.39}
 GARTHE_2013_SLOW_BULK = {"rate_pct_per_week": 0.16, "lean_fraction": 0.85, "fat_fraction": 0.15}
 
 
@@ -101,10 +112,13 @@ def rate_target(bodyweight_kg: float, goal: str, tier: str = "intermediate") -> 
 
     if goal == "gain":
         note = (
-            f"Garthe 2013: near {GARTHE_2013_SLOW_BULK['rate_pct_per_week']}%/wk partitions roughly "
+            f"Garthe 2013: near {GARTHE_2013_SLOW_BULK['rate_pct_per_week']}%/wk partitioned roughly "
             f"{GARTHE_2013_SLOW_BULK['lean_fraction']*100:.0f}% lean; near "
-            f"{GARTHE_2013_FAST_BULK['rate_pct_per_week']}%/wk partitions roughly "
-            f"{GARTHE_2013_FAST_BULK['lean_fraction']*100:.0f}% lean - slower bulks are leaner bulks."
+            f"{GARTHE_2013_FAST_BULK['rate_pct_per_week']}%/wk partitioned roughly "
+            f"{GARTHE_2013_FAST_BULK['lean_fraction']*100:.0f}% lean - slower bulks partition leaner. "
+            "Derived from the paper's reported group-mean kg changes per two independent reviews "
+            "of its tables (primary table is paywalled, not independently re-verified here) - "
+            "small n, high variance: directional, not precise."
         )
     else:
         note = (

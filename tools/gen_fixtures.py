@@ -185,8 +185,61 @@ def gen_macros() -> list[dict]:
     ]:
         cases.append({
             "fn": "macroTargets",
-            "args": {"bodyweight": bw, "goal": goal, "unit": unit, "tdee": tdee, "activity": activity},
+            "args": {
+                "bodyweight": bw, "goal": goal, "unit": unit, "tdee": tdee, "activity": activity,
+                "age": None, "heightM": None, "sex": None, "bodyfatPct": None,
+            },
             "expected": dump(macros.macro_targets(bw, goal, unit=unit, tdee=tdee, activity=activity)),
+        })
+    # Mifflin-St Jeor path (age + height_m + sex all given). height_m is
+    # always real meters regardless of `unit` (unit only scales `bodyweight`).
+    for bw, goal, unit, activity, age, height_m, sex in [
+        (90, "maintain", "kg", "moderate", 30, 1.80, "male"),
+        (65, "cut", "kg", "sedentary", 25, 1.65, "female"),
+        (200, "gain", "lb", "active", 22, 1.8288, "male"),  # 1.8288m = 72in
+    ]:
+        cases.append({
+            "fn": "macroTargets",
+            "args": {
+                "bodyweight": bw, "goal": goal, "unit": unit, "tdee": None, "activity": activity,
+                "age": age, "heightM": height_m, "sex": sex, "bodyfatPct": None,
+            },
+            "expected": dump(macros.macro_targets(bw, goal, unit=unit, activity=activity,
+                                                    age=age, height_m=height_m, sex=sex)),
+        })
+    # Cunningham-via-bodyfat path.
+    for bw, goal, unit, activity, bodyfat in [
+        (100, "gain", "kg", "moderate", 20),
+        (185, "cut", "lb", "active", 12),
+    ]:
+        cases.append({
+            "fn": "macroTargets",
+            "args": {
+                "bodyweight": bw, "goal": goal, "unit": unit, "tdee": None, "activity": activity,
+                "age": None, "heightM": None, "sex": None, "bodyfatPct": bodyfat,
+            },
+            "expected": dump(macros.macro_targets(bw, goal, unit=unit, activity=activity, bodyfat_pct=bodyfat)),
+        })
+    return cases
+
+
+# ---------------------------------------------------------------------------
+# macros.js <- liftmath.macros.cunningham_tdee
+# ---------------------------------------------------------------------------
+
+def gen_cunningham() -> list[dict]:
+    cases = []
+    for lean_mass_kg, activity in [(70, "moderate"), (60, "sedentary"), (85, "active")]:
+        cases.append({
+            "fn": "cunninghamTdee",
+            "args": {"leanMassKg": lean_mass_kg, "activity": activity, "bodyweightKg": None, "bodyfatPct": None},
+            "expected": dump(macros.cunningham_tdee(lean_mass_kg, activity=activity)),
+        })
+    for bw_kg, bodyfat, activity in [(100, 20, "moderate"), (84, 15, "light")]:
+        cases.append({
+            "fn": "cunninghamTdee",
+            "args": {"leanMassKg": None, "activity": activity, "bodyweightKg": bw_kg, "bodyfatPct": bodyfat},
+            "expected": dump(macros.cunningham_tdee(activity=activity, bodyweight_kg=bw_kg, bodyfat_pct=bodyfat)),
         })
     return cases
 
@@ -453,6 +506,7 @@ GENERATORS = {
     "load-chart": gen_load_chart,
     "volume-landmarks": gen_volume_landmarks,
     "macros": gen_macros,
+    "cunningham": gen_cunningham,
     "plate-loading": gen_plate_loading,
     "plate-inventory": gen_plate_inventory,
     "warmup-ramp": gen_warmup_ramp,

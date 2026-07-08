@@ -47,6 +47,14 @@ Sources:
         IPF_GL_Coefficients-2020.pdf). Coefficients are stated by the IPF as
         in effect May 1 2020 - Dec 31 2023 and are refreshed on a roughly
         4-year cycle; treat them as "current best known," not permanent.
+        CURRENCY NOTE: coefficients below were verified current as of the
+        liftmath 1.3.0 release (mid-2026) - that's already past the IPF's
+        own stated Dec 31 2023 window for this table, with no newer official
+        publication found as of that check. IPF GL points computed here may
+        drift from the IPF's own current live scoring once it next refreshes
+        the table; re-check powerlifting.sport's own coefficients page
+        periodically (roughly every 4 years, per the IPF's own cadence) and
+        update `_IPF_GL` if a newer table is published.
     World Raw Powerlifting Federation (2022 edition). McCulloch Coefficients
         for Masters - an age-based adjustment (ages 40-90) applied to a total,
         for comparing masters lifters against open-age standards. Table
@@ -86,6 +94,11 @@ _DOTS = {
 
 # IPF GL, classic (raw) powerlifting only. A,B,C per sex.
 # Coefficient = 100 / (A - B*e^(-C*Bwt)); points = coefficient * total.
+# CURRENCY: the IPF states this table in effect May 2020 - Dec 2023 and
+# refreshes it roughly every 4 years; verified current as of liftmath 1.3.0
+# (mid-2026, already past that stated window with no newer table found) -
+# re-check powerlifting.sport's published coefficients periodically and
+# update this table if the IPF has issued a newer one. See module docstring.
 _IPF_GL = {
     "male": (1199.72839, 1025.18162, 0.00921),
     "female": (610.32796, 1045.59282, 0.03048),

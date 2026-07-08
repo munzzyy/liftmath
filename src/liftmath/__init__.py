@@ -14,7 +14,9 @@ and does plate/warm-up math (including a finite-inventory plate solver).
 Every formula and heuristic is cited in the module it lives in, with an
 explicit evidence-tier note (established / emerging / speculative /
 practitioner consensus) wherever the provenance isn't a straightforward
-peer-reviewed finding.
+peer-reviewed finding. A plain-English glossary (`glossary.py`) defines
+every piece of jargon this package uses, beginner-friendly first and
+technical second.
 
 None of this is medical or nutrition advice. See the README.
 """
@@ -23,6 +25,7 @@ from liftmath._serialize import to_dict, to_json
 from liftmath.bodycomp import FfmiResult, NavyBodyFatResult, ffmi, navy_body_fat
 from liftmath.bodyweight import MOVEMENTS, WeightedBodyweightEstimate, weighted_bodyweight_one_rm
 from liftmath.bulkcut import TIERS, RateTarget, rate_target
+from liftmath.glossary import GLOSSARY, Term, glossary_entry
 from liftmath.loads import load_chart, pct_to_reps, reps_to_pct, target_load
 from liftmath.macros import CunninghamTdee, MacroTargets, cunningham_tdee, macro_targets
 from liftmath.mesocycle import ramp_mesocycle
@@ -69,7 +72,7 @@ from liftmath.templates import (
 from liftmath.volume import LANDMARKS, MUSCLES, band_for, describe_band, resolve_muscle
 from liftmath.warmup import warmup_ramp
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 __all__ = [
     "estimate_one_rm",
@@ -144,5 +147,8 @@ __all__ = [
     "NsunsDay",
     "to_dict",
     "to_json",
+    "GLOSSARY",
+    "Term",
+    "glossary_entry",
     "__version__",
 ]

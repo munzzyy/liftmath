@@ -324,6 +324,46 @@
           <label for="macros-tdee" id="macros-tdee-label">Known TDEE (optional)</label>
           <input type="number" id="macros-tdee" inputmode="numeric" min="0" step="10" placeholder="leave blank to estimate" />
         </div>
+        <details id="macros-advanced">
+          <summary id="macros-advanced-summary">More accurate TDEE (optional)</summary>
+          <div class="field">
+            <label for="macros-bodyfat" id="macros-bodyfat-label">Body-fat % (uses Cunningham automatically)</label>
+            <div class="stepper-row">
+              <button class="stepper-btn" id="macros-bodyfat-dec" aria-label="Decrease body-fat percent">&minus;</button>
+              <input type="number" id="macros-bodyfat" inputmode="decimal" min="0" max="99" step="0.5" placeholder="leave blank to skip" />
+              <button class="stepper-btn" id="macros-bodyfat-inc" aria-label="Increase body-fat percent">+</button>
+            </div>
+            <p class="hint" id="macros-bodyfat-hint">If given, this overrides age/height/sex below.</p>
+          </div>
+          <div class="field">
+            <label for="macros-age" id="macros-age-label">Age (for Mifflin-St Jeor)</label>
+            <div class="stepper-row">
+              <button class="stepper-btn" id="macros-age-dec" aria-label="Decrease age">&minus;</button>
+              <input type="number" id="macros-age" inputmode="numeric" min="1" step="1" placeholder="leave blank to skip" />
+              <button class="stepper-btn" id="macros-age-inc" aria-label="Increase age">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="macros-height" id="macros-height-label">Height (for Mifflin-St Jeor)</label>
+            <div class="stepper-row">
+              <button class="stepper-btn" id="macros-height-dec" aria-label="Decrease height">&minus;</button>
+              <input type="number" id="macros-height" inputmode="decimal" min="0" step="1" placeholder="leave blank to skip" />
+              <button class="stepper-btn" id="macros-height-inc" aria-label="Increase height">+</button>
+            </div>
+            <span id="macros-height-unit-label" class="visually-hidden">Height unit</span>
+            <div class="radio-row" role="radiogroup" aria-labelledby="macros-height-unit-label" id="macros-height-unit-group">
+              <button type="button" class="chip" data-height-unit="in" aria-pressed="true" id="macros-height-unit-in-btn">in</button>
+              <button type="button" class="chip" data-height-unit="cm" aria-pressed="false" id="macros-height-unit-cm-btn">cm</button>
+            </div>
+          </div>
+          <div class="field">
+            <span id="macros-sex-label">Sex (for Mifflin-St Jeor)</span>
+            <div class="radio-row" role="radiogroup" aria-labelledby="macros-sex-label" id="macros-sex-group">
+              <button type="button" class="chip" data-sex="male" aria-pressed="true" id="macros-sex-male-btn">Male</button>
+              <button type="button" class="chip" data-sex="female" aria-pressed="false" id="macros-sex-female-btn">Female</button>
+            </div>
+          </div>
+        </details>
       </div>
       <div class="results" id="macros-results" aria-live="polite"></div>
     </div>
@@ -540,6 +580,35 @@
           </div>
           <button type="button" class="chip" id="programs-531-fromonerm-apply">Use this training max</button>
         </details>
+        <details id="programs-531-fromamrap">
+          <summary id="programs-531-fromamrap-summary">Fill training max from an AMRAP set</summary>
+          <div class="field">
+            <label for="programs-531-fromamrap-weight" id="programs-531-fromamrap-weight-label">AMRAP weight</label>
+            <div class="stepper-row">
+              <button class="stepper-btn" id="programs-531-fromamrap-weight-dec" aria-label="Decrease AMRAP weight">&minus;</button>
+              <input type="number" id="programs-531-fromamrap-weight" inputmode="decimal" min="0" step="5" placeholder="e.g. 245" />
+              <button class="stepper-btn" id="programs-531-fromamrap-weight-inc" aria-label="Increase AMRAP weight">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="programs-531-fromamrap-reps" id="programs-531-fromamrap-reps-label">Reps completed</label>
+            <div class="stepper-row">
+              <button class="stepper-btn" id="programs-531-fromamrap-reps-dec" aria-label="Decrease reps completed">&minus;</button>
+              <input type="number" id="programs-531-fromamrap-reps" inputmode="numeric" min="1" step="1" placeholder="e.g. 7" />
+              <button class="stepper-btn" id="programs-531-fromamrap-reps-inc" aria-label="Increase reps completed">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="programs-531-fromamrap-tmpct" id="programs-531-fromamrap-tmpct-label">TM %</label>
+            <div class="stepper-row">
+              <button class="stepper-btn" id="programs-531-fromamrap-tmpct-dec" aria-label="Decrease TM percent">&minus;</button>
+              <input type="number" id="programs-531-fromamrap-tmpct" inputmode="numeric" value="90" min="80" max="100" step="1" />
+              <button class="stepper-btn" id="programs-531-fromamrap-tmpct-inc" aria-label="Increase TM percent">+</button>
+            </div>
+          </div>
+          <p class="hint" id="programs-531-fromamrap-hint">Estimates a 1RM from the set first (median of six formulas), same as the 1RM tab.</p>
+          <button type="button" class="chip" id="programs-531-fromamrap-apply">Use this training max</button>
+        </details>
         <div class="field">
           <label for="programs-531-week" id="programs-531-week-label">Week</label>
           <select id="programs-531-week">
@@ -654,8 +723,23 @@
   </p>
   <!-- app-version has no build step to read it from pyproject.toml automatically -
        bump it by hand alongside CACHE_NAME whenever a release changes web/. -->
-  <p><a href="https://github.com/munzzyy/liftmath" rel="noopener" id="footer-source-link">source on GitHub</a> &middot; v<span id="app-version">1.2.0</span></p>
+  <p><a href="https://github.com/munzzyy/liftmath" rel="noopener" id="footer-source-link">source on GitHub</a> &middot; v<span id="app-version">1.3.0</span>
+    &middot; <button type="button" class="footer-glossary-btn" id="footer-glossary-btn">Glossary</button></p>
 </footer>
+
+<!-- Plain-English + technical glossary, opened from the footer link or from
+     an inline "?" trigger next to jargon throughout the tool panels (see
+     js/app.js's openGlossary()). Content is populated by JS from
+     js/glossary.js + js/i18n's glossary.* keys, not hardcoded here, so it
+     re-renders correctly on a language switch same as every other tool. -->
+<dialog id="glossary-dialog" aria-labelledby="glossary-dialog-title">
+  <div class="glossary-dialog-header">
+    <h2 id="glossary-dialog-title">Glossary</h2>
+    <button type="button" class="icon-btn" id="glossary-dialog-close">Close</button>
+  </div>
+  <p class="hint" id="glossary-dialog-intro">Plain-English first, technical meaning second.</p>
+  <div id="glossary-list"></div>
+</dialog>
 
 <script type="module" src="js/app.js"></script>
 </body>

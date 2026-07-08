@@ -2,8 +2,12 @@
   {
     "args": {
       "activity": "moderate",
+      "age": null,
+      "bodyfatPct": null,
       "bodyweight": 185,
       "goal": "gain",
+      "heightM": null,
+      "sex": null,
       "tdee": null,
       "unit": "lb"
     },
@@ -23,15 +27,20 @@
       "shortfall": false,
       "targetKcal": 3195.4675598444833,
       "tdee": 2853.0960355754314,
-      "tdeeIsEstimate": true
+      "tdeeIsEstimate": true,
+      "tdeeMethod": "quick_estimate"
     },
     "fn": "macroTargets"
   },
   {
     "args": {
       "activity": "moderate",
+      "age": null,
+      "bodyfatPct": null,
       "bodyweight": 185,
       "goal": "cut",
+      "heightM": null,
+      "sex": null,
       "tdee": null,
       "unit": "lb"
     },
@@ -51,15 +60,20 @@
       "shortfall": false,
       "targetKcal": 2282.476828460345,
       "tdee": 2853.0960355754314,
-      "tdeeIsEstimate": true
+      "tdeeIsEstimate": true,
+      "tdeeMethod": "quick_estimate"
     },
     "fn": "macroTargets"
   },
   {
     "args": {
       "activity": "sedentary",
+      "age": null,
+      "bodyfatPct": null,
       "bodyweight": 185,
       "goal": "maintain",
+      "heightM": null,
+      "sex": null,
       "tdee": null,
       "unit": "lb"
     },
@@ -79,15 +93,20 @@
       "shortfall": false,
       "targetKcal": 2349.6084998856495,
       "tdee": 2349.6084998856495,
-      "tdeeIsEstimate": true
+      "tdeeIsEstimate": true,
+      "tdeeMethod": "quick_estimate"
     },
     "fn": "macroTargets"
   },
   {
     "args": {
       "activity": "active",
+      "age": null,
+      "bodyfatPct": null,
       "bodyweight": 80,
       "goal": "recomp",
+      "heightM": null,
+      "sex": null,
       "tdee": null,
       "unit": "kg"
     },
@@ -107,15 +126,20 @@
       "shortfall": false,
       "targetKcal": 3040.0,
       "tdee": 3040,
-      "tdeeIsEstimate": true
+      "tdeeIsEstimate": true,
+      "tdeeMethod": "quick_estimate"
     },
     "fn": "macroTargets"
   },
   {
     "args": {
       "activity": "moderate",
+      "age": null,
+      "bodyfatPct": null,
       "bodyweight": 80,
       "goal": "cut",
+      "heightM": null,
+      "sex": null,
       "tdee": 1800,
       "unit": "kg"
     },
@@ -135,15 +159,20 @@
       "shortfall": false,
       "targetKcal": 1440.0,
       "tdee": 1800,
-      "tdeeIsEstimate": false
+      "tdeeIsEstimate": false,
+      "tdeeMethod": "supplied"
     },
     "fn": "macroTargets"
   },
   {
     "args": {
       "activity": "moderate",
+      "age": null,
+      "bodyfatPct": null,
       "bodyweight": 250,
       "goal": "cut",
+      "heightM": null,
+      "sex": null,
       "tdee": 1600,
       "unit": "lb"
     },
@@ -163,15 +192,20 @@
       "shortfall": true,
       "targetKcal": 1280.0,
       "tdee": 1600,
-      "tdeeIsEstimate": false
+      "tdeeIsEstimate": false,
+      "tdeeMethod": "supplied"
     },
     "fn": "macroTargets"
   },
   {
     "args": {
       "activity": "light",
+      "age": null,
+      "bodyfatPct": null,
       "bodyweight": 120,
       "goal": "gain",
+      "heightM": null,
+      "sex": null,
       "tdee": null,
       "unit": "lb"
     },
@@ -191,7 +225,173 @@
       "shortfall": false,
       "targetKcal": 1889.8472690972142,
       "tdee": 1687.3636331225125,
-      "tdeeIsEstimate": true
+      "tdeeIsEstimate": true,
+      "tdeeMethod": "quick_estimate"
+    },
+    "fn": "macroTargets"
+  },
+  {
+    "args": {
+      "activity": "moderate",
+      "age": 30,
+      "bodyfatPct": null,
+      "bodyweight": 90,
+      "goal": "maintain",
+      "heightM": 1.8,
+      "sex": "male",
+      "tdee": null,
+      "unit": "kg"
+    },
+    "expected": {
+      "actualKcal": 2914.0,
+      "bodyweightKg": 90,
+      "carbG": 402.25,
+      "carbKcal": 1609.0,
+      "fatG": 81.0,
+      "fatGPerKg": 0.9,
+      "fatKcal": 729.0,
+      "goal": "maintain",
+      "perMealProteinG": 36.0,
+      "proteinG": 144.0,
+      "proteinGPerKg": 1.6,
+      "proteinKcal": 576.0,
+      "shortfall": false,
+      "targetKcal": 2914.0,
+      "tdee": 2914.0,
+      "tdeeIsEstimate": true,
+      "tdeeMethod": "mifflin"
+    },
+    "fn": "macroTargets"
+  },
+  {
+    "args": {
+      "activity": "sedentary",
+      "age": 25,
+      "bodyfatPct": null,
+      "bodyweight": 65,
+      "goal": "cut",
+      "heightM": 1.65,
+      "sex": "female",
+      "tdee": null,
+      "unit": "kg"
+    },
+    "expected": {
+      "actualKcal": 1339.44,
+      "bodyweightKg": 65,
+      "carbG": 91.11000000000001,
+      "carbKcal": 364.44000000000005,
+      "fatG": 39.0,
+      "fatGPerKg": 0.6,
+      "fatKcal": 351.0,
+      "goal": "cut",
+      "perMealProteinG": 26.0,
+      "proteinG": 156.0,
+      "proteinGPerKg": 2.4,
+      "proteinKcal": 624.0,
+      "shortfall": false,
+      "targetKcal": 1339.44,
+      "tdee": 1674.3,
+      "tdeeIsEstimate": true,
+      "tdeeMethod": "mifflin"
+    },
+    "fn": "macroTargets"
+  },
+  {
+    "args": {
+      "activity": "active",
+      "age": 22,
+      "bodyfatPct": null,
+      "bodyweight": 200,
+      "goal": "gain",
+      "heightM": 1.8288,
+      "sex": "male",
+      "tdee": null,
+      "unit": "lb"
+    },
+    "expected": {
+      "actualKcal": 3758.096935049837,
+      "bodyweightKg": 90.71847489905983,
+      "carbG": 610.6697622533674,
+      "carbKcal": 2442.6790490134695,
+      "fatG": 81.64662740915385,
+      "fatGPerKg": 0.9,
+      "fatKcal": 734.8196466823847,
+      "goal": "gain",
+      "perMealProteinG": 36.28738995962393,
+      "proteinG": 145.14955983849572,
+      "proteinGPerKg": 1.6,
+      "proteinKcal": 580.5982393539829,
+      "shortfall": false,
+      "targetKcal": 3758.096935049837,
+      "tdee": 3355.443692008783,
+      "tdeeIsEstimate": true,
+      "tdeeMethod": "mifflin"
+    },
+    "fn": "macroTargets"
+  },
+  {
+    "args": {
+      "activity": "moderate",
+      "age": null,
+      "bodyfatPct": 20,
+      "bodyweight": 100,
+      "goal": "gain",
+      "heightM": null,
+      "sex": null,
+      "tdee": null,
+      "unit": "kg"
+    },
+    "expected": {
+      "actualKcal": 3923.3600000000006,
+      "bodyweightKg": 100,
+      "carbG": 618.3400000000001,
+      "carbKcal": 2473.3600000000006,
+      "fatG": 90.0,
+      "fatGPerKg": 0.9,
+      "fatKcal": 810.0,
+      "goal": "gain",
+      "perMealProteinG": 40.0,
+      "proteinG": 160.0,
+      "proteinGPerKg": 1.6,
+      "proteinKcal": 640.0,
+      "shortfall": false,
+      "targetKcal": 3923.3600000000006,
+      "tdee": 3503.0,
+      "tdeeIsEstimate": true,
+      "tdeeMethod": "cunningham"
+    },
+    "fn": "macroTargets"
+  },
+  {
+    "args": {
+      "activity": "active",
+      "age": null,
+      "bodyfatPct": 12,
+      "bodyweight": 185,
+      "goal": "cut",
+      "heightM": null,
+      "sex": null,
+      "tdee": null,
+      "unit": "lb"
+    },
+    "expected": {
+      "actualKcal": 2931.9292989194614,
+      "bodyweightKg": 83.91458928163034,
+      "carbG": 418.30261492375155,
+      "carbKcal": 1673.2104596950062,
+      "fatG": 50.3487535689782,
+      "fatGPerKg": 0.6,
+      "fatKcal": 453.13878212080385,
+      "goal": "cut",
+      "perMealProteinG": 33.56583571265214,
+      "proteinG": 201.3950142759128,
+      "proteinGPerKg": 2.4,
+      "proteinKcal": 805.5800571036513,
+      "shortfall": false,
+      "targetKcal": 2931.9292989194614,
+      "tdee": 3664.9116236493264,
+      "tdeeIsEstimate": true,
+      "tdeeMethod": "cunningham"
     },
     "fn": "macroTargets"
   }

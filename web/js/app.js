@@ -25,6 +25,7 @@ import {
   T2_STAGES,
 } from "./math/training-templates.js";
 
+import { GLOSSARY_TERMS } from "./glossary.js";
 import { renderBarbellSvg, renderPlateLegend } from "./ui/svg-barbell.js";
 import { THEMES, initTheme, currentSelection, chooseTheme } from "./ui/theme.js";
 import { wireStepper, minFromInput } from "./ui/steppers.js";
@@ -65,6 +66,22 @@ function $(id) {
 function fmt(n, digits = 1) {
   if (n === null || n === undefined || Number.isNaN(n)) return "-";
   return formatNumber(n, { maximumFractionDigits: digits, minimumFractionDigits: 0 });
+}
+
+/**
+ * Sync the footer's online/offline indicator text+state to the current
+ * connection AND the current locale - a module-level function (not nested
+ * inside init(), where it originally lived) so both init()'s online/offline
+ * event listeners AND onLocaleChanged() can call the same one, keeping this
+ * text from going stale after a language switch the way a locale-scoped
+ * closure couldn't.
+ */
+function syncOnline() {
+  const indicator = $("offline-indicator");
+  const indicatorText = $("offline-indicator-text");
+  const online = navigator.onLine;
+  indicator.classList.toggle("is-offline", !online);
+  indicatorText.textContent = online ? t("footer.offline.online") : t("footer.offline.offline");
 }
 
 function escapeHtml(s) {
@@ -120,7 +137,7 @@ function applyStaticText() {
   $("tab-btn-programs").textContent = t("tab.programs");
 
   // 1RM
-  $("onerm-heading").textContent = t("onerm.heading");
+  setLabelWithGlossaryTrigger("onerm-heading", "onerm.heading", "e1rm");
   $("onerm-disclaimer").textContent = t("onerm.disclaimer");
   $("onerm-mode-label").textContent = t("onerm.modeLabel");
   $("onerm-mode-barbell-btn").textContent = t("onerm.mode.barbell");
@@ -156,7 +173,7 @@ function applyStaticText() {
   $("loadchart-reps-label").textContent = t("loadchart.repsLabel");
   $("loadchart-reps-dec").setAttribute("aria-label", t("loadchart.repsDecAria"));
   $("loadchart-reps-inc").setAttribute("aria-label", t("loadchart.repsIncAria"));
-  $("loadchart-rir-label").textContent = t("loadchart.rirLabel");
+  setLabelWithGlossaryTrigger("loadchart-rir-label", "loadchart.rirLabel", "rir");
   $("loadchart-rir-dec").setAttribute("aria-label", t("loadchart.rirDecAria"));
   $("loadchart-rir-inc").setAttribute("aria-label", t("loadchart.rirIncAria"));
   $("loadchart-fullchart-heading").textContent = t("loadchart.fullChartHeading");
@@ -193,8 +210,27 @@ function applyStaticText() {
   $("macros-activity-light-opt").textContent = t("macros.activity.light");
   $("macros-activity-moderate-opt").textContent = t("macros.activity.moderate");
   $("macros-activity-active-opt").textContent = t("macros.activity.active");
-  $("macros-tdee-label").textContent = t("macros.tdeeLabel");
+  setLabelWithGlossaryTrigger("macros-tdee-label", "macros.tdeeLabel", "tdee");
   $("macros-tdee").setAttribute("placeholder", t("macros.tdeePlaceholder"));
+  $("macros-advanced-summary").textContent = t("macros.advanced.summary");
+  setLabelWithGlossaryTrigger("macros-bodyfat-label", "macros.bodyfatLabel", "cunningham");
+  $("macros-bodyfat-dec").setAttribute("aria-label", t("macros.bodyfatDecAria"));
+  $("macros-bodyfat-inc").setAttribute("aria-label", t("macros.bodyfatIncAria"));
+  $("macros-bodyfat").setAttribute("placeholder", t("macros.optionalPlaceholder"));
+  $("macros-bodyfat-hint").textContent = t("macros.bodyfatHint");
+  setLabelWithGlossaryTrigger("macros-age-label", "macros.ageLabel", "mifflin");
+  $("macros-age-dec").setAttribute("aria-label", t("macros.ageDecAria"));
+  $("macros-age-inc").setAttribute("aria-label", t("macros.ageIncAria"));
+  $("macros-age").setAttribute("placeholder", t("macros.optionalPlaceholder"));
+  $("macros-height-label").textContent = t("macros.heightLabel");
+  $("macros-height-dec").setAttribute("aria-label", t("macros.heightDecAria"));
+  $("macros-height-inc").setAttribute("aria-label", t("macros.heightIncAria"));
+  $("macros-height").setAttribute("placeholder", t("macros.optionalPlaceholder"));
+  $("macros-height-unit-in-btn").textContent = t("macros.heightUnit.in");
+  $("macros-height-unit-cm-btn").textContent = t("macros.heightUnit.cm");
+  $("macros-sex-label").textContent = t("macros.sexLabel");
+  $("macros-sex-male-btn").textContent = t("macros.sex.male");
+  $("macros-sex-female-btn").textContent = t("macros.sex.female");
 
   // Plates
   $("plates-heading").textContent = t("plates.heading");
@@ -234,11 +270,11 @@ function applyStaticText() {
   $("scores-sex-label").textContent = t("scores.sexLabel");
   $("scores-sex-male-btn").textContent = t("scores.sex.male");
   $("scores-sex-female-btn").textContent = t("scores.sex.female");
-  $("scores-age-label").textContent = t("scores.ageLabel");
+  setLabelWithGlossaryTrigger("scores-age-label", "scores.ageLabel", "mcculloch");
   $("scores-age").setAttribute("placeholder", t("scores.agePlaceholder"));
 
   // Symmetry
-  $("symmetry-heading").textContent = t("symmetry.heading");
+  setLabelWithGlossaryTrigger("symmetry-heading", "symmetry.heading", "symmetry");
   $("symmetry-disclaimer").textContent = t("symmetry.disclaimer");
   $("symmetry-squat-label").textContent = t("symmetry.squatLabel");
   $("symmetry-squat-dec").setAttribute("aria-label", t("symmetry.squatDecAria"));
@@ -269,7 +305,7 @@ function applyStaticText() {
   $("programs-select-nsuns-opt").textContent = t("programs.select.nsuns");
   $("programs-select-gzclp-opt").textContent = t("programs.select.gzclp");
 
-  $("programs-531-tm-label").textContent = t("programs.531.tmLabel");
+  setLabelWithGlossaryTrigger("programs-531-tm-label", "programs.531.tmLabel", "trainingMax");
   $("programs-531-tm-dec").setAttribute("aria-label", t("programs.531.tmDecAria"));
   $("programs-531-tm-inc").setAttribute("aria-label", t("programs.531.tmIncAria"));
   $("programs-531-fromonerm-summary").textContent = t("programs.531.fillFromOnermSummary");
@@ -281,6 +317,20 @@ function applyStaticText() {
   $("programs-531-tmpct-dec").setAttribute("aria-label", t("programs.531.tmPctDecAria"));
   $("programs-531-tmpct-inc").setAttribute("aria-label", t("programs.531.tmPctIncAria"));
   $("programs-531-fromonerm-apply").textContent = t("programs.531.applyButton");
+  $("programs-531-fromamrap-summary").textContent = t("programs.531.fillFromAmrapSummary");
+  $("programs-531-fromamrap-weight-label").textContent = t("programs.531.fromAmrapWeightLabel");
+  $("programs-531-fromamrap-weight-dec").setAttribute("aria-label", t("programs.531.fromAmrapWeightDecAria"));
+  $("programs-531-fromamrap-weight-inc").setAttribute("aria-label", t("programs.531.fromAmrapWeightIncAria"));
+  $("programs-531-fromamrap-weight").setAttribute("placeholder", t("programs.531.fromAmrapWeightPlaceholder"));
+  $("programs-531-fromamrap-reps-label").textContent = t("programs.531.fromAmrapRepsLabel");
+  $("programs-531-fromamrap-reps-dec").setAttribute("aria-label", t("programs.531.fromAmrapRepsDecAria"));
+  $("programs-531-fromamrap-reps-inc").setAttribute("aria-label", t("programs.531.fromAmrapRepsIncAria"));
+  $("programs-531-fromamrap-reps").setAttribute("placeholder", t("programs.531.fromAmrapRepsPlaceholder"));
+  $("programs-531-fromamrap-tmpct-label").textContent = t("programs.531.tmPctLabel");
+  $("programs-531-fromamrap-tmpct-dec").setAttribute("aria-label", t("programs.531.tmPctDecAria"));
+  $("programs-531-fromamrap-tmpct-inc").setAttribute("aria-label", t("programs.531.tmPctIncAria"));
+  $("programs-531-fromamrap-hint").textContent = t("programs.531.fromAmrapHint");
+  $("programs-531-fromamrap-apply").textContent = t("programs.531.applyButton");
   $("programs-531-week-label").textContent = t("programs.531.weekLabel");
   $("programs-531-week-1-opt").textContent = t("programs.531.week.1");
   $("programs-531-week-2-opt").textContent = t("programs.531.week.2");
@@ -295,7 +345,7 @@ function applyStaticText() {
   $("programs-nsuns-day-squat2-opt").textContent = t("programs.nsuns.day.squat_day2");
   $("programs-nsuns-day-bench3-opt").textContent = t("programs.nsuns.day.bench_day3");
   $("programs-nsuns-day-deadlift4-opt").textContent = t("programs.nsuns.day.deadlift_day4");
-  $("programs-nsuns-tm-label").textContent = t("programs.nsuns.tmLabel");
+  setLabelWithGlossaryTrigger("programs-nsuns-tm-label", "programs.nsuns.tmLabel", "trainingMax");
   $("programs-nsuns-tm-dec").setAttribute("aria-label", t("programs.nsuns.tmDecAria"));
   $("programs-nsuns-tm-inc").setAttribute("aria-label", t("programs.nsuns.tmIncAria"));
   $("programs-nsuns-increment-label").textContent = t("programs.nsuns.incrementLabel");
@@ -303,7 +353,7 @@ function applyStaticText() {
   $("programs-nsuns-increment-inc").setAttribute("aria-label", t("programs.nsuns.incrementIncAria"));
   $("programs-nsuns-t2-hint").textContent = t("programs.nsuns.t2Hint");
 
-  $("programs-gzclp-tier-label").textContent = t("programs.gzclp.tierLabel");
+  setLabelWithGlossaryTrigger("programs-gzclp-tier-label", "programs.gzclp.tierLabel", "t1t2t3");
   $("programs-gzclp-tier-t1-btn").textContent = t("programs.gzclp.tier.t1");
   $("programs-gzclp-tier-t2-btn").textContent = t("programs.gzclp.tier.t2");
   $("programs-gzclp-tier-t3-btn").textContent = t("programs.gzclp.tier.t3");
@@ -314,7 +364,7 @@ function applyStaticText() {
   $("programs-gzclp-weight-label").textContent = t("programs.gzclp.weightLabel");
   $("programs-gzclp-weight-dec").setAttribute("aria-label", t("programs.gzclp.weightDecAria"));
   $("programs-gzclp-weight-inc").setAttribute("aria-label", t("programs.gzclp.weightIncAria"));
-  $("programs-gzclp-amrap-label").textContent = t("programs.gzclp.amrapLabel");
+  setLabelWithGlossaryTrigger("programs-gzclp-amrap-label", "programs.gzclp.amrapLabel", "amrap");
   $("programs-gzclp-amrap-dec").setAttribute("aria-label", t("programs.gzclp.amrapDecAria"));
   $("programs-gzclp-amrap-inc").setAttribute("aria-label", t("programs.gzclp.amrapIncAria"));
   $("programs-gzclp-result-label").textContent = t("programs.gzclp.resultLabel");
@@ -337,6 +387,104 @@ function applyStaticText() {
 }
 
 // ---------------------------------------------------------------------------
+// Glossary: dialog + inline "what does this mean?" triggers
+// ---------------------------------------------------------------------------
+// A native <dialog> (showModal()) rather than a hand-rolled floating
+// tooltip: free keyboard/ESC handling and focus trapping, no positioning
+// math to fight this page's strict style-src 'self' CSP over (no inline
+// styles). GLOSSARY_TERMS (js/glossary.js) supplies the language-neutral key
+// list; js/i18n's glossary.terms.<key>.* keys supply the actual text, same
+// split every other translated data list in this app already uses (compare
+// MUSCLES + MUSCLE_LABEL_KEY above).
+
+function glossaryEntryHtml(key) {
+  const term = t(`glossary.terms.${key}.term`);
+  const plain = t(`glossary.terms.${key}.plain`);
+  const technical = t(`glossary.terms.${key}.technical`);
+  return `
+    <div class="glossary-entry" id="glossary-entry-${escapeHtml(key)}">
+      <h3>${escapeHtml(term)}</h3>
+      <p class="glossary-plain">${escapeHtml(plain)}</p>
+      <p class="glossary-technical">${escapeHtml(t("glossary.technicalLabel"))}: ${escapeHtml(technical)}</p>
+    </div>
+  `;
+}
+
+function populateGlossaryDialog() {
+  $("glossary-dialog-title").textContent = t("glossary.dialogTitle");
+  $("glossary-dialog-intro").textContent = t("glossary.dialogIntro");
+  $("glossary-dialog-close").textContent = t("glossary.closeButton");
+  $("footer-glossary-btn").textContent = t("footer.glossaryLink");
+  $("footer-glossary-btn").setAttribute("aria-label", t("glossary.openAria"));
+  $("glossary-list").innerHTML = GLOSSARY_TERMS.map(glossaryEntryHtml).join("");
+}
+
+/**
+ * Inline HTML fragment for a small "what does this mean?" trigger next to a
+ * jargon word. Two nested elements, not one - see the .glossary-trigger /
+ * .glossary-trigger-dot rule in styles.css for why: the outer <button> is a
+ * full --tap-min hit target, the inner <span> is the small painted circle.
+ */
+function glossaryTriggerHtml(key) {
+  const term = t(`glossary.terms.${key}.term`);
+  return `<button type="button" class="glossary-trigger" data-glossary-term="${escapeHtml(key)}" aria-label="${escapeHtml(t("glossary.triggerAria", { term }))}"><span class="glossary-trigger-dot" aria-hidden="true">?</span></button>`;
+}
+
+/**
+ * Set a label/heading's content to translated text PLUS an inline glossary
+ * trigger, in one atomic innerHTML write.
+ *
+ * This exists because a naive two-step approach (write the text via
+ * `.textContent`, then separately inject a trigger `<button>` into a child
+ * `<span>`) is a real bug here: `applyStaticText()`'s own `.textContent =`
+ * assignment for these same elements would wipe out any child node placed
+ * there by an earlier pass, and a later pass can't inject into a `<span>`
+ * that `.textContent` already deleted. Building the whole thing in one
+ * `.innerHTML` write, in the SAME place that sets the label text, sidesteps
+ * the ordering problem entirely - see applyStaticText()'s call sites below.
+ */
+function setLabelWithGlossaryTrigger(id, textKey, glossaryKey) {
+  const el = $(id);
+  if (el) el.innerHTML = escapeHtml(t(textKey)) + glossaryTriggerHtml(glossaryKey);
+}
+
+/** Open the glossary dialog, optionally scrolled to and briefly highlighting one term. */
+function openGlossary(key) {
+  const dialog = $("glossary-dialog");
+  if (typeof dialog.showModal === "function") {
+    if (!dialog.open) dialog.showModal();
+  } else {
+    dialog.setAttribute("open", "");
+  }
+  if (key) {
+    const entry = $(`glossary-entry-${key}`);
+    if (entry) {
+      entry.scrollIntoView({ block: "start", behavior: "smooth" });
+      entry.classList.add("glossary-entry-highlight");
+      setTimeout(() => entry.classList.remove("glossary-entry-highlight"), 2000);
+    }
+  }
+}
+
+$("footer-glossary-btn").addEventListener("click", () => openGlossary());
+$("glossary-dialog-close").addEventListener("click", () => $("glossary-dialog").close());
+// A click that lands on the <dialog> element itself (not one of its
+// children) only happens on the ::backdrop with showModal() - treat it as
+// "click outside to close", the same convention most modal dialogs use.
+$("glossary-dialog").addEventListener("click", (e) => {
+  if (e.target === $("glossary-dialog")) $("glossary-dialog").close();
+});
+
+// Delegated on `document`: inline triggers live inside result panels that
+// get replaced wholesale via innerHTML on every render(), so per-element
+// listeners would need constant re-wiring - one stable delegated listener
+// avoids that entirely.
+document.addEventListener("click", (e) => {
+  const trigger = e.target.closest(".glossary-trigger");
+  if (trigger) openGlossary(trigger.dataset.glossaryTerm);
+});
+
+// ---------------------------------------------------------------------------
 // Language switcher
 // ---------------------------------------------------------------------------
 
@@ -357,6 +505,8 @@ async function onLocaleChanged() {
   applyStaticText();
   populateLangSelect(); // re-sync <select> value + keep it in sync if called externally
   populateThemeSelect(); // "Auto"'s label is translated - refresh it + re-sync the selected value
+  populateGlossaryDialog();
+  syncOnline();
   renderActiveTab();
 }
 
@@ -701,7 +851,7 @@ function renderVolume() {
     <p class="badge ${bandClass}">${escapeHtml(verdictText)}</p>
     <table class="data-table">
       <caption>${escapeHtml(t("volume.table.caption", { muscle: t(MUSCLE_LABEL_KEY[muscle] || muscle) }))}</caption>
-      <thead><tr><th>${escapeHtml(t("volume.table.mv"))}</th><th>${escapeHtml(t("volume.table.mev"))}</th><th>${escapeHtml(t("volume.table.mav"))}</th><th>${escapeHtml(t("volume.table.mrv"))}</th></tr></thead>
+      <thead><tr><th>${escapeHtml(t("volume.table.mv"))}${glossaryTriggerHtml("mv")}</th><th>${escapeHtml(t("volume.table.mev"))}${glossaryTriggerHtml("mev")}</th><th>${escapeHtml(t("volume.table.mav"))}${glossaryTriggerHtml("mav")}</th><th>${escapeHtml(t("volume.table.mrv"))}${glossaryTriggerHtml("mrv")}</th></tr></thead>
       <tbody><tr><td>${result.mv}</td><td>${result.mev}</td><td>${result.mavLow}-${result.mavHigh}</td><td>${result.mrv}</td></tr></tbody>
     </table>
   `;
@@ -762,6 +912,27 @@ function renderMesocycle() {
 // Macros
 // ---------------------------------------------------------------------------
 
+let macrosHeightUnit = "in";
+let macrosSex = "male";
+
+// "quick_estimate" reuses the pre-existing macros.result.estimatedTdeeSuffix
+// key (same meaning it always had - a rough estimate) so the 6 already-
+// translated locales (es/de/ru/ja/zh-Hans/ar) keep working for that case
+// without a re-translation; the other three methods are new keys that fall
+// back to English in those locales until translated (see en.js header note).
+const MACROS_GOAL_HINT_KEY = {
+  gain: "macros.result.goalHint.gain",
+  cut: "macros.result.goalHint.cut",
+  recomp: "macros.result.goalHint.recomp",
+};
+
+const MACROS_METHOD_SUFFIX_KEY = {
+  supplied: "macros.result.methodSuffix.supplied",
+  cunningham: "macros.result.methodSuffix.cunningham",
+  mifflin: "macros.result.methodSuffix.mifflin",
+  quick_estimate: "macros.result.estimatedTdeeSuffix",
+};
+
 function renderMacros() {
   const bodyweight = parseFloat($("macros-bodyweight").value) || 0;
   const goal = $("macros-goal").value;
@@ -770,11 +941,27 @@ function renderMacros() {
   const tdee = tdeeRaw === "" ? null : parseFloat(tdeeRaw);
   const unit = state.unit;
 
-  updateParamsDebounced({ tab: "macros", bw: bodyweight, goal, activity, tdee: tdeeRaw || "" });
+  const bodyfatRaw = $("macros-bodyfat").value;
+  const bodyfatPct = bodyfatRaw === "" ? null : parseFloat(bodyfatRaw);
+  const ageRaw = $("macros-age").value;
+  const age = ageRaw === "" ? null : parseInt(ageRaw, 10);
+  const heightRaw = $("macros-height").value;
+  const heightVal = heightRaw === "" ? null : parseFloat(heightRaw);
+  const heightM = heightVal === null ? null : (macrosHeightUnit === "in" ? heightVal * 0.0254 : heightVal / 100);
+  // Mifflin only activates once BOTH age and height are filled in - sex is a
+  // chip that always carries some value, so it must not count on its own
+  // (see macros.js's/macros.py's "all three or none" validation).
+  const mifflinActive = age !== null && heightM !== null;
+  const sex = mifflinActive ? macrosSex : null;
+
+  updateParamsDebounced({
+    tab: "macros", bw: bodyweight, goal, activity, tdee: tdeeRaw || "",
+    bf: bodyfatRaw || "", age: ageRaw || "", ht: heightRaw || "", htu: macrosHeightUnit, msex: macrosSex,
+  });
 
   let result;
   try {
-    result = macroTargets(bodyweight, goal, { unit, tdee, activity });
+    result = macroTargets(bodyweight, goal, { unit, tdee, activity, age, heightM, sex, bodyfatPct });
   } catch (err) {
     $("macros-results").innerHTML = `<p class="badge warn">${escapeHtml(err.message)}</p>`;
     return;
@@ -784,7 +971,13 @@ function renderMacros() {
     ? `<p class="badge warn">${escapeHtml(t("macros.warn.shortfall"))}</p>`
     : "";
 
-  const estimatedSuffix = result.tdeeIsEstimate ? t("macros.result.estimatedTdeeSuffix") : "";
+  const methodKey = MACROS_METHOD_SUFFIX_KEY[result.tdeeMethod] || MACROS_METHOD_SUFFIX_KEY.quick_estimate;
+  const estimatedSuffix = t(methodKey);
+
+  const goalHintKey = MACROS_GOAL_HINT_KEY[goal];
+  const goalHintHtml = goalHintKey
+    ? `<p class="hint">${escapeHtml(t(goalHintKey))}${goal === "recomp" ? glossaryTriggerHtml("recomp") : ""}</p>`
+    : "";
 
   $("macros-results").innerHTML = `
     <p class="result-hero">${fmt(result.targetKcal, 0)}<span class="unit">${escapeHtml(t("macros.result.kcalPerDay"))}${escapeHtml(estimatedSuffix)}</span></p>
@@ -797,9 +990,27 @@ function renderMacros() {
         <tr><td>${escapeHtml(t("macros.table.carbs"))}</td><td>${fmt(result.carbG, 0)} g</td><td>${fmt(result.carbKcal, 0)}</td></tr>
       </tbody>
     </table>
+    <p class="hint">${escapeHtml(t("macros.result.proteinFatFirstHint"))}</p>
     <p class="hint">${escapeHtml(t("macros.result.perMealHint", { grams: fmt(result.perMealProteinG, 0) }))}</p>
+    ${goalHintHtml}
   `;
 }
+
+document.querySelectorAll("#macros-height-unit-group .chip").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    macrosHeightUnit = btn.dataset.heightUnit;
+    document.querySelectorAll("#macros-height-unit-group .chip").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+    renderMacros();
+  });
+});
+
+document.querySelectorAll("#macros-sex-group .chip").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    macrosSex = btn.dataset.sex;
+    document.querySelectorAll("#macros-sex-group .chip").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+    renderMacros();
+  });
+});
 
 // ---------------------------------------------------------------------------
 // Plate loading (+ shared barbell renderer)
@@ -1016,10 +1227,10 @@ function renderScores() {
     <table class="data-table">
       <thead><tr><th>${escapeHtml(t("scores.table.formula"))}</th><th>${escapeHtml(t("scores.table.score"))}</th></tr></thead>
       <tbody>
-        <tr class="highlight"><td>${escapeHtml(t("scores.formula.wilks2020"))}</td><td>${fmt(result.wilks, 2)}</td></tr>
+        <tr class="highlight"><td>${escapeHtml(t("scores.formula.wilks2020"))}${glossaryTriggerHtml("wilks")}</td><td>${fmt(result.wilks, 2)}</td></tr>
         <tr><td>${escapeHtml(t("scores.formula.wilksOriginal"))}</td><td>${fmt(result.wilksOriginal, 2)}</td></tr>
-        <tr><td>${escapeHtml(t("scores.formula.dots"))}</td><td>${fmt(result.dots, 2)}</td></tr>
-        <tr><td>${escapeHtml(t("scores.formula.ipfGl"))}</td><td>${fmt(result.ipfGl, 2)}</td></tr>
+        <tr><td>${escapeHtml(t("scores.formula.dots"))}${glossaryTriggerHtml("dots")}</td><td>${fmt(result.dots, 2)}</td></tr>
+        <tr><td>${escapeHtml(t("scores.formula.ipfGl"))}${glossaryTriggerHtml("ipfGl")}</td><td>${fmt(result.ipfGl, 2)}</td></tr>
       </tbody>
     </table>
     ${mcHtml}
@@ -1184,6 +1395,25 @@ $("programs-531-fromonerm-apply").addEventListener("click", () => {
     render531();
   } catch {
     // invalid pct - leave the training max field untouched
+  }
+});
+
+// AMRAP set -> e1RM -> training max: wires the same two already-shipped
+// functions the 1RM tab and the "from a 1RM" block above already use, just
+// composed for the case where the input is a weight x reps set rather than
+// a known 1RM (e.g. this cycle's 5/3/1 week-3 AMRAP top set).
+$("programs-531-fromamrap-apply").addEventListener("click", () => {
+  const weight = parseFloat($("programs-531-fromamrap-weight").value) || 0;
+  const reps = Math.max(1, parseInt($("programs-531-fromamrap-reps").value, 10) || 1);
+  const pct = (parseFloat($("programs-531-fromamrap-tmpct").value) || 90) / 100;
+  if (weight <= 0) return;
+  try {
+    const est = estimateOneRm(weight, reps, state.unit);
+    const result = trainingMax(est.consensus, { pct, unit: state.unit });
+    $("programs-531-tm").value = String(result.trainingMax);
+    render531();
+  } catch {
+    // invalid input - leave the training max field untouched
   }
 });
 
@@ -1419,6 +1649,9 @@ const STEPPER_NO_UNIT_SUBSTRINGS = [
   "week", // programs-531-week isn't a stepper, but keep the substring list consistent
   "tmpct",
   "amrap",
+  "bodyfat", // a percent, not a weight in the global lb/kg unit
+  "age", // a count of years
+  "height", // its own in/cm unit, not the global lb/kg one
 ];
 
 function wireAllSteppers() {
@@ -1431,6 +1664,9 @@ function wireAllSteppers() {
     ["volume-sets", 1],
     ["meso-weeks", 1],
     ["macros-bodyweight", 5],
+    ["macros-bodyfat", 0.5],
+    ["macros-age", 1],
+    ["macros-height", 1],
     ["plates-target", 2.5],
     ["warmup-weight", 2.5],
     ["scores-total", 2.5],
@@ -1447,6 +1683,9 @@ function wireAllSteppers() {
     ["programs-531-tm", 5],
     ["programs-531-fromonerm", 5],
     ["programs-531-tmpct", 1],
+    ["programs-531-fromamrap-weight", 5],
+    ["programs-531-fromamrap-reps", 1],
+    ["programs-531-fromamrap-tmpct", 1],
     ["programs-531-increment", 0.5],
     ["programs-nsuns-tm", 5],
     ["programs-nsuns-increment", 0.5],
@@ -1494,6 +1733,21 @@ function applyInitialParams() {
   if (params.goal) $("macros-goal").value = params.goal;
   if (params.activity) $("macros-activity").value = params.activity;
   if (params.tdee) $("macros-tdee").value = params.tdee;
+  if (params.bf) $("macros-bodyfat").value = params.bf;
+  if (params.age) $("macros-age").value = params.age;
+  if (params.ht) $("macros-height").value = params.ht;
+  if (params.htu === "in" || params.htu === "cm") {
+    macrosHeightUnit = params.htu;
+    document.querySelectorAll("#macros-height-unit-group .chip").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.heightUnit === macrosHeightUnit))
+    );
+  }
+  if (params.msex === "male" || params.msex === "female") {
+    macrosSex = params.msex;
+    document.querySelectorAll("#macros-sex-group .chip").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.sex === macrosSex))
+    );
+  }
   if (params.target) $("plates-target").value = params.target;
   if (params.preset) {
     platesPreset = params.preset;
@@ -1591,20 +1845,13 @@ async function init() {
   populateLangSelect();
   populateThemeSelect();
   applyStaticText();
+  populateGlossaryDialog();
 
   const initialTab = applyInitialParams();
   wireInstantRecompute();
   wireAllSteppers();
   selectTab(initialTab);
 
-  // Offline indicator
-  const indicator = $("offline-indicator");
-  const indicatorText = $("offline-indicator-text");
-  function syncOnline() {
-    const online = navigator.onLine;
-    indicator.classList.toggle("is-offline", !online);
-    indicatorText.textContent = online ? t("footer.offline.online") : t("footer.offline.offline");
-  }
   window.addEventListener("online", syncOnline);
   window.addEventListener("offline", syncOnline);
   syncOnline();

@@ -18,6 +18,16 @@ this library avoids elsewhere.
 
 Standard increments (documented defaults, not fitted constants): ~2.5-5 lb
 (1-2.5 kg) for upper-body lifts, ~5-10 lb (2.5-5 kg) for lower-body lifts.
+
+Stall signal (`previous_reps_achieved`, optional): if you miss the BOTTOM of
+the rep range (not just the top) two sessions running at the same weight,
+that's the standard practitioner cue to deload rather than keep grinding the
+same weight hoping for a better day - repeated bottom-of-range misses are a
+recovery/fatigue signal, not a "try harder next time" one. Same evidence
+tier as double progression itself (established as a correct implementation
+of a widely-used practitioner heuristic, not a single-study finding - see
+above): mechanism trivially sound (two failures in a row at an unchanged
+weight means something isn't recovering), not a cited RCT result.
 """
 
 from __future__ import annotations
@@ -43,6 +53,9 @@ class ProgressionStep:
     next_weight: float
     next_target_reps: int
     note: str
+    previous_reps_achieved: int | None = None
+    missed_bottom_of_range: bool = False
+    stall_signal: bool = False
 
 
 def next_progression_step(
@@ -51,6 +64,8 @@ def next_progression_step(
     current_weight: float,
     reps_achieved: int,
     increment: float,
+    *,
+    previous_reps_achieved: int | None = None,
 ) -> ProgressionStep:
     """Decide the next session's weight/rep target from a double-progression range.
 
@@ -61,6 +76,12 @@ def next_progression_step(
         reps_achieved: reps actually completed at `current_weight`.
         increment: load jump to apply once `reps_high` is reached (see
             DEFAULT_INCREMENT_KG/LB for documented defaults by lift type).
+        previous_reps_achieved: reps completed at this same weight the
+            PRIOR session, if known (optional). Used only to detect the
+            stall signal (see module docstring): missing the bottom of the
+            range two sessions running at an unchanged weight. Omit this
+            (or pass None) if you don't have it - every other calculation
+            here is identical either way.
 
     Raises:
         ValueError: if reps_low >= reps_high, reps_achieved < 1, or
@@ -74,11 +95,21 @@ def next_progression_step(
         raise ValueError("increment must be > 0")
 
     at_top = reps_achieved >= reps_high
+    missed_bottom = reps_achieved < reps_low
+    stall = missed_bottom and previous_reps_achieved is not None and previous_reps_achieved < reps_low
 
     if at_top:
         next_weight = current_weight + increment
         next_target = reps_low
         note = f"at top of range - increase to {next_weight:g}, reset target to {reps_low} reps"
+    elif stall:
+        next_weight = current_weight
+        next_target = reps_low
+        note = (
+            f"missed the bottom of the range two sessions running ({previous_reps_achieved} then "
+            f"{reps_achieved} reps, range starts at {reps_low}) - usually a deload signal, not a "
+            f"push-harder one; consider backing off before repeating {current_weight:g}"
+        )
     else:
         next_weight = current_weight
         next_target = min(reps_achieved + 1, reps_high)
@@ -94,4 +125,7 @@ def next_progression_step(
         next_weight=next_weight,
         next_target_reps=next_target,
         note=note,
+        previous_reps_achieved=previous_reps_achieved,
+        missed_bottom_of_range=missed_bottom,
+        stall_signal=stall,
     )

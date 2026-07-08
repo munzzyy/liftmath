@@ -85,7 +85,15 @@ _CURVILINEAR = {"Brzycki", "Lander", "Mayhew"}
 
 @dataclass
 class OneRmEstimate:
-    """Result of a 1RM estimate: every formula's value plus the median consensus."""
+    """Result of a 1RM estimate: every formula's value plus the median consensus.
+
+    `per_formula` is in FORMULAS' own definition order (Epley, Brzycki,
+    Lombardi, O'Conner, Lander, Mayhew, minus whichever were dropped) - it is
+    not sorted by accuracy, since no formula here is established as more
+    accurate than another (see the "open question" note above). The CLI's
+    `1rm` output sorts this dict by VALUE (lightest estimate first) purely
+    for readability, not as an accuracy ranking - see cli.py's `cmd_1rm`.
+    """
 
     weight: float
     reps: int

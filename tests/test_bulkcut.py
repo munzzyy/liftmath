@@ -30,15 +30,24 @@ def test_default_tier_is_intermediate():
 
 
 def test_garthe_partition_anchors_documented():
+    # NCG (fast, ~0.38%/wk): +1.7kg lean / +1.1kg fat = 60.7/39.3, rounded to 61/39.
+    # ALG (slow, ~0.16%/wk): +1.2kg lean / +0.2kg fat = 85.7/14.3, rounded to 85/15.
     assert GARTHE_2013_FAST_BULK["rate_pct_per_week"] == pytest.approx(0.38)
-    assert GARTHE_2013_FAST_BULK["lean_fraction"] == pytest.approx(0.625)
+    assert GARTHE_2013_FAST_BULK["lean_fraction"] == pytest.approx(0.61)
+    assert GARTHE_2013_FAST_BULK["fat_fraction"] == pytest.approx(0.39)
     assert GARTHE_2013_SLOW_BULK["rate_pct_per_week"] == pytest.approx(0.16)
     assert GARTHE_2013_SLOW_BULK["lean_fraction"] == pytest.approx(0.85)
+    assert GARTHE_2013_SLOW_BULK["fat_fraction"] == pytest.approx(0.15)
 
 
 def test_gain_note_cites_garthe():
     r = rate_target(84, "gain", "intermediate")
     assert "Garthe" in r.partition_note
+
+
+def test_gain_note_is_directional_not_precise():
+    r = rate_target(84, "gain", "intermediate")
+    assert "directional" in r.partition_note.lower()
 
 
 def test_cut_note_present():

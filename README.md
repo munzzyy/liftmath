@@ -75,7 +75,10 @@ liftmath program --exercise "Bench Press | 4x2" --exercise "Barbell Row | 4x2"
 liftmath meso --muscle chest --weeks 5
 liftmath progression --reps-low 8 --reps-high 12 --weight 185 --reps-achieved 12 --increment 5
 liftmath macros --bodyweight 185 --goal gain --unit lb
+liftmath macros --bodyweight 185 --goal cut --age 34 --height 70 --sex male --unit lb
+liftmath macros --bodyweight 185 --goal cut --bodyfat 15 --unit lb
 liftmath cunningham --lean-mass 154 --unit lb
+liftmath cunningham --bodyweight 185 --bodyfat 15 --unit lb
 liftmath bulkcut --bodyweight 185 --goal gain --tier intermediate --unit lb
 liftmath ffmi --weight 200 --unit lb --height 70 --bodyfat 12
 liftmath navybf --sex male --height 70 --neck 15 --waist 34
@@ -84,12 +87,15 @@ liftmath plates --target 245 --unit lb
 liftmath plates --target 300 --inventory "45x4,25x1,10x1,5x1,2.5x1" --bar 45 --unit lb
 liftmath warmup --weight 275 --unit lb
 liftmath tm --onerm 315 --unit lb
+liftmath tm --amrap-weight 245 --amrap-reps 7 --unit lb
 liftmath program531 --tm 280 --week 2 --unit lb
 liftmath gzclp --tier t1 --stage 5x3 --weight 245 --made --unit lb
 liftmath nsuns --day bench_day1 --tm 280 --unit lb
 liftmath symmetry --squat 405 --bench 275 --deadlift 495 --bodyweight 185 --sex male --unit lb
 liftmath standards --total 1100 --bodyweight 220 --sex male --unit lb
 liftmath mcculloch --total 300 --age 50 --unit kg
+liftmath glossary
+liftmath glossary --term RIR
 ```
 
 Run `liftmath <command> --help` for the full flag list on any of them.
@@ -194,27 +200,44 @@ landmarks.
 across a block, ending in a deload week. `progression` handles the other
 axis - load and reps within a session - by computing the standard
 double-progression decision (add a rep, or add load and reset to the bottom
-of the range) from a rep range and the set you just did.
+of the range) from a rep range and the set you just did. Pass
+`--previous-reps-achieved` (optional) and it flags the standard stall
+signal too: missing the bottom of your rep range two sessions running at
+the same weight usually calls for a deload, not another attempt at the same
+weight.
 
 ### Macros, Cunningham TDEE, and bulk/cut rates
 
 `macros` computes protein, fat, and carb targets from bodyweight and a goal
-(gain, maintain, recomp, cut). If you don't supply a known TDEE it estimates
-one from an activity level, and it always flags you if the protein-and-fat
-floor is higher than the calorie target you asked for, instead of quietly
-printing numbers that don't add up.
+(gain, maintain, recomp, cut). Protein and fat are set first, as biological
+minimums; carbs fill whatever calorie budget is left over. TDEE is picked
+from the best method your inputs support: give `--bodyfat` and it routes
+through Cunningham (below) automatically; give `--age`, `--height`, and
+`--sex` together and it uses Mifflin-St Jeor (1990) - the best
+general-population resting-energy equation in head-to-head comparisons
+(Frankenfield, Roth-Yousey & Compher, 2005); give none of those and it falls
+back to a quick bodyweight-times-activity-factor estimate, clearly labeled
+as such rather than dressed up as more precise than it is. It always flags
+you if the protein-and-fat floor is higher than the calorie target you
+asked for, instead of quietly printing numbers that don't add up.
 
 `cunningham` computes an alternative TDEE from lean (fat-free) mass instead
 of total bodyweight - a meaningfully better estimate for lean, trained
 individuals specifically (shown to overestimate for a general, non-athlete
-population), so it's offered alongside `macros`' bodyweight-based estimate
-rather than replacing it.
+population), so it's offered alongside `macros`' other TDEE methods rather
+than replacing them. Pass `--bodyweight` and `--bodyfat` instead of
+`--lean-mass` if that's the pair you have (the same body-fat % `navybf` or
+`ffmi` already give you) - it derives lean mass for you.
 
 `bulkcut` turns "gain/lose ~0.25-0.5% bodyweight/week" into an actual weekly
 kg/lb target, banded by trainee tier (novice/intermediate/advanced), with
 the lean:fat partition trade-off from Garthe (2013) shown explicitly -
-slower bulks partition leaner, and the tool says so rather than hiding it
-behind one number.
+slower bulks partition leaner (about 85% lean at a ~0.16%/week pace) than
+faster ones (about 61% lean at a ~0.38%/week pace), and the tool says so
+rather than hiding it behind one number. Those figures are derived from the
+paper's reported group-mean kg changes via two independent secondary
+reviews, not the primary table directly (paywalled) - read them as
+directional, not precise.
 
 ### Body composition
 
@@ -227,7 +250,10 @@ physiological law).
 `navybf` estimates body-fat % from tape-measure circumferences (Hodgdon &
 Beckett, 1984, the U.S. Navy method) - a field-expedient estimate good for
 tracking a trend, with a reported error band of about +/-3-4 percentage
-points versus hydrostatic weighing, not a clinical-grade reading.
+points versus hydrostatic weighing, not a clinical-grade reading. That band
+is itself least reliable at the extremes - under about 12% or over about
+25% body fat, this is a rough trend line more than a number, and the CLI
+flags it when your result lands there.
 
 ### Session load, monotony, and strain
 
@@ -301,7 +327,10 @@ bench-to-press ratio.
 
 `tm` turns a 1RM into a training max — the submaximal number percentage-based
 programs actually run off (Wendler's 90% default, rounded down to a real plate
-increment). Feed that number to the program builders:
+increment). Don't have a tested 1RM handy? Pass `--amrap-weight`/`--amrap-reps`
+instead of `--onerm` - your last AMRAP top set (this cycle's 5/3/1 week-3 set,
+say) runs through the same six-formula consensus `1rm` uses, then straight into
+the training-max math, no separate step. Feed the result to the program builders:
 
 ```
 $ liftmath program531 --tm 280 --week 2
@@ -331,6 +360,22 @@ unsettled (GZCLP never fixes a starting weight; nSuns' T2 percentages aren't
 consistently documented), liftmath asks you for the input rather than guessing.
 nSuns prints T1 only for that reason, and says so in the output.
 
+### Plain-English glossary
+
+`glossary` defines every piece of jargon liftmath uses - RIR, TDEE, MEV, IPF
+GL, T1/T2/T3, all of it - beginner-friendly first, technical meaning second:
+
+```
+$ liftmath glossary --term RIR
+RIR
+  plain:     Reps in reserve - how many more reps you could have done before hitting failure.
+  technical: Reps In Reserve: the gap between reps performed and true momentary failure for a set.
+```
+
+Run it with no `--term` for the full list. Most other commands also print a
+short version of the relevant definition inline, the first time that term
+shows up in their own output, so you don't have to go looking for it.
+
 ## Web app
 
 liftmath also ships as a static web app: the same math as the CLI, in your
@@ -345,12 +390,19 @@ Everything runs client-side. No server, no account, no analytics, no ads, no
 CDN - open the page once and it works offline after that (it's a PWA, so you
 can add it to your home screen). Ten tools in one page, tab-switchable: 1RM
 consensus (with a weighted pull-up/dip mode), a %1RM/RIR load chart, weekly
-volume landmarks, a mesocycle set ramp, macro targets, plate loading (with an
+volume landmarks, a mesocycle set ramp, macro targets (with an optional
+Mifflin-St Jeor or Cunningham TDEE, same as the CLI), plate loading (with an
 SVG barbell render, a women's-bar preset, and a "my plates" inventory mode), a
 warm-up ramp, Wilks/DOTS/IPF GL scores, lift-ratio symmetry, and a program
-builder (5/3/1, GZCLP, nSuns). Every input recomputes instantly - no submit
-button - and your inputs live in the URL so a result is just a link you can
-send someone.
+builder (5/3/1, GZCLP, nSuns, including filling a training max straight from
+an AMRAP set). Every input recomputes instantly - no submit button - and your
+inputs live in the URL so a result is just a link you can send someone.
+Tuned for a phone at the gym - the screen you're actually holding mid-set.
+
+A "Glossary" link in the footer opens a plain-English-first, technical-second
+definition for every term the app uses, and a small "?" next to a jargon word
+throughout the page (RIR, TDEE, MV/MEV/MAV/MRV, Wilks/DOTS/IPF GL, T1/T2/T3,
+...) jumps straight to that term's entry.
 
 It reads in 32 languages, switchable from the header, with proper right-to-left
 layout for Arabic, Hebrew, and Persian. Only the interface is translated - the
@@ -446,7 +498,7 @@ See the module docstrings in `src/liftmath/` for the full API; each module
 covers one area: `onerm.py`, `bodyweight.py`, `loads.py`, `rpe.py`,
 `volume.py`, `program.py`, `mesocycle.py`, `progression.py`, `macros.py`,
 `bulkcut.py`, `bodycomp.py`, `sessionload.py`, `plates.py`, `warmup.py`,
-`standards.py`, `symmetry.py`, `templates.py`.
+`standards.py`, `symmetry.py`, `templates.py`, `glossary.py`.
 
 ## Where the numbers come from
 
@@ -478,13 +530,20 @@ muscle about as well as training to failure at matched volume.
 The protein target comes from a Morton et al. (2018) meta-analysis putting
 about 1.6 g/kg as the point of diminishing returns for hypertrophy, with
 intakes up to about 2.2 g/kg shown safe, raised further in a deficit per
-Helms, Aragon & Fitschen (2014). The Cunningham (1980) TDEE alternative uses
-fat-free mass and is backed by a 2023 systematic review specifically for
-athlete populations - not a universal replacement for the bodyweight-based
-estimate. Bulk/cut rate targets and the lean:fat partition trade-off come
-from Garthe et al. (2013), a single (if well-designed) trial in elite
-athletes, blended with Rozenek et al. (2002) and Helms's practitioner
-synthesis for the trainee-tier bands.
+Helms, Aragon & Fitschen (2014). TDEE defaults to Mifflin-St Jeor (1990)
+whenever age, height, and sex are all known - the best general-population
+resting-energy equation in head-to-head comparisons (Frankenfield, Roth-Yousey
+& Compher, 2005) - falling back to a clearly-labeled quick bodyweight*activity
+estimate otherwise. The Cunningham (1980) TDEE alternative uses fat-free mass
+and is backed by a 2023 systematic review specifically for athlete
+populations - meaningfully better for a lean, trained body than either of the
+above, not a universal replacement for them. Bulk/cut rate targets and the
+lean:fat partition trade-off come from Garthe, Raastad, Refsnes & Sundgot-Borgen
+(2013), a single (if well-designed) trial in elite athletes, blended with
+Rozenek et al. (2002) and Helms's practitioner synthesis for the trainee-tier
+bands - the partition split itself is derived from the paper's group-mean kg
+changes via two independent secondary reviews, not the (paywalled) primary
+table directly, so read it as directional.
 
 FFMI comes from Kouri, Pope, Katz & Oliva (1995); the 25.0 reference ceiling
 is from that study's specific 157-person male-athlete sample, not a general
@@ -499,8 +558,11 @@ that paper's own more cautious framing of that specific claim.
 The relative-strength scores come from the IPF's own published GL
 coefficients (May 2020), the original and 2020-revised Wilks formula, and
 the DOTS formula introduced in 2019 as a bodyweight-independent alternative
-to Wilks. The McCulloch age-coefficient table for masters lifters comes from
-the WRPF's own published 2022 document.
+to Wilks. The IPF states its GL table in effect through Dec 2023 and
+refreshes it on a roughly 4-year cycle - `standards.py` notes when it was
+last checked current and flags that it may need a refresh. The McCulloch
+age-coefficient table for masters lifters comes from the WRPF's own
+published 2022 document.
 
 The weighted-movement bodyweight fractions treat pull-ups, chin-ups, and dips
 as full-bodyweight lifts; the push-up figure people cite (about 64% of

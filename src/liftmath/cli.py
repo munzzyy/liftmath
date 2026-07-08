@@ -27,10 +27,15 @@ Subcommands:
     nsuns       nSuns LP (4-day variant) T1 set list for one lift day
     standards   Relative-strength scoring: Wilks (original + 2020), DOTS, IPF GL points
     mcculloch   McCulloch age-adjusted total for masters lifters (WRPF)
+    glossary    Plain-English + technical definitions for every term liftmath uses
 
 All loads are unit-agnostic (kg or lb) unless a subcommand needs the unit; pass --unit.
 Pass --json (before or after the subcommand) to get machine-readable JSON instead of
 the formatted text, e.g. `liftmath 1rm --weight 225 --reps 5 --json`.
+
+Most commands print a short plain-English aside the first time a piece of jargon (RIR,
+TDEE, MEV, ...) shows up in their output. Run `liftmath glossary` for the full list, or
+`liftmath glossary --term RIR` for one term.
 """
 
 from __future__ import annotations
@@ -45,6 +50,7 @@ from liftmath.bodycomp import ffmi as compute_ffmi
 from liftmath.bodycomp import navy_body_fat
 from liftmath.bodyweight import MOVEMENTS, weighted_bodyweight_one_rm
 from liftmath.bulkcut import TIERS, rate_target
+from liftmath.glossary import GLOSSARY, glossary_entry
 from liftmath.loads import load_chart, target_load
 from liftmath.macros import ACTIVITY_LEVELS, GOALS, cunningham_tdee, macro_targets
 from liftmath.mesocycle import ramp_mesocycle
@@ -71,6 +77,28 @@ from liftmath.warmup import warmup_ramp
 
 _LB_PER_KG = 0.45359237
 
+# Shared plain-English explainer for the volume landmarks, used by both
+# `volume` branches (per-muscle and full-table) and by `program`, so the
+# four abbreviations are defined identically everywhere they show up.
+_VOLUME_LANDMARK_EXPLAINER = (
+    "MV is the least work that keeps a muscle from shrinking; MEV is the least that actually "
+    "grows it; MAV is the productive sweet-spot range; MRV is the most you can still recover from."
+)
+
+
+def _hint(*keys: str) -> None:
+    """Print a short plain-English aside for the given glossary term(s).
+
+    One line per command call site (not one line per term - multi-term
+    calls read as a single flowing sentence, see e.g. `cmd_meso`), gated by
+    the caller to non-JSON output only. Silently skips an unknown key rather
+    than raising - a typo here should never crash a command.
+    """
+    for key in keys:
+        entry = GLOSSARY.get(key)
+        if entry:
+            print(f"  ({entry.term}: {entry.plain})")
+
 
 def cmd_1rm(args: argparse.Namespace) -> int:
     try:
@@ -88,6 +116,10 @@ def cmd_1rm(args: argparse.Namespace) -> int:
         return 0
 
     print(f"Estimated 1RM from {args.weight:g}{args.unit} x {args.reps} reps")
+    print("  e1RM = an estimated 1RM from a submaximal set, not a tested max. No single formula")
+    print("  is most accurate across every rep range, so this runs six and takes the CONSENSUS")
+    print("  (median) instead of picking one. Table below is sorted by value, not accuracy - no")
+    print("  formula here is established as more accurate than another (see onerm.py).")
     print("-" * 46)
     for name, value in sorted(est.per_formula.items(), key=lambda kv: kv[1]):
         print(f"  {name:<9} {value:6.1f}{args.unit}")
@@ -125,6 +157,8 @@ def cmd_bw_onerm(args: argparse.Namespace) -> int:
     verb = "assisted by" if r.is_assisted else "with"
     print(f"Weighted {args.movement}: {args.bodyweight:g}{args.unit} bodyweight {verb} "
           f"{abs(args.added):g}{args.unit} x {args.reps} reps")
+    if args.reps > 1:
+        _hint("e1rm")
     print(f"  total system load   {r.total_load:6.1f}{args.unit}")
     est = r.total_load_estimate
     if not est.is_exact:
@@ -183,6 +217,7 @@ def cmd_target(args: argparse.Namespace) -> int:
     if args.rir:
         print(f"  at {args.rir} RIR (stop at {args.reps}, ~{result.rir_max_reps} rep max): "
               f"{result.rir_load:.1f}{args.unit}  ({result.rir_pct*100:.0f}% 1RM)")
+        _hint("rir")
     return 0
 
 
@@ -211,6 +246,8 @@ def cmd_rpe(args: argparse.Namespace) -> int:
         return 1
 
     if not args.json:
+        print("  (RPE is a 0-10 gut check on how hard a set felt, where 10 is failure. RIR is the")
+        print("   same idea counted backward - how many more reps you had left before failure.)")
         print("[!] Derived from the same Epley-based model as `reps`/`target`, not the popular")
         print("    RTS/Tuchscherer chart - that chart is mostly a practitioner heuristic, not")
         print("    RCT data (Zourdos 2016 only measured 3 anchor points). Treat this as soft,")
@@ -235,7 +272,8 @@ def cmd_volume(args: argparse.Namespace) -> int:
         print(f"  MRV (max recoverable)   {info.mrv}")
         if args.sets is not None:
             print(f"\n  Your {args.sets} sets/wk: {info.verdict}")
-        print("\n[evidence tier] Practitioner consensus/expert heuristic (Israetel/RP), NOT a")
+        print(f"\n  {_VOLUME_LANDMARK_EXPLAINER}")
+        print("[evidence tier] Practitioner consensus/expert heuristic (Israetel/RP), NOT a")
         print("peer-reviewed per-muscle table.")
         return 0
 
@@ -253,6 +291,7 @@ def cmd_volume(args: argparse.Namespace) -> int:
     for m, (mv, mev, mlo, mhi, mrv) in LANDMARKS.items():
         print(f"{m:<12}{mv:>4}{mev:>5}{str(mlo)+'-'+str(mhi):>10}{mrv:>6}")
     print("-" * 40)
+    print(f"{_VOLUME_LANDMARK_EXPLAINER}")
     print("Count a 'hard set' as a working set taken to ~0-4 reps in reserve.")
     print("Directly-trained isolation counts fully; a compound counts fully for its prime")
     print("mover and ~0.5 for strong synergists. Titrate up from MEV until progress stalls or")
@@ -317,7 +356,8 @@ def cmd_program(args: argparse.Namespace) -> int:
     print("-" * 66)
     if audit.untrained:
         print("Untrained (MEV>0 muscles absent from the split): " + ", ".join(audit.untrained))
-    print("Prime mover counts fully, synergists ~0.3-0.7. Same MEV/MAV/MRV bands as `volume`.")
+    print("Prime mover counts fully, synergists ~0.3-0.7. Same MEV/MAV/MRV bands as `volume`:")
+    print(f"{_VOLUME_LANDMARK_EXPLAINER}")
     print("[evidence tier] MEV/MAV/MRV bands are practitioner consensus, not peer-reviewed data.")
     return 0
 
@@ -334,6 +374,8 @@ def cmd_meso(args: argparse.Namespace) -> int:
         return 0
 
     print(f"{meso.muscle} mesocycle - {args.weeks} weeks: ramp MEV({meso.mev}) -> MRV({meso.mrv}), then deload")
+    print("  (a mesocycle is a training block that ramps volume toward a peak; a deload is the")
+    print("   planned easy week after it that lets fatigue dissipate before the next block)")
     print(f"{'week':>5}{'sets':>7}{'%MRV':>7}   note")
     print("-" * 46)
     for w in meso.weeks:
@@ -348,7 +390,7 @@ def cmd_meso(args: argparse.Namespace) -> int:
 def cmd_progression(args: argparse.Namespace) -> int:
     try:
         step = next_progression_step(args.reps_low, args.reps_high, args.weight, args.reps_achieved,
-                                      args.increment)
+                                      args.increment, previous_reps_achieved=args.previous_reps_achieved)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -365,8 +407,12 @@ def cmd_progression(args: argparse.Namespace) -> int:
 
 
 def cmd_macros(args: argparse.Namespace) -> int:
+    height_m = None
+    if args.height is not None:
+        height_m = args.height * 0.0254 if args.height_unit == "in" else args.height / 100.0
     try:
-        m = macro_targets(args.bodyweight, args.goal, unit=args.unit, tdee=args.tdee, activity=args.activity)
+        m = macro_targets(args.bodyweight, args.goal, unit=args.unit, tdee=args.tdee, activity=args.activity,
+                           age=args.age, height_m=height_m, sex=args.sex, bodyfat_pct=args.bodyfat)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -375,36 +421,67 @@ def cmd_macros(args: argparse.Namespace) -> int:
         print(to_json(m))
         return 0
 
-    est = " (estimated)" if m.tdee_is_estimate else " (you supplied)"
+    method_label = {
+        "supplied": " (you supplied)",
+        "cunningham": " (Cunningham, from body fat %)",
+        "mifflin": " (Mifflin-St Jeor estimate)",
+        "quick_estimate": " (quick estimate)",
+    }[m.tdee_method]
     print(f"Targets for {args.bodyweight:g}{args.unit} ({m.bodyweight_kg:.1f}kg), goal = {args.goal}")
+    _hint("tdee")
     print("-" * 46)
-    print(f"  Maintenance (TDEE){est:<12} {m.tdee:6.0f} kcal")
+    print(f"  Maintenance (TDEE){method_label:<30} {m.tdee:6.0f} kcal")
     print(f"  Calorie target                {m.actual_kcal:6.0f} kcal")
     print("-" * 46)
     print(f"  Protein   {m.protein_g:5.0f} g  ({m.protein_g_per_kg:.1f} g/kg, {m.protein_kcal:.0f} kcal)")
     print(f"  Fat       {m.fat_g:5.0f} g  ({m.fat_g_per_kg:.1f} g/kg floor, {m.fat_kcal:.0f} kcal)")
     print(f"  Carbs     {m.carb_g:5.0f} g  (remainder, {m.carb_kcal:.0f} kcal)")
     print("-" * 46)
+    print("  Protein and fat are set first, as biological minimums; carbs fill whatever calorie")
+    print("  budget is left - that's why carbs move the most between a gain and a cut.")
     print(f"  Per-meal protein target: ~{m.per_meal_protein_g:.0f} g across 3-5 meals (leucine threshold).")
     if args.goal == "gain":
         print("  Expect ~0.25-0.5% bodyweight/wk; faster = mostly fat. Adjust if scale stalls/runs.")
     elif args.goal == "cut":
         print("  Aim ~0.5-1% bodyweight/wk; keep protein high + training hard to hold muscle.")
     elif args.goal == "recomp":
+        _hint("recomp")
         print("  Recomp (eat at maintenance): slow, best for novices/returners/higher body fat.")
     if m.shortfall:
         print(f"\n  [!] Protein + fat floor is {m.actual_kcal:.0f} kcal, above your {m.target_kcal:.0f} kcal")
         print("      goal. Options: accept the smaller deficit (shown), raise calories, or drop")
         print("      protein toward 2.2 g/kg. Carbs are already at zero.")
+    if m.tdee_method == "quick_estimate":
+        print("\n  [!] TDEE is a QUICK ESTIMATE (bodyweight x an activity factor) - not a named,")
+        print("      published equation. Pass --age/--height/--sex for a Mifflin-St Jeor estimate,")
+        print("      or --bodyfat for a Cunningham (lean-mass) estimate - either is more accurate.")
+    elif m.tdee_method == "mifflin":
+        print("\n  Mifflin-St Jeor: the best general-population TDEE equation in head-to-head")
+        print("  comparisons (Frankenfield et al. 2005). Pass --bodyfat instead if you know it -")
+        print("  Cunningham (lean-mass-based) is even better for a lean, trained body specifically.")
+    elif m.tdee_method == "cunningham":
+        print("\n  Cunningham: meaningfully better than a bodyweight-only estimate for lean, trained")
+        print("  individuals specifically - see `liftmath cunningham` for the number on its own.")
     if m.tdee_is_estimate:
-        print("  [!] TDEE is a rough estimate. Track weight 2 wks and adjust cals to the real trend.")
+        print("  Track bodyweight 2 wks and adjust calories to the real trend either way.")
     return 0
 
 
 def cmd_cunningham(args: argparse.Namespace) -> int:
-    lean_mass_kg = args.lean_mass * _LB_PER_KG if args.unit == "lb" else args.lean_mass
     try:
-        result = cunningham_tdee(lean_mass_kg, activity=args.activity)
+        if args.lean_mass is not None:
+            if args.bodyweight is not None or args.bodyfat is not None:
+                print("error: pass --lean-mass, OR --bodyweight and --bodyfat, not both", file=sys.stderr)
+                return 1
+            lean_mass_kg = args.lean_mass * _LB_PER_KG if args.unit == "lb" else args.lean_mass
+            result = cunningham_tdee(lean_mass_kg, activity=args.activity)
+        elif args.bodyweight is not None and args.bodyfat is not None:
+            bw_kg = args.bodyweight * _LB_PER_KG if args.unit == "lb" else args.bodyweight
+            result = cunningham_tdee(activity=args.activity, bodyweight_kg=bw_kg, bodyfat_pct=args.bodyfat)
+        else:
+            print("error: pass --lean-mass, or both --bodyweight and --bodyfat "
+                  "(e.g. the body-fat %% `navybf` or `ffmi` gave you)", file=sys.stderr)
+            return 1
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -413,12 +490,15 @@ def cmd_cunningham(args: argparse.Namespace) -> int:
         print(to_json(result))
         return 0
 
-    print(f"Cunningham (1980) RMR/TDEE for {args.lean_mass:g}{args.unit} lean mass ({args.activity}):")
+    lean_display = result.lean_mass_kg / _LB_PER_KG if args.unit == "lb" else result.lean_mass_kg
+    print(f"Cunningham (1980) RMR/TDEE for {lean_display:.1f}{args.unit} lean mass ({args.activity}):")
+    _hint("cunningham")
     print(f"  RMR   {result.rmr_kcal:6.0f} kcal  (500 + 22*lean_kg)")
     print(f"  TDEE  {result.tdee:6.0f} kcal  (RMR x {result.activity_multiplier:g})")
     print("Established for ATHLETES specifically (2023 Sports Medicine systematic review); a")
     print("general-population comparison found this equation overestimates by ~14-15% for")
-    print("non-athletes. Use `macros` (bodyweight-based) if lean mass isn't known.")
+    print("non-athletes. Use `macros` (bodyweight-based, or --age/--height/--sex for Mifflin-St")
+    print("Jeor) if lean mass or a body-fat %% isn't known.")
     return 0
 
 
@@ -438,6 +518,7 @@ def cmd_bulkcut(args: argparse.Namespace) -> int:
     print(f"{args.goal} target for {args.bodyweight:g}{args.unit} ({args.tier}):")
     print(f"  {result.rate_low_pct:g}-{result.rate_high_pct:g}% bodyweight/week = "
           f"{result.weekly_change_low_kg*conv:.2f}-{result.weekly_change_high_kg*conv:.2f}{args.unit}/week")
+    _hint("partition")
     print(f"  {result.partition_note}")
     print("[evidence tier] emerging - Garthe 2013 is one well-designed trial in elite athletes;")
     print("Helms's tier thresholds are expert synthesis, not a single dated RCT.")
@@ -525,6 +606,9 @@ def cmd_standards(args: argparse.Namespace) -> int:
 
     print(f"Relative-strength scores - {args.total:g}{args.unit} total @ {args.bodyweight:g}{args.unit} "
           f"bodyweight ({args.sex}):")
+    print("  Each score below lets you compare lifters across bodyweights on one scale - Wilks")
+    print("  and DOTS are two different curve-fit formulas for it (what \"DOTS\" stands for is")
+    print("  disputed, so this app doesn't guess); IPF GL is the federation's own official version.")
     print("-" * 40)
     print(f"  Wilks (2020)      {result.wilks:7.2f}")
     print(f"  Wilks (original)  {result.wilks_original:7.2f}")
@@ -555,6 +639,9 @@ def cmd_mcculloch(args: argparse.Namespace) -> int:
 
     adjusted = result.adjusted_total / _LB_PER_KG if args.unit == "lb" else result.adjusted_total
     print(f"McCulloch age adjustment - {args.total:g}{args.unit} total @ age {args.age}:")
+    print("  \"Masters\" means 40+ - strength-vs-age curves differ from open-age competition, so")
+    print("  this answers \"how does this total compare once age is accounted for\" the same way")
+    print("  Wilks/DOTS answer it for bodyweight.")
     print(f"  coefficient      {result.coefficient:.3f}")
     print(f"  adjusted total   {adjusted:.1f}{args.unit}")
     print("Source: WRPF (2022) McCulloch Coefficients for Masters. [evidence tier] established")
@@ -580,6 +667,7 @@ def cmd_ffmi(args: argparse.Namespace) -> int:
         return 0
 
     print(f"FFMI for {args.weight:g}{args.unit}, {args.bodyfat:g}% body fat:")
+    _hint("ffmi")
     print(f"  lean mass          {result.lean_mass_kg:.1f} kg")
     print(f"  FFMI               {result.ffmi:.2f}")
     print(f"  normalized FFMI    {result.normalized_ffmi:.2f}  (adjusted to 1.80m reference height)")
@@ -603,9 +691,14 @@ def cmd_navybf(args: argparse.Namespace) -> int:
         return 0
 
     print(f"Navy tape body-fat estimate ({args.sex}):")
+    _hint("navy_bf")
     print(f"  ~{result.bodyfat_pct:.1f}%  (+/- {result.error_band_pct:g} points vs. hydrostatic weighing)")
     print("Source: Hodgdon & Beckett (1984), Naval Health Research Center Report 84-11.")
     print("Field-expedient estimate for tracking trend over time, not a clinical reading.")
+    if result.less_reliable_at_extremes:
+        print("[!] Under ~12% or over ~25% body fat, this regression fits worst - very lean or")
+        print("    unusually muscular bodies push the real error past the usual +/-3-4 points.")
+        print("    Read this as a rough trend line here, not even the usual band.")
     return 0
 
 
@@ -621,6 +714,8 @@ def cmd_sessionload(args: argparse.Namespace) -> int:
         return 0
 
     print(f"Session-load summary over {len(result.loads)} logged sessions:")
+    print("  (session load = how hard a session felt x how long it took; monotony = how same-y")
+    print("   the week's loads were; strain = weekly load scaled up by monotony)")
     print(f"  weekly load   {result.weekly_load:8.1f}")
     print(f"  mean load     {result.mean_load:8.1f}")
     print(f"  monotony      {result.monotony:8.2f}  (mean / population SD)")
@@ -646,6 +741,7 @@ def cmd_symmetry(args: argparse.Namespace) -> int:
         return 0
 
     print(f"Lift-ratio symmetry ({args.sex}) - total {report.total:g}{args.unit}:")
+    _hint("symmetry")
     print("-" * 62)
     print(f"{'lift':<10}{'weight':>9}{'% of DL':>10}{'expected':>10}{'% of total':>12}   verdict")
     print("-" * 62)
@@ -676,8 +772,28 @@ def _print_set_table(sets, unit: str) -> None:
 
 
 def cmd_tm(args: argparse.Namespace) -> int:
+    # Two ways in: a known 1RM directly, or an AMRAP set (weight x reps) this
+    # cycle's last top set - derived via the same six-formula consensus `1rm`
+    # uses, then fed straight into `training_max` (no new math, just wiring
+    # two already-shipped functions together).
+    onerm = args.onerm
+    derived_est = None
+    if onerm is None:
+        if args.amrap_weight is None or args.amrap_reps is None:
+            print("error: pass --onerm, or both --amrap-weight and --amrap-reps", file=sys.stderr)
+            return 1
+        try:
+            derived_est = estimate_one_rm(args.amrap_weight, args.amrap_reps, unit=args.unit)
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        onerm = derived_est.consensus
+    elif args.amrap_weight is not None or args.amrap_reps is not None:
+        print("error: pass --onerm, OR --amrap-weight/--amrap-reps, not both", file=sys.stderr)
+        return 1
+
     try:
-        result = training_max(args.onerm, pct=args.pct, increment=args.increment, unit=args.unit)
+        result = training_max(onerm, pct=args.pct, increment=args.increment, unit=args.unit)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -686,7 +802,11 @@ def cmd_tm(args: argparse.Namespace) -> int:
         print(to_json(result))
         return 0
 
-    print(f"Training max from a {args.onerm:g}{args.unit} 1RM at {result.pct*100:.0f}%:")
+    if derived_est is not None:
+        print(f"AMRAP set {args.amrap_weight:g}{args.unit} x {args.amrap_reps} reps -> e1RM "
+              f"{derived_est.consensus:.1f}{args.unit} (median of six formulas)")
+    print(f"Training max from a {onerm:g}{args.unit} 1RM at {result.pct*100:.0f}%:")
+    _hint("training_max")
     print(f"  {result.training_max:g}{args.unit}  (rounded down to the nearest {result.increment:g}{args.unit})")
     print("Source: Wendler's 5/3/1 - 90% of a tested 1RM is the published default, kept")
     print("deliberately submaximal so percentage-based sets stay achievable across a cycle.")
@@ -706,6 +826,7 @@ def cmd_program531(args: argparse.Namespace) -> int:
 
     label = "deload" if week.is_deload else f"week {week.week}"
     print(f"5/3/1 - {label} (TM {args.tm:g}{args.unit}):")
+    _hint("training_max")
     _print_set_table(week.sets, args.unit)
     if not week.is_deload:
         print("\n'+' sets are AMRAP (as many reps as possible at or past the listed count).")
@@ -730,6 +851,9 @@ def cmd_gzclp(args: argparse.Namespace) -> int:
         return 0
 
     print(f"GZCLP {args.tier.upper()} ({args.lift_type}) - {result.note}")
+    _hint("t1t2t3")
+    if args.tier == "t3":
+        _hint("amrap")
     print(f"  next: {result.next_stage} @ {result.next_weight:g}{args.unit}")
     if result.needs_retest:
         print("\n[!] A retest is a real training event this library can't compute for you -")
@@ -751,11 +875,44 @@ def cmd_nsuns(args: argparse.Namespace) -> int:
         return 0
 
     print(f"nSuns LP (4-day) - {args.day}, Scheme {day.scheme} (TM {args.tm:g}{args.unit}):")
+    _hint("training_max")
     _print_set_table(day.sets, args.unit)
-    print("\n'+' sets are AMRAP. T1 (this table) only - T2 (the paired secondary lift) isn't")
-    print("computed here; its exact per-set percentages couldn't be independently corroborated")
-    print("with the same confidence as T1's, so it's left out rather than guessed (see")
-    print("templates.py's module docstring).")
+    print("\n'+' sets are AMRAP (as many reps as possible at or past the listed count). T1 (this")
+    print("table) only - T2 (the paired secondary lift) isn't computed here; its exact per-set")
+    print("percentages couldn't be independently corroborated with the same confidence as T1's,")
+    print("so it's left out rather than guessed (see templates.py's module docstring).")
+    return 0
+
+
+def cmd_glossary(args: argparse.Namespace) -> int:
+    if args.term:
+        entry = glossary_entry(args.term)
+        if entry is None:
+            print(f"error: unknown term '{args.term}'. Run `liftmath glossary` for the full list.",
+                  file=sys.stderr)
+            return 1
+        if args.json:
+            print(to_json(entry))
+            return 0
+        print(entry.term)
+        print(f"  plain:     {entry.plain}")
+        print(f"  technical: {entry.technical}")
+        return 0
+
+    if args.json:
+        print(json.dumps(
+            {k: {"term": v.term, "plain": v.plain, "technical": v.technical} for k, v in GLOSSARY.items()},
+            indent=2,
+        ))
+        return 0
+
+    print("liftmath glossary - plain-English first, technical meaning second.")
+    print("Look up one term with `liftmath glossary --term <name>`.")
+    print("=" * 66)
+    for entry in GLOSSARY.values():
+        print(f"\n{entry.term}")
+        print(f"  {entry.plain}")
+        print(f"  (technical: {entry.technical})")
     return 0
 
 
@@ -841,6 +998,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--reps-achieved", type=int, required=True, help="reps completed at that weight")
     s.add_argument("--increment", type=float, required=True,
                    help="load jump once reps-high is reached (~2.5-5lb upper / ~5-10lb lower)")
+    s.add_argument("--previous-reps-achieved", type=int,
+                   help="reps completed at this weight the PRIOR session (optional) - only used "
+                        "to flag a two-sessions-running stall at the bottom of the range")
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_progression)
 
@@ -850,11 +1010,25 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.add_argument("--tdee", type=float, help="maintenance kcal if known (else estimated)")
     s.add_argument("--activity", default="moderate", choices=list(ACTIVITY_LEVELS))
+    s.add_argument("--age", type=int,
+                   help="age in years - combine with --height and --sex (all three) for a "
+                        "Mifflin-St Jeor TDEE estimate instead of the quick bodyweight-only one")
+    s.add_argument("--height", type=float, help="height - combine with --age and --sex")
+    s.add_argument("--height-unit", default="in", choices=["in", "cm"])
+    s.add_argument("--sex", choices=["male", "female"], help="combine with --age and --height")
+    s.add_argument("--bodyfat", type=float,
+                   help="body-fat %% (e.g. 15 for 15%%) - if given, TDEE routes through Cunningham "
+                        "(lean-mass-based) automatically instead; takes priority over --age/--height/--sex")
     s.set_defaults(func=cmd_macros)
 
     s = sub.add_parser("cunningham", help="Cunningham (1980) lean-mass-based RMR/TDEE",
                         parents=[json_parent])
-    s.add_argument("--lean-mass", type=float, required=True, help="fat-free mass")
+    s.add_argument("--lean-mass", type=float, help="fat-free mass (give this, OR --bodyweight + --bodyfat)")
+    s.add_argument("--bodyweight", type=float, help="total bodyweight - combine with --bodyfat "
+                                                      "instead of --lean-mass")
+    s.add_argument("--bodyfat", type=float,
+                   help="body-fat %% (e.g. 15 for 15%%, the same number `navybf`/`ffmi` compute) - "
+                        "combine with --bodyweight instead of --lean-mass")
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.add_argument("--activity", default="moderate", choices=list(ACTIVITY_LEVELS))
     s.set_defaults(func=cmd_cunningham)
@@ -925,7 +1099,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("tm", help="training max: pct of a 1RM, rounded down (Wendler)",
                         parents=[json_parent])
-    s.add_argument("--onerm", type=float, required=True)
+    s.add_argument("--onerm", type=float, help="a known/tested 1RM (give this, OR --amrap-weight + --amrap-reps)")
+    s.add_argument("--amrap-weight", type=float,
+                   help="weight from an AMRAP top set (e.g. this cycle's 5/3/1 week-3 set) - "
+                        "combine with --amrap-reps instead of --onerm to derive an e1RM first")
+    s.add_argument("--amrap-reps", type=int, help="reps completed on that AMRAP set")
     s.add_argument("--pct", type=float, default=0.90, help="training-max %% of 1RM, 0.80-1.00 (default 0.90)")
     s.add_argument("--increment", type=float, help="rounding increment (default 5lb / 2.5kg)")
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
@@ -976,6 +1154,11 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--age", type=int, required=True, help="lifter's age in whole years, 40-90")
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_mcculloch)
+
+    s = sub.add_parser("glossary", help="plain-English + technical definitions for every term liftmath uses",
+                        parents=[json_parent])
+    s.add_argument("--term", help="look up one term (e.g. 'RIR', 'IPF GL') - omit for the full glossary")
+    s.set_defaults(func=cmd_glossary)
 
     return p
 

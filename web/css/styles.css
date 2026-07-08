@@ -654,7 +654,12 @@ a:hover {
   background: var(--color-surface-alt);
   color: var(--color-text);
   border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
+  /* >=16px, not --font-size-sm (14px): iOS Safari auto-zooms the page on
+     focusing any form control whose computed font-size is under 16px -
+     these two <select>s are real form controls a phone user taps first
+     (language/theme), so they need the same 16px floor every text/number
+     input in this app already sits at (.field input/select above). */
+  font-size: var(--font-size-base);
   font-family: inherit;
   cursor: pointer;
   padding: var(--space-2) var(--space-3);
@@ -846,7 +851,17 @@ main {
 
 .tool-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  /* minmax(0, 1fr), not bare 1fr: a bare 1fr track's minimum width is its
+     content's min-content/max-content size (CSS Grid's default sizing), not
+     0 - a non-wrapping-enough child (e.g. the plates preset chip-row) then
+     forces the whole track, and with it the page, wider than the viewport.
+     minmax(0, 1fr) clamps the track's own minimum to 0 so wrapping/overflow
+     rules on its children (flex-wrap, .results' overflow-x) actually get a
+     chance to apply at the viewport width instead of being pre-empted by
+     grid auto-sizing. See the >=700px rule below, which already did this
+     for its two columns - this was only missing from the single-column
+     (mobile-default) case. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
 }
 
@@ -1383,6 +1398,30 @@ table.data-table tr.highlight td {
   background: var(--color-danger);
 }
 
+/* Footer "Glossary" trigger: styled to match the plain-text footer links
+   next to it, but a real <button> (opens the dialog below, doesn't
+   navigate). Padding + a matching negative margin gives it a full
+   --tap-min hit area without visually growing past the surrounding text -
+   the footer's own line-height already provides most of that height. */
+.footer-glossary-btn {
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: inherit;
+  color: var(--color-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: var(--space-2);
+  margin: calc(var(--space-2) * -1);
+}
+.footer-glossary-btn:hover {
+  color: var(--color-accent-strong);
+}
+
 .disclaimer {
   border-inline-start: 3px solid var(--color-accent);
   padding: var(--space-3) var(--space-4);
@@ -1397,6 +1436,144 @@ table.data-table tr.highlight td {
   color: var(--color-muted);
   margin-bottom: var(--space-5);
   line-height: 1.55;
+}
+
+/* ---------- Glossary ----------
+   A native <dialog> (showModal()) - keyboard/ESC-dismissible and
+   backdrop-clickable for free, no floating-positioned tooltip to hand-roll
+   under this page's strict style-src 'self' CSP (no inline styles). Sized
+   as a centered card on wide viewports, near-full-screen on narrow ones (see
+   the mobile block below) so it never needs its own horizontal scrollbar. */
+
+dialog#glossary-dialog {
+  width: min(560px, calc(100vw - var(--space-6)));
+  max-height: min(720px, calc(100vh - var(--space-6)));
+  margin: auto;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  box-shadow: var(--shadow-md);
+  overflow-y: auto;
+}
+
+dialog#glossary-dialog::backdrop {
+  background: rgba(10, 11, 14, 0.55);
+}
+
+dialog#glossary-dialog:not([open]) {
+  display: none;
+}
+
+.glossary-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  position: sticky;
+  top: calc(var(--space-5) * -1);
+  margin: calc(var(--space-5) * -1) calc(var(--space-5) * -1) var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface-raised);
+  border-bottom: 1px solid var(--color-border);
+  z-index: 1;
+}
+
+.glossary-dialog-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+}
+
+.glossary-entry {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+  scroll-margin-top: var(--space-12);
+}
+
+.glossary-entry:last-child {
+  border-bottom: none;
+}
+
+.glossary-entry h3 {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-display);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+}
+
+.glossary-entry .glossary-plain {
+  margin: 0 0 var(--space-1);
+}
+
+.glossary-entry .glossary-technical {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+}
+
+/* Briefly highlighted after an inline trigger scrolls to it (see app.js's
+   openGlossary()) so the reader's eye lands on the right entry. */
+.glossary-entry.glossary-entry-highlight {
+  background: var(--color-accent-tint);
+  border-radius: var(--radius-md);
+}
+
+/* Inline "what does this mean?" trigger next to a jargon word/label.
+   Two-element target-size trick (Material Design's own recommended pattern
+   for a dense-UI icon smaller than 48dp: a small VISIBLE glyph inside a
+   larger INVISIBLE, real tappable box) rather than a flat compromise
+   between "meets --tap-min" and "doesn't visually dominate a 14px label":
+     - .glossary-trigger (the <button>, real hit box) is a full --tap-min
+       square - an element's OWN clickable area is always its border-box,
+       so this is what actually satisfies the 44px target, full stop.
+     - .glossary-trigger-dot (a child <span>, paint-only) is the small
+       circle that's actually drawn - `pointer-events: none` so every click
+       anywhere in the parent's 44px box is what fires, not just the dot.
+   The button's own negative margin pulls its LAYOUT footprint (how much
+   inline space it reserves next to the preceding text) back down to
+   roughly the dot's visual size, so a 44px tap box doesn't visually shove
+   neighboring text apart - the extra hit area simply overlaps into
+   whitespace the button already sits at the end of (every current usage is
+   the last thing in its label/heading/table-header). */
+.glossary-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  margin: -8px -8px -8px -2px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.glossary-trigger-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4em;
+  height: 1.4em;
+  min-width: 28px;
+  min-height: 28px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 50%;
+  background: var(--color-surface-alt);
+  color: var(--color-muted);
+  font-size: 0.8em;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.glossary-trigger:hover .glossary-trigger-dot {
+  background: var(--color-accent-tint);
+  color: var(--color-accent-strong);
+  border-color: var(--color-accent);
 }
 
 /* ---------- small screens (mobile-first hardening, ~375px target) ---------- */
@@ -1414,6 +1591,20 @@ table.data-table tr.highlight td {
   .result-hero { font-size: clamp(1.9rem, 8vw, 2.3rem); }
   .stepper-btn { width: var(--tap-min); min-height: var(--tap-min); }
   .app-footer { padding: var(--space-6) var(--space-3) var(--space-10); }
+  dialog#glossary-dialog {
+    width: 100vw;
+    max-height: 100vh;
+    height: 100vh;
+    max-width: 100vw;
+    margin: 0;
+    border-radius: 0;
+    padding: var(--space-4);
+  }
+  .glossary-dialog-header {
+    top: calc(var(--space-4) * -1);
+    margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) var(--space-3);
+    padding: var(--space-3) var(--space-4);
+  }
 }
 
 /* Small phones (~360px and under): tighten control gaps further still - the

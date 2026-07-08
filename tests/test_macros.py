@@ -102,3 +102,78 @@ def test_cunningham_rejects_nonpositive_lean_mass():
 def test_cunningham_rejects_unknown_activity():
     with pytest.raises(ValueError):
         cunningham_tdee(70, activity="superhuman")
+
+
+def test_cunningham_accepts_bodyweight_and_bodyfat_instead_of_lean_mass():
+    # 100kg bodyweight, 20% bodyfat -> lean 80kg -> RMR 500+22*80=2260, TDEE 2260*1.55=3503.
+    result = cunningham_tdee(activity="moderate", bodyweight_kg=100, bodyfat_pct=20)
+    assert result.lean_mass_kg == pytest.approx(80.0)
+    assert result.rmr_kcal == pytest.approx(2260.0)
+    assert result.tdee == pytest.approx(3503.0)
+
+
+def test_cunningham_rejects_both_forms_at_once():
+    with pytest.raises(ValueError):
+        cunningham_tdee(70, bodyweight_kg=100, bodyfat_pct=20)
+
+
+def test_cunningham_rejects_neither_form():
+    with pytest.raises(ValueError):
+        cunningham_tdee()
+
+
+def test_cunningham_rejects_bodyfat_out_of_range():
+    with pytest.raises(ValueError):
+        cunningham_tdee(bodyweight_kg=100, bodyfat_pct=100)
+
+
+def test_mifflin_male_reference_value():
+    # 90kg, 180cm, age 30, male, moderate: RMR = 10*90+6.25*180-5*30+5 = 1880;
+    # TDEE = 1880 * 1.55 = 2914.0.
+    m = macro_targets(90, "maintain", unit="kg", age=30, height_m=1.80, sex="male")
+    assert m.tdee_method == "mifflin"
+    assert m.tdee == pytest.approx(2914.0)
+
+
+def test_mifflin_female_reference_value():
+    # 65kg, 165cm, age 25, female, sedentary: RMR = 10*65+6.25*165-5*25-161 = 1395.25;
+    # TDEE = 1395.25 * 1.2 = 1674.3.
+    m = macro_targets(65, "maintain", unit="kg", activity="sedentary", age=25, height_m=1.65, sex="female")
+    assert m.tdee_method == "mifflin"
+    assert m.tdee == pytest.approx(1674.3)
+
+
+def test_bodyfat_routes_through_cunningham():
+    # 100kg, 20% bodyfat, moderate -> same Cunningham math as the direct-cunningham test above.
+    m = macro_targets(100, "gain", unit="kg", bodyfat_pct=20)
+    assert m.tdee_method == "cunningham"
+    assert m.tdee == pytest.approx(3503.0)
+
+
+def test_bodyfat_takes_priority_over_mifflin_when_both_given():
+    m = macro_targets(100, "maintain", unit="kg", age=30, height_m=1.80, sex="male", bodyfat_pct=20)
+    assert m.tdee_method == "cunningham"
+
+
+def test_quick_estimate_method_label_when_nothing_special_given():
+    m = macro_targets(84, "maintain", unit="kg")
+    assert m.tdee_method == "quick_estimate"
+
+
+def test_supplied_method_label():
+    m = macro_targets(84, "maintain", unit="kg", tdee=2800)
+    assert m.tdee_method == "supplied"
+
+
+def test_partial_mifflin_inputs_raise():
+    with pytest.raises(ValueError):
+        macro_targets(84, "maintain", unit="kg", age=30)
+    with pytest.raises(ValueError):
+        macro_targets(84, "maintain", unit="kg", height_m=1.8)
+    with pytest.raises(ValueError):
+        macro_targets(84, "maintain", unit="kg", age=30, height_m=1.8)  # no sex
+
+
+def test_mifflin_invalid_sex_raises():
+    with pytest.raises(ValueError):
+        macro_targets(84, "maintain", unit="kg", age=30, height_m=1.8, sex="other")

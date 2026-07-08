@@ -30,7 +30,16 @@ Sources:
         validated against hydrostatic weighing at r~=0.90 in the source
         study, but with a reported standard error of ~3-4 percentage points
         vs. underwater weighing, so the output should be read as a band
-        ("~18% +/- 3-4"), not a precise figure.
+        ("~18% +/- 3-4"), not a precise figure. That error band is a
+        SAMPLE-AVERAGE figure, not constant across the whole range: this is
+        a regression fit to the Navy's own sample, and like any regression
+        it fits worst at the tails of that sample - a circumference-based
+        estimate tracks fat mass least tightly on bodies that are already
+        very lean or unusually muscular (roughly under ~12% or over ~25%
+        body fat), where the reported +/-3-4 point band is optimistic.
+        `NavyBodyFatResult.less_reliable_at_extremes` flags this range;
+        treat the number there as a rough trend line, not even the usual
+        band.
 """
 
 from __future__ import annotations
@@ -114,6 +123,18 @@ class NavyBodyFatResult:
     def error_band_pct(self) -> float:
         """Reported standard error vs. hydrostatic weighing, +/- percentage points."""
         return 3.5
+
+    @property
+    def less_reliable_at_extremes(self) -> bool:
+        """True below ~12% or above ~25% body fat, where this regression fits worst.
+
+        The Hodgdon & Beckett regression was fit across the Navy's own
+        sample and is least accurate at the tails of that fit - a very lean
+        or unusually muscular body pushes the real error wider than the
+        reported +/-3-4 point band (see module docstring). Read the result
+        as a rough trend line in this range, not the usual band.
+        """
+        return self.bodyfat_pct < 12.0 or self.bodyfat_pct > 25.0
 
 
 def navy_body_fat(
