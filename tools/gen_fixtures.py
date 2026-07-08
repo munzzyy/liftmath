@@ -775,7 +775,8 @@ def gen_clubs() -> list[dict]:
         cases.append({
             "fn": "evaluateClubs",
             "args": {"opts": {"squat": squat, "bench": bench, "deadlift": deadlift, "ohp": ohp, "unit": unit}},
-            "expected": dump(clubs.evaluate_clubs(squat=squat, bench=bench, deadlift=deadlift, ohp=ohp, unit=unit)),
+            "expected": dump(clubs.evaluate_clubs(
+                squat=squat, bench=bench, deadlift=deadlift, ohp=ohp, unit=unit)),
         })
     return cases
 

@@ -10,7 +10,7 @@ abstract: >-
 authors:
   - family-names: "Munz"
     given-names: "Cole"
-version: 1.4.0
+version: 1.5.0
 date-released: "2026-07-08"
 url: "https://github.com/munzzyy/liftmath"
 repository-code: "https://github.com/munzzyy/liftmath"
