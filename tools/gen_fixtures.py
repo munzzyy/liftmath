@@ -33,16 +33,23 @@ FIXTURES_DIR = REPO_ROOT / "tests" / "web" / "fixtures"
 sys.path.insert(0, str(SRC))
 
 from liftmath import (  # noqa: E402
+    attempts,
     bodyweight,
+    clubs,
+    gainrate,
     loads,
     macros,
     mesocycle,
     onerm,
     plates,
+    pr,
+    prilepin,
+    skinfold,
     standards,
     symmetry,
     templates,
     tiers,
+    tonnage,
     volume,
     warmup,
 )
@@ -550,6 +557,252 @@ def gen_training_templates() -> list[dict]:
     return cases
 
 
+# ---------------------------------------------------------------------------
+# prilepin.js <- liftmath.prilepin
+# ---------------------------------------------------------------------------
+
+def gen_prilepin() -> list[dict]:
+    cases = []
+    for pct in [10, 50, 69.9, 70, 75, 79.9, 80, 85, 89.9, 90, 95, 100, 110]:
+        cases.append({
+            "fn": "zoneForPct",
+            "args": {"pct1rm": pct},
+            "expected": dump(prilepin.zone_for_pct(pct)),
+        })
+    for sets, reps, pct in [
+        (3, 5, 60),      # <70% zone, under (15 < 18)
+        (5, 5, 60),      # <70% zone, optimal (25)
+        (6, 6, 60),      # <70% zone, over (36 > 30)
+        (4, 5, 75),      # 70-79% zone, optimal (20)
+        (3, 8, 75),      # 70-79% zone, reps/set out of range (8 > 6) but total in range
+        (5, 3, 85),      # 80-89% zone, optimal (15, exactly optimal)
+        (2, 2, 95),      # >89% zone, exactly at the total-reps floor (4) -> optimal, not under
+        (5, 2, 95),      # >89% zone, over (10 == ceiling, still optimal)
+        (6, 2, 95),      # >89% zone, over (12 > 10)
+    ]:
+        cases.append({
+            "fn": "evaluateScheme",
+            "args": {"sets": sets, "reps": reps, "pct1rm": pct},
+            "expected": dump(prilepin.evaluate_scheme(sets, reps, pct)),
+        })
+    for reps, pct in [(6, 60), (3, 75), (4, 72), (4, 77), (1, 95), (10, 50)]:
+        cases.append({
+            "fn": "inolOfSet",
+            "args": {"reps": reps, "pct1rm": pct},
+            "expected": prilepin.inol_of_set(reps, pct),
+        })
+    # Hristov's own worked examples (see prilepin.py's module docstring),
+    # pinned exactly: 2x6@60%+5x3@75% -> 0.9, 6x4@72% -> 0.86, 6x4@77% -> 1.04.
+    for specs in [
+        [(2, 6, 60), (5, 3, 75)],
+        [(6, 4, 72)],
+        [(6, 4, 77)],
+        [(1, 5, 30)],       # low total -> "easy"/"under" bands
+        [(10, 5, 85)],      # high total -> "brutal"/"insane" bands
+        [(3, 5, 70), (3, 5, 80)],
+    ]:
+        cases.append({
+            "fn": "inolTotal",
+            "args": {"specs": [list(s) for s in specs]},
+            "expected": dump(prilepin.inol_total(specs)),
+        })
+    return cases
+
+
+# ---------------------------------------------------------------------------
+# attempts.js <- liftmath.attempts
+# ---------------------------------------------------------------------------
+
+def gen_attempts() -> list[dict]:
+    cases = []
+    for goal_third, lift, unit, increment in [
+        (405, "squat", "lb", None),
+        (315, "bench", "lb", None),
+        (500, "deadlift", "lb", None),
+        (180, "squat", "kg", None),
+        (140, "bench", "kg", None),
+        (100, "lift", "lb", 2.5),
+        (222.5, "deadlift", "kg", 1.0),
+        (45, "bench", "lb", None),
+    ]:
+        cases.append({
+            "fn": "attemptSelection",
+            "args": {"goalThird": goal_third, "opts": {"lift": lift, "unit": unit, "increment": increment}},
+            "expected": dump(attempts.attempt_selection(goal_third, lift=lift, unit=unit, increment=increment)),
+        })
+    return cases
+
+
+# ---------------------------------------------------------------------------
+# skinfold.js <- liftmath.skinfold
+# ---------------------------------------------------------------------------
+
+def gen_skinfold() -> list[dict]:
+    cases = []
+    for chest, triceps, subscapular, age in [(10, 8, 12, 30), (20, 15, 22, 45), (6, 5, 7, 22)]:
+        cases.append({
+            "fn": "jacksonPollockMen3Site",
+            "args": {"chestMm": chest, "tricepsMm": triceps, "subscapularMm": subscapular, "age": age},
+            "expected": dump(skinfold.jackson_pollock_men_3site(chest, triceps, subscapular, age)),
+        })
+    for chest, axilla, triceps, subscapular, abdominal, suprailiac, thigh, age in [
+        (10, 12, 8, 12, 15, 10, 14, 30),
+        (18, 20, 16, 20, 25, 18, 22, 50),
+    ]:
+        cases.append({
+            "fn": "jacksonPollockMen7Site",
+            "args": {
+                "chestMm": chest, "axillaMm": axilla, "tricepsMm": triceps, "subscapularMm": subscapular,
+                "abdominalMm": abdominal, "suprailiacMm": suprailiac, "thighMm": thigh, "age": age,
+            },
+            "expected": dump(skinfold.jackson_pollock_men_7site(
+                chest, axilla, triceps, subscapular, abdominal, suprailiac, thigh, age
+            )),
+        })
+    for triceps, thigh, suprailiac, age in [(12, 20, 14, 28), (18, 26, 20, 40), (8, 14, 9, 22)]:
+        cases.append({
+            "fn": "jacksonPollockWomen3Site",
+            "args": {"tricepsMm": triceps, "thighMm": thigh, "suprailiacMm": suprailiac, "age": age},
+            "expected": dump(skinfold.jackson_pollock_women_3site(triceps, thigh, suprailiac, age)),
+        })
+    for chest, axilla, triceps, subscapular, abdominal, suprailiac, thigh, age in [
+        (12, 14, 16, 14, 20, 16, 24, 30),
+        (20, 22, 24, 22, 30, 24, 32, 50),
+    ]:
+        cases.append({
+            "fn": "jacksonPollockWomen7Site",
+            "args": {
+                "chestMm": chest, "axillaMm": axilla, "tricepsMm": triceps, "subscapularMm": subscapular,
+                "abdominalMm": abdominal, "suprailiacMm": suprailiac, "thighMm": thigh, "age": age,
+            },
+            "expected": dump(skinfold.jackson_pollock_women_7site(
+                chest, axilla, triceps, subscapular, abdominal, suprailiac, thigh, age
+            )),
+        })
+    for bd in [1.05, 1.08, 1.02, 0.98]:
+        cases.append({
+            "fn": "siriBodyfatPct",
+            "args": {"bodyDensity": bd},
+            "expected": skinfold.siri_bodyfat_pct(bd),
+        })
+    return cases
+
+
+# ---------------------------------------------------------------------------
+# tonnage.js <- liftmath.tonnage
+# ---------------------------------------------------------------------------
+
+def gen_tonnage() -> list[dict]:
+    cases = []
+    sets_specs = [
+        [(225, 5, None, None)],
+        [(225, 5, None, None), (245, 3, None, 80.0), (265, 1, None, 90.0)],
+        [(135, 10, "squat", None), (95, 10, "bench", None)],
+        [(100, 5, None, 70.0), (100, 5, None, 70.0), (100, 5, None, 70.0)],
+        [(60, 8, "back", None), (60, 8, "back", None), (40, 12, "biceps", None)],
+    ]
+    for spec in sets_specs:
+        sets = [tonnage.TonnageSet(weight=w, reps=r, lift=lift, pct_1rm=pct) for w, r, lift, pct in spec]
+        for unit in ["lb", "kg"]:
+            cases.append({
+                "fn": "sessionTonnage",
+                "args": {
+                    "sets": [{"weight": w, "reps": r, "lift": lift, "pct1rm": pct} for w, r, lift, pct in spec],
+                    "opts": {"unit": unit},
+                },
+                "expected": dump(tonnage.session_tonnage(sets, unit=unit)),
+            })
+    return cases
+
+
+# ---------------------------------------------------------------------------
+# pr-check.js <- liftmath.pr
+# ---------------------------------------------------------------------------
+
+def gen_pr_check() -> list[dict]:
+    cases = []
+    for prev_onerm, new_weight, new_reps, unit in [
+        (315, 335, 1, "lb"),
+        (315, 300, 3, "lb"),
+        (140, 145, 1, "kg"),
+    ]:
+        cases.append({
+            "fn": "checkPr",
+            "args": {
+                "opts": {
+                    "unit": unit, "previousOneRm": prev_onerm, "previousWeight": None, "previousReps": None,
+                    "newWeight": new_weight, "newReps": new_reps,
+                },
+            },
+            "expected": dump(pr.check_pr(
+                unit=unit, previous_one_rm=prev_onerm, new_weight=new_weight, new_reps=new_reps
+            )),
+        })
+    for prev_weight, prev_reps, new_weight, new_reps, unit in [
+        (300, 5, 315, 5, "lb"),
+        (225, 8, 225, 10, "lb"),
+        (100, 5, 95, 5, "kg"),
+    ]:
+        cases.append({
+            "fn": "checkPr",
+            "args": {
+                "opts": {
+                    "unit": unit, "previousOneRm": None, "previousWeight": prev_weight, "previousReps": prev_reps,
+                    "newWeight": new_weight, "newReps": new_reps,
+                },
+            },
+            "expected": dump(pr.check_pr(
+                unit=unit, previous_weight=prev_weight, previous_reps=prev_reps,
+                new_weight=new_weight, new_reps=new_reps,
+            )),
+        })
+    return cases
+
+
+# ---------------------------------------------------------------------------
+# clubs.js <- liftmath.clubs
+# ---------------------------------------------------------------------------
+
+def gen_clubs() -> list[dict]:
+    cases = []
+    for squat, bench, deadlift, ohp, unit in [
+        (315, 225, 405, 135, "lb"),   # every plate club + 1000 + 2-3-4, all exactly hit
+        (300, 200, 350, None, "lb"),  # no ohp given, none achieved yet
+        (405, 275, 500, 155, "lb"),   # all comfortably achieved
+        (140, 100, 180, 60, "kg"),
+        (100, 60, 120, None, "kg"),
+    ]:
+        cases.append({
+            "fn": "evaluateClubs",
+            "args": {"opts": {"squat": squat, "bench": bench, "deadlift": deadlift, "ohp": ohp, "unit": unit}},
+            "expected": dump(clubs.evaluate_clubs(squat=squat, bench=bench, deadlift=deadlift, ohp=ohp, unit=unit)),
+        })
+    return cases
+
+
+# ---------------------------------------------------------------------------
+# gain-rate.js <- liftmath.gainrate
+# ---------------------------------------------------------------------------
+
+def gen_gain_rate() -> list[dict]:
+    cases = []
+    for bw, level, unit in [
+        (185, "beginner", "lb"),
+        (185, "intermediate", "lb"),
+        (185, "advanced", "lb"),
+        (84, "beginner", "kg"),
+        (84, "intermediate", "kg"),
+        (84, "advanced", "kg"),
+        (250, "beginner", "lb"),
+    ]:
+        cases.append({
+            "fn": "gainRate",
+            "args": {"bodyweight": bw, "level": level, "opts": {"unit": unit}},
+            "expected": dump(gainrate.gain_rate(bw, level, unit=unit)),
+        })
+    return cases
+
+
 GENERATORS = {
     "one-rep-max": gen_one_rep_max,
     "load-chart": gen_load_chart,
@@ -565,6 +818,13 @@ GENERATORS = {
     "bodyweight-onerm": gen_bodyweight_onerm,
     "symmetry": gen_symmetry,
     "training-templates": gen_training_templates,
+    "prilepin": gen_prilepin,
+    "attempts": gen_attempts,
+    "skinfold": gen_skinfold,
+    "tonnage": gen_tonnage,
+    "pr-check": gen_pr_check,
+    "clubs": gen_clubs,
+    "gain-rate": gen_gain_rate,
 }
 
 

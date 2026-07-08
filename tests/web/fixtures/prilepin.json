@@ -1,0 +1,673 @@
+[
+  {
+    "args": {
+      "pct1rm": 10
+    },
+    "expected": {
+      "label": "<70%",
+      "maxPct": 70.0,
+      "minPct": 0.0,
+      "optimalTotalReps": 24,
+      "repsPerSetHigh": 6,
+      "repsPerSetLow": 3,
+      "totalRepsHigh": 30,
+      "totalRepsLow": 18
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 50
+    },
+    "expected": {
+      "label": "<70%",
+      "maxPct": 70.0,
+      "minPct": 0.0,
+      "optimalTotalReps": 24,
+      "repsPerSetHigh": 6,
+      "repsPerSetLow": 3,
+      "totalRepsHigh": 30,
+      "totalRepsLow": 18
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 69.9
+    },
+    "expected": {
+      "label": "<70%",
+      "maxPct": 70.0,
+      "minPct": 0.0,
+      "optimalTotalReps": 24,
+      "repsPerSetHigh": 6,
+      "repsPerSetLow": 3,
+      "totalRepsHigh": 30,
+      "totalRepsLow": 18
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 70
+    },
+    "expected": {
+      "label": "70-79%",
+      "maxPct": 80.0,
+      "minPct": 70.0,
+      "optimalTotalReps": 18,
+      "repsPerSetHigh": 6,
+      "repsPerSetLow": 3,
+      "totalRepsHigh": 24,
+      "totalRepsLow": 12
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 75
+    },
+    "expected": {
+      "label": "70-79%",
+      "maxPct": 80.0,
+      "minPct": 70.0,
+      "optimalTotalReps": 18,
+      "repsPerSetHigh": 6,
+      "repsPerSetLow": 3,
+      "totalRepsHigh": 24,
+      "totalRepsLow": 12
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 79.9
+    },
+    "expected": {
+      "label": "70-79%",
+      "maxPct": 80.0,
+      "minPct": 70.0,
+      "optimalTotalReps": 18,
+      "repsPerSetHigh": 6,
+      "repsPerSetLow": 3,
+      "totalRepsHigh": 24,
+      "totalRepsLow": 12
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 80
+    },
+    "expected": {
+      "label": "80-89%",
+      "maxPct": 90.0,
+      "minPct": 80.0,
+      "optimalTotalReps": 15,
+      "repsPerSetHigh": 4,
+      "repsPerSetLow": 2,
+      "totalRepsHigh": 20,
+      "totalRepsLow": 10
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 85
+    },
+    "expected": {
+      "label": "80-89%",
+      "maxPct": 90.0,
+      "minPct": 80.0,
+      "optimalTotalReps": 15,
+      "repsPerSetHigh": 4,
+      "repsPerSetLow": 2,
+      "totalRepsHigh": 20,
+      "totalRepsLow": 10
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 89.9
+    },
+    "expected": {
+      "label": "80-89%",
+      "maxPct": 90.0,
+      "minPct": 80.0,
+      "optimalTotalReps": 15,
+      "repsPerSetHigh": 4,
+      "repsPerSetLow": 2,
+      "totalRepsHigh": 20,
+      "totalRepsLow": 10
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 90
+    },
+    "expected": {
+      "label": ">89%",
+      "maxPct": null,
+      "minPct": 90.0,
+      "optimalTotalReps": 7,
+      "repsPerSetHigh": 2,
+      "repsPerSetLow": 1,
+      "totalRepsHigh": 10,
+      "totalRepsLow": 4
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 95
+    },
+    "expected": {
+      "label": ">89%",
+      "maxPct": null,
+      "minPct": 90.0,
+      "optimalTotalReps": 7,
+      "repsPerSetHigh": 2,
+      "repsPerSetLow": 1,
+      "totalRepsHigh": 10,
+      "totalRepsLow": 4
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 100
+    },
+    "expected": {
+      "label": ">89%",
+      "maxPct": null,
+      "minPct": 90.0,
+      "optimalTotalReps": 7,
+      "repsPerSetHigh": 2,
+      "repsPerSetLow": 1,
+      "totalRepsHigh": 10,
+      "totalRepsLow": 4
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 110
+    },
+    "expected": {
+      "label": ">89%",
+      "maxPct": null,
+      "minPct": 90.0,
+      "optimalTotalReps": 7,
+      "repsPerSetHigh": 2,
+      "repsPerSetLow": 1,
+      "totalRepsHigh": 10,
+      "totalRepsLow": 4
+    },
+    "fn": "zoneForPct"
+  },
+  {
+    "args": {
+      "pct1rm": 60,
+      "reps": 5,
+      "sets": 3
+    },
+    "expected": {
+      "pct1rm": 60,
+      "reps": 5,
+      "repsPerSetInRange": true,
+      "repsToOptimal": 9,
+      "sets": 3,
+      "totalReps": 15,
+      "verdict": "under",
+      "zone": {
+        "label": "<70%",
+        "maxPct": 70.0,
+        "minPct": 0.0,
+        "optimalTotalReps": 24,
+        "repsPerSetHigh": 6,
+        "repsPerSetLow": 3,
+        "totalRepsHigh": 30,
+        "totalRepsLow": 18
+      }
+    },
+    "fn": "evaluateScheme"
+  },
+  {
+    "args": {
+      "pct1rm": 60,
+      "reps": 5,
+      "sets": 5
+    },
+    "expected": {
+      "pct1rm": 60,
+      "reps": 5,
+      "repsPerSetInRange": true,
+      "repsToOptimal": -1,
+      "sets": 5,
+      "totalReps": 25,
+      "verdict": "optimal",
+      "zone": {
+        "label": "<70%",
+        "maxPct": 70.0,
+        "minPct": 0.0,
+        "optimalTotalReps": 24,
+        "repsPerSetHigh": 6,
+        "repsPerSetLow": 3,
+        "totalRepsHigh": 30,
+        "totalRepsLow": 18
+      }
+    },
+    "fn": "evaluateScheme"
+  },
+  {
+    "args": {
+      "pct1rm": 60,
+      "reps": 6,
+      "sets": 6
+    },
+    "expected": {
+      "pct1rm": 60,
+      "reps": 6,
+      "repsPerSetInRange": true,
+      "repsToOptimal": -12,
+      "sets": 6,
+      "totalReps": 36,
+      "verdict": "over",
+      "zone": {
+        "label": "<70%",
+        "maxPct": 70.0,
+        "minPct": 0.0,
+        "optimalTotalReps": 24,
+        "repsPerSetHigh": 6,
+        "repsPerSetLow": 3,
+        "totalRepsHigh": 30,
+        "totalRepsLow": 18
+      }
+    },
+    "fn": "evaluateScheme"
+  },
+  {
+    "args": {
+      "pct1rm": 75,
+      "reps": 5,
+      "sets": 4
+    },
+    "expected": {
+      "pct1rm": 75,
+      "reps": 5,
+      "repsPerSetInRange": true,
+      "repsToOptimal": -2,
+      "sets": 4,
+      "totalReps": 20,
+      "verdict": "optimal",
+      "zone": {
+        "label": "70-79%",
+        "maxPct": 80.0,
+        "minPct": 70.0,
+        "optimalTotalReps": 18,
+        "repsPerSetHigh": 6,
+        "repsPerSetLow": 3,
+        "totalRepsHigh": 24,
+        "totalRepsLow": 12
+      }
+    },
+    "fn": "evaluateScheme"
+  },
+  {
+    "args": {
+      "pct1rm": 75,
+      "reps": 8,
+      "sets": 3
+    },
+    "expected": {
+      "pct1rm": 75,
+      "reps": 8,
+      "repsPerSetInRange": false,
+      "repsToOptimal": -6,
+      "sets": 3,
+      "totalReps": 24,
+      "verdict": "optimal",
+      "zone": {
+        "label": "70-79%",
+        "maxPct": 80.0,
+        "minPct": 70.0,
+        "optimalTotalReps": 18,
+        "repsPerSetHigh": 6,
+        "repsPerSetLow": 3,
+        "totalRepsHigh": 24,
+        "totalRepsLow": 12
+      }
+    },
+    "fn": "evaluateScheme"
+  },
+  {
+    "args": {
+      "pct1rm": 85,
+      "reps": 3,
+      "sets": 5
+    },
+    "expected": {
+      "pct1rm": 85,
+      "reps": 3,
+      "repsPerSetInRange": true,
+      "repsToOptimal": 0,
+      "sets": 5,
+      "totalReps": 15,
+      "verdict": "optimal",
+      "zone": {
+        "label": "80-89%",
+        "maxPct": 90.0,
+        "minPct": 80.0,
+        "optimalTotalReps": 15,
+        "repsPerSetHigh": 4,
+        "repsPerSetLow": 2,
+        "totalRepsHigh": 20,
+        "totalRepsLow": 10
+      }
+    },
+    "fn": "evaluateScheme"
+  },
+  {
+    "args": {
+      "pct1rm": 95,
+      "reps": 2,
+      "sets": 2
+    },
+    "expected": {
+      "pct1rm": 95,
+      "reps": 2,
+      "repsPerSetInRange": true,
+      "repsToOptimal": 3,
+      "sets": 2,
+      "totalReps": 4,
+      "verdict": "optimal",
+      "zone": {
+        "label": ">89%",
+        "maxPct": null,
+        "minPct": 90.0,
+        "optimalTotalReps": 7,
+        "repsPerSetHigh": 2,
+        "repsPerSetLow": 1,
+        "totalRepsHigh": 10,
+        "totalRepsLow": 4
+      }
+    },
+    "fn": "evaluateScheme"
+  },
+  {
+    "args": {
+      "pct1rm": 95,
+      "reps": 2,
+      "sets": 5
+    },
+    "expected": {
+      "pct1rm": 95,
+      "reps": 2,
+      "repsPerSetInRange": true,
+      "repsToOptimal": -3,
+      "sets": 5,
+      "totalReps": 10,
+      "verdict": "optimal",
+      "zone": {
+        "label": ">89%",
+        "maxPct": null,
+        "minPct": 90.0,
+        "optimalTotalReps": 7,
+        "repsPerSetHigh": 2,
+        "repsPerSetLow": 1,
+        "totalRepsHigh": 10,
+        "totalRepsLow": 4
+      }
+    },
+    "fn": "evaluateScheme"
+  },
+  {
+    "args": {
+      "pct1rm": 95,
+      "reps": 2,
+      "sets": 6
+    },
+    "expected": {
+      "pct1rm": 95,
+      "reps": 2,
+      "repsPerSetInRange": true,
+      "repsToOptimal": -5,
+      "sets": 6,
+      "totalReps": 12,
+      "verdict": "over",
+      "zone": {
+        "label": ">89%",
+        "maxPct": null,
+        "minPct": 90.0,
+        "optimalTotalReps": 7,
+        "repsPerSetHigh": 2,
+        "repsPerSetLow": 1,
+        "totalRepsHigh": 10,
+        "totalRepsLow": 4
+      }
+    },
+    "fn": "evaluateScheme"
+  },
+  {
+    "args": {
+      "pct1rm": 60,
+      "reps": 6
+    },
+    "expected": 0.15,
+    "fn": "inolOfSet"
+  },
+  {
+    "args": {
+      "pct1rm": 75,
+      "reps": 3
+    },
+    "expected": 0.12,
+    "fn": "inolOfSet"
+  },
+  {
+    "args": {
+      "pct1rm": 72,
+      "reps": 4
+    },
+    "expected": 0.14285714285714285,
+    "fn": "inolOfSet"
+  },
+  {
+    "args": {
+      "pct1rm": 77,
+      "reps": 4
+    },
+    "expected": 0.17391304347826086,
+    "fn": "inolOfSet"
+  },
+  {
+    "args": {
+      "pct1rm": 95,
+      "reps": 1
+    },
+    "expected": 0.2,
+    "fn": "inolOfSet"
+  },
+  {
+    "args": {
+      "pct1rm": 50,
+      "reps": 10
+    },
+    "expected": 0.2,
+    "fn": "inolOfSet"
+  },
+  {
+    "args": {
+      "specs": [
+        [
+          2,
+          6,
+          60
+        ],
+        [
+          5,
+          3,
+          75
+        ]
+      ]
+    },
+    "expected": {
+      "groups": [
+        {
+          "inol": 0.3,
+          "numSets": 2,
+          "pct1rm": 60,
+          "reps": 6
+        },
+        {
+          "inol": 0.6,
+          "numSets": 5,
+          "pct1rm": 75,
+          "reps": 3
+        }
+      ],
+      "total": 0.8999999999999999,
+      "weeklyBand": "easy, doable, good to do after more tiring weeks and prepeaking",
+      "workoutBand": "fresh, quite doable and optimal if you are not accumulating fatigue"
+    },
+    "fn": "inolTotal"
+  },
+  {
+    "args": {
+      "specs": [
+        [
+          6,
+          4,
+          72
+        ]
+      ]
+    },
+    "expected": {
+      "groups": [
+        {
+          "inol": 0.8571428571428571,
+          "numSets": 6,
+          "pct1rm": 72,
+          "reps": 4
+        }
+      ],
+      "total": 0.8571428571428571,
+      "weeklyBand": "easy, doable, good to do after more tiring weeks and prepeaking",
+      "workoutBand": "fresh, quite doable and optimal if you are not accumulating fatigue"
+    },
+    "fn": "inolTotal"
+  },
+  {
+    "args": {
+      "specs": [
+        [
+          6,
+          4,
+          77
+        ]
+      ]
+    },
+    "expected": {
+      "groups": [
+        {
+          "inol": 1.0434782608695652,
+          "numSets": 6,
+          "pct1rm": 77,
+          "reps": 4
+        }
+      ],
+      "total": 1.0434782608695652,
+      "weeklyBand": "easy, doable, good to do after more tiring weeks and prepeaking",
+      "workoutBand": "tough, but good for loading phases"
+    },
+    "fn": "inolTotal"
+  },
+  {
+    "args": {
+      "specs": [
+        [
+          1,
+          5,
+          30
+        ]
+      ]
+    },
+    "expected": {
+      "groups": [
+        {
+          "inol": 0.07142857142857142,
+          "numSets": 1,
+          "pct1rm": 30,
+          "reps": 5
+        }
+      ],
+      "total": 0.07142857142857142,
+      "weeklyBand": "easy, doable, good to do after more tiring weeks and prepeaking",
+      "workoutBand": "too few reps, not enough stimulus?"
+    },
+    "fn": "inolTotal"
+  },
+  {
+    "args": {
+      "specs": [
+        [
+          10,
+          5,
+          85
+        ]
+      ]
+    },
+    "expected": {
+      "groups": [
+        {
+          "inol": 3.333333333333333,
+          "numSets": 10,
+          "pct1rm": 85,
+          "reps": 5
+        }
+      ],
+      "total": 3.333333333333333,
+      "weeklyBand": "brutal, lots of fatigue, good for a limited time and shock microcycles",
+      "workoutBand": "brutal"
+    },
+    "fn": "inolTotal"
+  },
+  {
+    "args": {
+      "specs": [
+        [
+          3,
+          5,
+          70
+        ],
+        [
+          3,
+          5,
+          80
+        ]
+      ]
+    },
+    "expected": {
+      "groups": [
+        {
+          "inol": 0.5,
+          "numSets": 3,
+          "pct1rm": 70,
+          "reps": 5
+        },
+        {
+          "inol": 0.75,
+          "numSets": 3,
+          "pct1rm": 80,
+          "reps": 5
+        }
+      ],
+      "total": 1.25,
+      "weeklyBand": "easy, doable, good to do after more tiring weeks and prepeaking",
+      "workoutBand": "tough, but good for loading phases"
+    },
+    "fn": "inolTotal"
+  }
+]

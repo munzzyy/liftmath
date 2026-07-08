@@ -1,0 +1,482 @@
+[
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "sets": [
+        {
+          "lift": null,
+          "pct1rm": null,
+          "reps": 5,
+          "weight": 225
+        }
+      ]
+    },
+    "expected": {
+      "averageIntensityPct": null,
+      "perLift": null,
+      "sets": [
+        {
+          "lift": null,
+          "pct1rm": null,
+          "reps": 5,
+          "weight": 225
+        }
+      ],
+      "totalTonnage": 1125,
+      "unit": "lb"
+    },
+    "fn": "sessionTonnage"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "sets": [
+        {
+          "lift": null,
+          "pct1rm": null,
+          "reps": 5,
+          "weight": 225
+        }
+      ]
+    },
+    "expected": {
+      "averageIntensityPct": null,
+      "perLift": null,
+      "sets": [
+        {
+          "lift": null,
+          "pct1rm": null,
+          "reps": 5,
+          "weight": 225
+        }
+      ],
+      "totalTonnage": 1125,
+      "unit": "kg"
+    },
+    "fn": "sessionTonnage"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "sets": [
+        {
+          "lift": null,
+          "pct1rm": null,
+          "reps": 5,
+          "weight": 225
+        },
+        {
+          "lift": null,
+          "pct1rm": 80.0,
+          "reps": 3,
+          "weight": 245
+        },
+        {
+          "lift": null,
+          "pct1rm": 90.0,
+          "reps": 1,
+          "weight": 265
+        }
+      ]
+    },
+    "expected": {
+      "averageIntensityPct": 82.5,
+      "perLift": null,
+      "sets": [
+        {
+          "lift": null,
+          "pct1rm": null,
+          "reps": 5,
+          "weight": 225
+        },
+        {
+          "lift": null,
+          "pct1rm": 80.0,
+          "reps": 3,
+          "weight": 245
+        },
+        {
+          "lift": null,
+          "pct1rm": 90.0,
+          "reps": 1,
+          "weight": 265
+        }
+      ],
+      "totalTonnage": 2125,
+      "unit": "lb"
+    },
+    "fn": "sessionTonnage"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "sets": [
+        {
+          "lift": null,
+          "pct1rm": null,
+          "reps": 5,
+          "weight": 225
+        },
+        {
+          "lift": null,
+          "pct1rm": 80.0,
+          "reps": 3,
+          "weight": 245
+        },
+        {
+          "lift": null,
+          "pct1rm": 90.0,
+          "reps": 1,
+          "weight": 265
+        }
+      ]
+    },
+    "expected": {
+      "averageIntensityPct": 82.5,
+      "perLift": null,
+      "sets": [
+        {
+          "lift": null,
+          "pct1rm": null,
+          "reps": 5,
+          "weight": 225
+        },
+        {
+          "lift": null,
+          "pct1rm": 80.0,
+          "reps": 3,
+          "weight": 245
+        },
+        {
+          "lift": null,
+          "pct1rm": 90.0,
+          "reps": 1,
+          "weight": 265
+        }
+      ],
+      "totalTonnage": 2125,
+      "unit": "kg"
+    },
+    "fn": "sessionTonnage"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "sets": [
+        {
+          "lift": "squat",
+          "pct1rm": null,
+          "reps": 10,
+          "weight": 135
+        },
+        {
+          "lift": "bench",
+          "pct1rm": null,
+          "reps": 10,
+          "weight": 95
+        }
+      ]
+    },
+    "expected": {
+      "averageIntensityPct": null,
+      "perLift": {
+        "bench": 950.0,
+        "squat": 1350.0
+      },
+      "sets": [
+        {
+          "lift": "squat",
+          "pct1rm": null,
+          "reps": 10,
+          "weight": 135
+        },
+        {
+          "lift": "bench",
+          "pct1rm": null,
+          "reps": 10,
+          "weight": 95
+        }
+      ],
+      "totalTonnage": 2300,
+      "unit": "lb"
+    },
+    "fn": "sessionTonnage"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "sets": [
+        {
+          "lift": "squat",
+          "pct1rm": null,
+          "reps": 10,
+          "weight": 135
+        },
+        {
+          "lift": "bench",
+          "pct1rm": null,
+          "reps": 10,
+          "weight": 95
+        }
+      ]
+    },
+    "expected": {
+      "averageIntensityPct": null,
+      "perLift": {
+        "bench": 950.0,
+        "squat": 1350.0
+      },
+      "sets": [
+        {
+          "lift": "squat",
+          "pct1rm": null,
+          "reps": 10,
+          "weight": 135
+        },
+        {
+          "lift": "bench",
+          "pct1rm": null,
+          "reps": 10,
+          "weight": 95
+        }
+      ],
+      "totalTonnage": 2300,
+      "unit": "kg"
+    },
+    "fn": "sessionTonnage"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "sets": [
+        {
+          "lift": null,
+          "pct1rm": 70.0,
+          "reps": 5,
+          "weight": 100
+        },
+        {
+          "lift": null,
+          "pct1rm": 70.0,
+          "reps": 5,
+          "weight": 100
+        },
+        {
+          "lift": null,
+          "pct1rm": 70.0,
+          "reps": 5,
+          "weight": 100
+        }
+      ]
+    },
+    "expected": {
+      "averageIntensityPct": 70.0,
+      "perLift": null,
+      "sets": [
+        {
+          "lift": null,
+          "pct1rm": 70.0,
+          "reps": 5,
+          "weight": 100
+        },
+        {
+          "lift": null,
+          "pct1rm": 70.0,
+          "reps": 5,
+          "weight": 100
+        },
+        {
+          "lift": null,
+          "pct1rm": 70.0,
+          "reps": 5,
+          "weight": 100
+        }
+      ],
+      "totalTonnage": 1500,
+      "unit": "lb"
+    },
+    "fn": "sessionTonnage"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "sets": [
+        {
+          "lift": null,
+          "pct1rm": 70.0,
+          "reps": 5,
+          "weight": 100
+        },
+        {
+          "lift": null,
+          "pct1rm": 70.0,
+          "reps": 5,
+          "weight": 100
+        },
+        {
+          "lift": null,
+          "pct1rm": 70.0,
+          "reps": 5,
+          "weight": 100
+        }
+      ]
+    },
+    "expected": {
+      "averageIntensityPct": 70.0,
+      "perLift": null,
+      "sets": [
+        {
+          "lift": null,
+          "pct1rm": 70.0,
+          "reps": 5,
+          "weight": 100
+        },
+        {
+          "lift": null,
+          "pct1rm": 70.0,
+          "reps": 5,
+          "weight": 100
+        },
+        {
+          "lift": null,
+          "pct1rm": 70.0,
+          "reps": 5,
+          "weight": 100
+        }
+      ],
+      "totalTonnage": 1500,
+      "unit": "kg"
+    },
+    "fn": "sessionTonnage"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "sets": [
+        {
+          "lift": "back",
+          "pct1rm": null,
+          "reps": 8,
+          "weight": 60
+        },
+        {
+          "lift": "back",
+          "pct1rm": null,
+          "reps": 8,
+          "weight": 60
+        },
+        {
+          "lift": "biceps",
+          "pct1rm": null,
+          "reps": 12,
+          "weight": 40
+        }
+      ]
+    },
+    "expected": {
+      "averageIntensityPct": null,
+      "perLift": {
+        "back": 960.0,
+        "biceps": 480.0
+      },
+      "sets": [
+        {
+          "lift": "back",
+          "pct1rm": null,
+          "reps": 8,
+          "weight": 60
+        },
+        {
+          "lift": "back",
+          "pct1rm": null,
+          "reps": 8,
+          "weight": 60
+        },
+        {
+          "lift": "biceps",
+          "pct1rm": null,
+          "reps": 12,
+          "weight": 40
+        }
+      ],
+      "totalTonnage": 1440,
+      "unit": "lb"
+    },
+    "fn": "sessionTonnage"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "sets": [
+        {
+          "lift": "back",
+          "pct1rm": null,
+          "reps": 8,
+          "weight": 60
+        },
+        {
+          "lift": "back",
+          "pct1rm": null,
+          "reps": 8,
+          "weight": 60
+        },
+        {
+          "lift": "biceps",
+          "pct1rm": null,
+          "reps": 12,
+          "weight": 40
+        }
+      ]
+    },
+    "expected": {
+      "averageIntensityPct": null,
+      "perLift": {
+        "back": 960.0,
+        "biceps": 480.0
+      },
+      "sets": [
+        {
+          "lift": "back",
+          "pct1rm": null,
+          "reps": 8,
+          "weight": 60
+        },
+        {
+          "lift": "back",
+          "pct1rm": null,
+          "reps": 8,
+          "weight": 60
+        },
+        {
+          "lift": "biceps",
+          "pct1rm": null,
+          "reps": 12,
+          "weight": 40
+        }
+      ],
+      "totalTonnage": 1440,
+      "unit": "kg"
+    },
+    "fn": "sessionTonnage"
+  }
+]

@@ -1,0 +1,282 @@
+[
+  {
+    "args": {
+      "age": 30,
+      "chestMm": 10,
+      "subscapularMm": 12,
+      "tricepsMm": 8
+    },
+    "expected": {
+      "age": 30,
+      "bodyDensity": 1.0707575,
+      "bodyfatPct": 12.289547353158866,
+      "method": "3-site",
+      "sex": "male",
+      "sitesMm": {
+        "chestMm": 10,
+        "subscapularMm": 12,
+        "tricepsMm": 8
+      },
+      "sumMm": 30
+    },
+    "fn": "jacksonPollockMen3Site"
+  },
+  {
+    "args": {
+      "age": 45,
+      "chestMm": 20,
+      "subscapularMm": 22,
+      "tricepsMm": 15
+    },
+    "expected": {
+      "age": 45,
+      "bodyDensity": 1.0445795,
+      "bodyfatPct": 23.874894155973777,
+      "method": "3-site",
+      "sex": "male",
+      "sitesMm": {
+        "chestMm": 20,
+        "subscapularMm": 22,
+        "tricepsMm": 15
+      },
+      "sumMm": 57
+    },
+    "fn": "jacksonPollockMen3Site"
+  },
+  {
+    "args": {
+      "age": 22,
+      "chestMm": 6,
+      "subscapularMm": 7,
+      "tricepsMm": 5
+    },
+    "expected": {
+      "age": 22,
+      "bodyDensity": 1.0852914999999999,
+      "bodyfatPct": 6.098661050971145,
+      "method": "3-site",
+      "sex": "male",
+      "sitesMm": {
+        "chestMm": 6,
+        "subscapularMm": 7,
+        "tricepsMm": 5
+      },
+      "sumMm": 18
+    },
+    "fn": "jacksonPollockMen3Site"
+  },
+  {
+    "args": {
+      "abdominalMm": 15,
+      "age": 30,
+      "axillaMm": 12,
+      "chestMm": 10,
+      "subscapularMm": 12,
+      "suprailiacMm": 10,
+      "thighMm": 14,
+      "tricepsMm": 8
+    },
+    "expected": {
+      "age": 30,
+      "bodyDensity": 1.07172656,
+      "bodyfatPct": 11.871543054788106,
+      "method": "7-site",
+      "sex": "male",
+      "sitesMm": {
+        "abdominalMm": 15,
+        "axillaMm": 12,
+        "chestMm": 10,
+        "subscapularMm": 12,
+        "suprailiacMm": 10,
+        "thighMm": 14,
+        "tricepsMm": 8
+      },
+      "sumMm": 81
+    },
+    "fn": "jacksonPollockMen7Site"
+  },
+  {
+    "args": {
+      "abdominalMm": 25,
+      "age": 50,
+      "axillaMm": 20,
+      "chestMm": 18,
+      "subscapularMm": 20,
+      "suprailiacMm": 18,
+      "thighMm": 22,
+      "tricepsMm": 16
+    },
+    "expected": {
+      "age": 50,
+      "bodyDensity": 1.04774994,
+      "bodyfatPct": 22.440971936490826,
+      "method": "7-site",
+      "sex": "male",
+      "sitesMm": {
+        "abdominalMm": 25,
+        "axillaMm": 20,
+        "chestMm": 18,
+        "subscapularMm": 20,
+        "suprailiacMm": 18,
+        "thighMm": 22,
+        "tricepsMm": 16
+      },
+      "sumMm": 139
+    },
+    "fn": "jacksonPollockMen7Site"
+  },
+  {
+    "args": {
+      "age": 28,
+      "suprailiacMm": 14,
+      "thighMm": 20,
+      "tricepsMm": 12
+    },
+    "expected": {
+      "age": 28,
+      "bodyDensity": 1.0547879,
+      "bodyfatPct": 19.28865983388698,
+      "method": "3-site",
+      "sex": "female",
+      "sitesMm": {
+        "suprailiacMm": 14,
+        "thighMm": 20,
+        "tricepsMm": 12
+      },
+      "sumMm": 46
+    },
+    "fn": "jacksonPollockWomen3Site"
+  },
+  {
+    "args": {
+      "age": 40,
+      "suprailiacMm": 20,
+      "thighMm": 26,
+      "tricepsMm": 18
+    },
+    "expected": {
+      "age": 40,
+      "bodyDensity": 1.0397992999999999,
+      "bodyfatPct": 26.053407614334844,
+      "method": "3-site",
+      "sex": "female",
+      "sitesMm": {
+        "suprailiacMm": 20,
+        "thighMm": 26,
+        "tricepsMm": 18
+      },
+      "sumMm": 64
+    },
+    "fn": "jacksonPollockWomen3Site"
+  },
+  {
+    "args": {
+      "age": 22,
+      "suprailiacMm": 9,
+      "thighMm": 14,
+      "tricepsMm": 8
+    },
+    "expected": {
+      "age": 22,
+      "bodyDensity": 1.0678601,
+      "bodyfatPct": 13.543866841733234,
+      "method": "3-site",
+      "sex": "female",
+      "sitesMm": {
+        "suprailiacMm": 9,
+        "thighMm": 14,
+        "tricepsMm": 8
+      },
+      "sumMm": 31
+    },
+    "fn": "jacksonPollockWomen3Site"
+  },
+  {
+    "args": {
+      "abdominalMm": 20,
+      "age": 30,
+      "axillaMm": 14,
+      "chestMm": 12,
+      "subscapularMm": 14,
+      "suprailiacMm": 16,
+      "thighMm": 24,
+      "tricepsMm": 16
+    },
+    "expected": {
+      "age": 30,
+      "bodyDensity": 1.0462006,
+      "bodyfatPct": 23.14061949496113,
+      "method": "7-site",
+      "sex": "female",
+      "sitesMm": {
+        "abdominalMm": 20,
+        "axillaMm": 14,
+        "chestMm": 12,
+        "subscapularMm": 14,
+        "suprailiacMm": 16,
+        "thighMm": 24,
+        "tricepsMm": 16
+      },
+      "sumMm": 116
+    },
+    "fn": "jacksonPollockWomen7Site"
+  },
+  {
+    "args": {
+      "abdominalMm": 30,
+      "age": 50,
+      "axillaMm": 22,
+      "chestMm": 20,
+      "subscapularMm": 22,
+      "suprailiacMm": 24,
+      "thighMm": 32,
+      "tricepsMm": 24
+    },
+    "expected": {
+      "age": 50,
+      "bodyDensity": 1.0258110200000001,
+      "bodyfatPct": 32.54502081679715,
+      "method": "7-site",
+      "sex": "female",
+      "sitesMm": {
+        "abdominalMm": 30,
+        "axillaMm": 22,
+        "chestMm": 20,
+        "subscapularMm": 22,
+        "suprailiacMm": 24,
+        "thighMm": 32,
+        "tricepsMm": 24
+      },
+      "sumMm": 174
+    },
+    "fn": "jacksonPollockWomen7Site"
+  },
+  {
+    "args": {
+      "bodyDensity": 1.05
+    },
+    "expected": 21.428571428571388,
+    "fn": "siriBodyfatPct"
+  },
+  {
+    "args": {
+      "bodyDensity": 1.08
+    },
+    "expected": 8.333333333333314,
+    "fn": "siriBodyfatPct"
+  },
+  {
+    "args": {
+      "bodyDensity": 1.02
+    },
+    "expected": 35.29411764705884,
+    "fn": "siriBodyfatPct"
+  },
+  {
+    "args": {
+      "bodyDensity": 0.98
+    },
+    "expected": 55.102040816326564,
+    "fn": "siriBodyfatPct"
+  }
+]
