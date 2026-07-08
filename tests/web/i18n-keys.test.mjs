@@ -409,6 +409,33 @@ const NEW_IN_1_3_0 = new Set([
   "programs.531.fromAmrapWeightPlaceholder",
 ]);
 
+// Keys added in the v1.4.0 release (the strength-tiers feature, folded into
+// the existing Wilks/DOTS/GL "scores" tab) - shipped English-complete per
+// the same scope decision NEW_IN_1_3_0 documents above (translate as a
+// tracked fast-follow, not a release blocker). See that const's comment for
+// the full mechanism this relies on (index.js's t() already falls back to
+// English for any absent key at runtime).
+const NEW_IN_1_4_0 = new Set([
+  "scores.tier.heading",
+  "scores.tier.name.belowBeginner",
+  "scores.tier.name.beginner",
+  "scores.tier.name.novice",
+  "scores.tier.name.intermediate",
+  "scores.tier.name.advanced",
+  "scores.tier.name.elite",
+  "scores.tier.table.tier",
+  "scores.tier.table.total",
+  "scores.tier.pctHint",
+  "scores.tier.nextHint",
+  "scores.tier.eliteHint",
+  "scores.tier.clampBelow",
+  "scores.tier.clampAbove",
+  "scores.tier.disclaimer",
+  "glossary.terms.strengthTier.term",
+  "glossary.terms.strengthTier.plain",
+  "glossary.terms.strengthTier.technical",
+]);
+
 test("discovers at least the 7 expected locale files (en + 6 proof locales)", () => {
   const expected = ["en", "es", "de", "ru", "ja", "zh-Hans", "ar"];
   for (const loc of expected) {
@@ -430,10 +457,12 @@ for (const locale of LOCALES) {
 
     const localeKeys = new Set(Object.keys(dict));
 
-    // NEW_IN_1_3_0 keys may be absent (graceful English fallback at runtime -
-    // see that const's own comment); every OTHER en.js key is still required,
-    // same strict parity this test has always enforced.
-    const missing = [...EN_KEYS].filter((k) => !localeKeys.has(k) && !NEW_IN_1_3_0.has(k));
+    // NEW_IN_1_3_0/NEW_IN_1_4_0 keys may be absent (graceful English fallback
+    // at runtime - see NEW_IN_1_3_0's own comment); every OTHER en.js key is
+    // still required, same strict parity this test has always enforced.
+    const missing = [...EN_KEYS].filter(
+      (k) => !localeKeys.has(k) && !NEW_IN_1_3_0.has(k) && !NEW_IN_1_4_0.has(k)
+    );
     const extra = [...localeKeys].filter((k) => !EN_KEYS.has(k));
 
     assert.deepEqual(missing, [], `${locale}.js is missing keys present in en.js: ${missing.join(", ")}`);
@@ -462,11 +491,11 @@ for (const locale of LOCALES) {
     const dict = mod.default;
     const mismatches = [];
     for (const key of EN_KEYS) {
-      // A NEW_IN_1_3_0 key the locale hasn't picked up yet falls back to the
-      // English string wholesale (placeholders included) at runtime, not a
-      // half-translated string with mismatched tokens - only check it here
-      // once/if the locale actually defines it.
-      if (NEW_IN_1_3_0.has(key) && !(key in dict)) continue;
+      // A NEW_IN_1_3_0/NEW_IN_1_4_0 key the locale hasn't picked up yet falls
+      // back to the English string wholesale (placeholders included) at
+      // runtime, not a half-translated string with mismatched tokens - only
+      // check it here once/if the locale actually defines it.
+      if ((NEW_IN_1_3_0.has(key) || NEW_IN_1_4_0.has(key)) && !(key in dict)) continue;
       const enTokens = [...(en[key].match(/\{\w+\}/g) || [])].sort();
       const localeTokens = [...((dict[key] || "").match(/\{\w+\}/g) || [])].sort();
       if (JSON.stringify(enTokens) !== JSON.stringify(localeTokens)) {

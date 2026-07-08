@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "liftmath"
-version = "1.3.0"
+version = "1.4.0"
 description = "Evidence-based strength training math: 1RM, RPE/RIR, volume landmarks, double progression, body composition, session load, macros, plates, warm-ups, and relative-strength scoring (Wilks/DOTS/IPF GL/McCulloch)."
 readme = "README.md"
 license = { text = "Prosperity Public License 3.0.0" }

@@ -27,6 +27,7 @@ Subcommands:
     nsuns       nSuns LP (4-day variant) T1 set list for one lift day
     standards   Relative-strength scoring: Wilks (original + 2020), DOTS, IPF GL points
     mcculloch   McCulloch age-adjusted total for masters lifters (WRPF)
+    tier        Bodyweight-indexed strength tier (beginner->elite) for a total
     glossary    Plain-English + technical definitions for every term liftmath uses
 
 All loads are unit-agnostic (kg or lb) unless a subcommand needs the unit; pass --unit.
@@ -45,7 +46,7 @@ import json
 import sys
 
 from liftmath import __version__
-from liftmath._serialize import to_json
+from liftmath._serialize import to_dict, to_json
 from liftmath.bodycomp import ffmi as compute_ffmi
 from liftmath.bodycomp import navy_body_fat
 from liftmath.bodyweight import MOVEMENTS, weighted_bodyweight_one_rm
@@ -72,6 +73,7 @@ from liftmath.templates import (
     program_531,
     training_max,
 )
+from liftmath.tiers import TIER_NAMES, classify_tier
 from liftmath.volume import LANDMARKS, landmarks_for
 from liftmath.warmup import warmup_ramp
 
@@ -591,6 +593,54 @@ def cmd_warmup(args: argparse.Namespace) -> int:
     return 0
 
 
+# Display label per tier key - shared between `standards --tier` and `tier`
+# so the two surfaces never drift into describing the same tier differently.
+_TIER_LABELS = {
+    "below_beginner": "below beginner",
+    "beginner": "BEGINNER",
+    "novice": "NOVICE",
+    "intermediate": "INTERMEDIATE",
+    "advanced": "ADVANCED",
+    "elite": "ELITE",
+}
+
+
+def _print_tier_block(result, unit: str, bodyweight_display: float) -> None:
+    """Shared strength-tier text block for `tier` and `standards --tier`.
+
+    `result` is a `liftmath.tiers.TierResult`; `bodyweight_display` is the
+    bodyweight in the CALLER's original --unit (for the header line only -
+    all the actual conversion happens via `conv` below).
+    """
+    conv = 1.0 if unit == "kg" else 1.0 / _LB_PER_KG
+    th = result.thresholds
+    print(f"  bodyweight-indexed tier thresholds at {bodyweight_display:g}{unit} (interpolated):")
+    for name, value in zip(TIER_NAMES, (th.beginner, th.novice, th.intermediate, th.advanced, th.elite)):
+        marker = " <- your tier" if name == result.tier else ""
+        print(f"    {name:<14}{value * conv:9.1f}{unit}{marker}")
+    print(f"  tier: {_TIER_LABELS.get(result.tier, result.tier)}")
+    if result.pct_into_tier is not None:
+        print(f"    {result.pct_into_tier:.0f}% of the way through this tier")
+    if result.next_tier is not None and result.total_to_next_kg is not None:
+        print(f"    {result.total_to_next_kg * conv:.1f}{unit} to "
+              f"{_TIER_LABELS.get(result.next_tier, result.next_tier)}")
+    elif result.tier == "elite":
+        print("    already at the top published tier - no higher threshold on this table")
+    if th.clamped == "below_min":
+        print(f"  [!] {bodyweight_display:g}{unit} is below the table's lightest bodyweight bracket "
+              f"({th.clamp_bracket_kg * conv:g}{unit}) - using")
+        print("      that bracket's thresholds rather than extrapolating lighter.")
+    elif th.clamped == "above_max":
+        print(f"  [!] {bodyweight_display:g}{unit} is above the table's heaviest bodyweight bracket "
+              f"({th.clamp_bracket_kg * conv:g}{unit}) - using")
+        print("      that bracket's thresholds rather than extrapolating heavier.")
+    print("Source: Strength Level's published TOTAL standards (5th/20th/50th/80th/95th percentile,")
+    print("bodyweight-indexed), cross-checked against ExRx/Kilgore (same ballpark, 3-18% apart, no")
+    print("wild divergence). [!] Self-reported population percentiles - Strength Level's own FAQ")
+    print("says its loggers skew stronger than the general population; this is NOT a training-age")
+    print("guarantee and NOT a judge-verified competition result.")
+
+
 def cmd_standards(args: argparse.Namespace) -> int:
     bodyweight_kg = args.bodyweight * _LB_PER_KG if args.unit == "lb" else args.bodyweight
     total_kg = args.total * _LB_PER_KG if args.unit == "lb" else args.total
@@ -600,8 +650,24 @@ def cmd_standards(args: argparse.Namespace) -> int:
         print(f"error: {e}", file=sys.stderr)
         return 1
 
+    # --tier is additive and opt-in: with it omitted, output below (both JSON
+    # and text) is byte-identical to before this flag existed. See `tier` for
+    # the same computation as its own dedicated subcommand.
+    tier_result = None
+    tier_error = None
+    if args.tier:
+        try:
+            tier_result = classify_tier(total_kg, bodyweight_kg, args.sex)
+        except ValueError as e:
+            tier_error = str(e)
+
     if args.json:
-        print(to_json(result))
+        payload = to_dict(result)
+        if args.tier:
+            payload["tier"] = to_dict(tier_result) if tier_result is not None else None
+            if tier_error is not None:
+                payload["tier_error"] = tier_error
+        print(json.dumps(payload, indent=2))
         return 0
 
     print(f"Relative-strength scores - {args.total:g}{args.unit} total @ {args.bodyweight:g}{args.unit} "
@@ -622,6 +688,14 @@ def cmd_standards(args: argparse.Namespace) -> int:
     print("is kept for historical comparison. [evidence tier] established as competition")
     print("scoring CONVENTIONS (real federation formulas fit to real competition samples),")
     print("not evidence in the causal/RCT sense.")
+
+    if args.tier:
+        print()
+        if tier_error is not None:
+            print(f"error computing strength tier: {tier_error}", file=sys.stderr)
+        else:
+            print("Strength tier (bodyweight-indexed percentile, see `liftmath tier --help`):")
+            _print_tier_block(tier_result, args.unit, args.bodyweight)
     return 0
 
 
@@ -650,6 +724,36 @@ def cmd_mcculloch(args: argparse.Namespace) -> int:
     print("methodology (unlike IPF GL, which does) - treat the curve's shape as less")
     print("independently verifiable than IPF GL's, even though the numbers are the")
     print("federation's own published table.")
+    return 0
+
+
+def cmd_tier(args: argparse.Namespace) -> int:
+    if args.total is not None:
+        if args.squat is not None or args.bench is not None or args.deadlift is not None:
+            print("error: pass --total, OR --squat/--bench/--deadlift, not both", file=sys.stderr)
+            return 1
+        total = args.total
+    else:
+        if args.squat is None or args.bench is None or args.deadlift is None:
+            print("error: pass --total, or all three of --squat/--bench/--deadlift", file=sys.stderr)
+            return 1
+        total = args.squat + args.bench + args.deadlift
+
+    bodyweight_kg = args.bodyweight * _LB_PER_KG if args.unit == "lb" else args.bodyweight
+    total_kg = total * _LB_PER_KG if args.unit == "lb" else total
+    try:
+        result = classify_tier(total_kg, bodyweight_kg, args.sex)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(result))
+        return 0
+
+    print(f"Strength tier - {total:g}{args.unit} total @ {args.bodyweight:g}{args.unit} bodyweight ({args.sex}):")
+    _hint("strength_tier")
+    _print_tier_block(result, args.unit, args.bodyweight)
     return 0
 
 
@@ -1146,6 +1250,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--bodyweight", type=float, required=True)
     s.add_argument("--sex", required=True, choices=["male", "female"])
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.add_argument("--tier", action="store_true",
+                   help="also classify a bodyweight-indexed strength tier (beginner-elite) from "
+                        "this same total/bodyweight/sex - see the `tier` subcommand for the full "
+                        "breakdown. Omit this flag and output is unchanged from before it existed.")
     s.set_defaults(func=cmd_standards)
 
     s = sub.add_parser("mcculloch", help="McCulloch age-adjusted total for masters lifters (WRPF)",
@@ -1154,6 +1262,18 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--age", type=int, required=True, help="lifter's age in whole years, 40-90")
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_mcculloch)
+
+    s = sub.add_parser("tier", help="bodyweight-indexed strength tier (beginner->elite) for a total",
+                        parents=[json_parent])
+    s.add_argument("--total", type=float, help="competition total (give this, OR --squat/--bench/--deadlift)")
+    s.add_argument("--squat", type=float, help="squat 1RM - combine with --bench/--deadlift instead of --total")
+    s.add_argument("--bench", type=float, help="bench 1RM - combine with --squat/--deadlift instead of --total")
+    s.add_argument("--deadlift", type=float,
+                   help="deadlift 1RM - combine with --squat/--bench instead of --total")
+    s.add_argument("--bodyweight", type=float, required=True)
+    s.add_argument("--sex", required=True, choices=["male", "female"])
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_tier)
 
     s = sub.add_parser("glossary", help="plain-English + technical definitions for every term liftmath uses",
                         parents=[json_parent])

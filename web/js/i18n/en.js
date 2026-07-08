@@ -320,6 +320,23 @@ export default {
   "scores.formula.ipfGl": "IPF GL",
   "scores.result.mcullochHint": "McCulloch age-adjusted total (age {age}): {total} {unit} (×{coefficient})",
 
+  // ---- Strength tier (bodyweight-indexed, folded into the scores tab) --------
+  "scores.tier.heading": "Strength tier",
+  "scores.tier.name.belowBeginner": "Below beginner",
+  "scores.tier.name.beginner": "Beginner",
+  "scores.tier.name.novice": "Novice",
+  "scores.tier.name.intermediate": "Intermediate",
+  "scores.tier.name.advanced": "Advanced",
+  "scores.tier.name.elite": "Elite",
+  "scores.tier.table.tier": "Tier",
+  "scores.tier.table.total": "Total needed",
+  "scores.tier.pctHint": "{pct}% of the way through this tier",
+  "scores.tier.nextHint": "{amount} {unit} to {tier}",
+  "scores.tier.eliteHint": "Already at the top published tier - no higher threshold on this table.",
+  "scores.tier.clampBelow": "Bodyweight {bodyweight} {unit} is below the table's lightest bracket ({bracket} {unit}) - using that bracket's thresholds rather than extrapolating lighter.",
+  "scores.tier.clampAbove": "Bodyweight {bodyweight} {unit} is above the table's heaviest bracket ({bracket} {unit}) - using that bracket's thresholds rather than extrapolating heavier.",
+  "scores.tier.disclaimer": "Bodyweight-indexed percentiles (5th/20th/50th/80th/95th = beginner/novice/intermediate/advanced/elite) from Strength Level's published total standards, cross-checked against ExRx/Kilgore. Self-reported population percentiles - Strength Level's own FAQ says its loggers skew stronger than the general population - not a training-age guarantee, and not a judge-verified competition result.",
+
   // ---- Symmetry ---------------------------------------------------------------
   "symmetry.heading": "Lift symmetry",
   "symmetry.disclaimer":
@@ -564,6 +581,9 @@ export default {
   "glossary.terms.mcculloch.term": "McCulloch",
   "glossary.terms.mcculloch.plain": "An age adjustment applied on top of a bodyweight-normalized score, for comparing masters (40+) lifters against open-age standards.",
   "glossary.terms.mcculloch.technical": "A multiplier (WRPF's published coefficient table, ages 40-90) applied to a total to age-adjust it for masters-category comparison - the same idea as Wilks/DOTS, but normalizing for age instead of bodyweight.",
+  "glossary.terms.strengthTier.term": "strength tier",
+  "glossary.terms.strengthTier.plain": "Where a total lands against a bodyweight-matched population, from beginner up through elite.",
+  "glossary.terms.strengthTier.technical": "A classification of a total against five bodyweight-indexed percentile thresholds (beginner/novice/intermediate/advanced/elite = the 5th/20th/50th/80th/95th percentile of same-bodyweight, same-sex lifters in the source sample), linearly interpolated to the lifter's exact bodyweight. Self-reported population percentiles, not a training-age guarantee or a judge-verified competition result.",
   "glossary.terms.531.term": "5/3/1",
   "glossary.terms.531.plain": "Jim Wendler's classic strength program: four-week waves building to a top single, named for the rep scheme of its final \"money\" week.",
   "glossary.terms.531.technical": "A percentage-based periodization template (Wendler) run off a training max, cycling through 65/75/85%, 70/80/90%, and 75/85/95% weeks (5, 3, and 1 reps respectively) before a deload.",

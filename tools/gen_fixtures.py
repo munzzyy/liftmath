@@ -42,6 +42,7 @@ from liftmath import (  # noqa: E402
     standards,
     symmetry,
     templates,
+    tiers,
     volume,
     warmup,
 )
@@ -392,6 +393,54 @@ def gen_strength_scores() -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
+# strength-tiers.js <- liftmath.tiers
+# ---------------------------------------------------------------------------
+
+def gen_strength_tiers() -> list[dict]:
+    cases = []
+    for bw, sex in [
+        (100, "male"),      # exact bracket, no interpolation
+        (60, "female"),     # exact bracket, no interpolation
+        (102.5, "male"),    # midpoint of two brackets
+        (101, "male"),      # 1/5 of the way between two brackets
+        (47.5, "female"),   # midpoint of two brackets
+        (45, "male"),       # below the lightest bracket -> clamped
+        (200, "male"),      # above the heaviest bracket -> clamped
+        (35, "female"),     # below the lightest bracket -> clamped
+        (130, "female"),    # above the heaviest bracket -> clamped
+        (50, "male"),       # exactly at the lightest bracket -> NOT clamped
+        (140, "male"),      # exactly at the heaviest bracket -> NOT clamped
+        (93.4, "male"),     # non-round bodyweight
+    ]:
+        cases.append({
+            "fn": "thresholdsAtBodyweight",
+            "args": {"bodyweightKg": bw, "sex": sex},
+            "expected": dump(tiers.thresholds_at_bodyweight(bw, sex)),
+        })
+
+    for total, bw, sex in [
+        (300, 100, "male"),     # below beginner
+        (320, 100, "male"),     # exactly at the beginner floor
+        (389, 100, "male"),     # partway through beginner
+        (472, 100, "male"),     # exactly at the intermediate floor
+        (600, 100, "male"),     # partway through advanced
+        (652, 100, "male"),     # exactly at the elite floor
+        (900, 100, "male"),     # above elite (still elite - no ceiling)
+        (162, 60, "female"),    # exactly at a threshold, female
+        (150, 45, "male"),      # clamped bodyweight (below lightest bracket)
+        (500, 102.5, "male"),   # interpolated bodyweight + classification
+        (620.5, 93.4, "male"),  # non-round total and bodyweight together
+        (250, 130, "female"),   # clamped bodyweight (above heaviest bracket)
+    ]:
+        cases.append({
+            "fn": "classifyTier",
+            "args": {"totalKg": total, "bodyweightKg": bw, "sex": sex},
+            "expected": dump(tiers.classify_tier(total, bw, sex)),
+        })
+    return cases
+
+
+# ---------------------------------------------------------------------------
 # bodyweight-onerm.js <- liftmath.bodyweight
 # ---------------------------------------------------------------------------
 
@@ -512,6 +561,7 @@ GENERATORS = {
     "warmup-ramp": gen_warmup_ramp,
     "mesocycle-ramp": gen_mesocycle_ramp,
     "strength-scores": gen_strength_scores,
+    "strength-tiers": gen_strength_tiers,
     "bodyweight-onerm": gen_bodyweight_onerm,
     "symmetry": gen_symmetry,
     "training-templates": gen_training_templates,

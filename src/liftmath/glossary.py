@@ -229,6 +229,16 @@ GLOSSARY: dict[str, Term] = {
         "age-adjust it for masters-category comparison - the same idea as Wilks/DOTS, but "
         "normalizing for age instead of bodyweight.",
     ),
+    "strength_tier": Term(
+        "strength tier",
+        "Where a total lands against a bodyweight-matched population, from beginner up through "
+        "elite.",
+        "A classification of a total against five bodyweight-indexed percentile thresholds "
+        "(beginner/novice/intermediate/advanced/elite = the 5th/20th/50th/80th/95th percentile of "
+        "same-bodyweight, same-sex lifters in the source sample), linearly interpolated to the "
+        "lifter's exact bodyweight. Self-reported population percentiles, not a training-age "
+        "guarantee or a judge-verified competition result.",
+    ),
     "531": Term(
         "5/3/1",
         "Jim Wendler's classic strength program: four-week waves building to a top single, named "

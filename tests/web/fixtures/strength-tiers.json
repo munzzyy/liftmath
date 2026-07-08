@@ -1,0 +1,554 @@
+[
+  {
+    "args": {
+      "bodyweightKg": 100,
+      "sex": "male"
+    },
+    "expected": {
+      "advanced": 560.0,
+      "beginner": 320.0,
+      "bodyweightKg": 100,
+      "clampBracketKg": null,
+      "clamped": null,
+      "elite": 652.0,
+      "intermediate": 472.0,
+      "novice": 390.0,
+      "sex": "male"
+    },
+    "fn": "thresholdsAtBodyweight"
+  },
+  {
+    "args": {
+      "bodyweightKg": 60,
+      "sex": "female"
+    },
+    "expected": {
+      "advanced": 268.0,
+      "beginner": 120.0,
+      "bodyweightKg": 60,
+      "clampBracketKg": null,
+      "clamped": null,
+      "elite": 328.0,
+      "intermediate": 211.0,
+      "novice": 162.0,
+      "sex": "female"
+    },
+    "fn": "thresholdsAtBodyweight"
+  },
+  {
+    "args": {
+      "bodyweightKg": 102.5,
+      "sex": "male"
+    },
+    "expected": {
+      "advanced": 571.0,
+      "beginner": 328.0,
+      "bodyweightKg": 102.5,
+      "clampBracketKg": null,
+      "clamped": null,
+      "elite": 663.5,
+      "intermediate": 481.5,
+      "novice": 399.0,
+      "sex": "male"
+    },
+    "fn": "thresholdsAtBodyweight"
+  },
+  {
+    "args": {
+      "bodyweightKg": 101,
+      "sex": "male"
+    },
+    "expected": {
+      "advanced": 564.4,
+      "beginner": 323.2,
+      "bodyweightKg": 101,
+      "clampBracketKg": null,
+      "clamped": null,
+      "elite": 656.6,
+      "intermediate": 475.8,
+      "novice": 393.6,
+      "sex": "male"
+    },
+    "fn": "thresholdsAtBodyweight"
+  },
+  {
+    "args": {
+      "bodyweightKg": 47.5,
+      "sex": "female"
+    },
+    "expected": {
+      "advanced": 234.5,
+      "beginner": 98.0,
+      "bodyweightKg": 47.5,
+      "clampBracketKg": null,
+      "clamped": null,
+      "elite": 291.0,
+      "intermediate": 181.5,
+      "novice": 135.5,
+      "sex": "female"
+    },
+    "fn": "thresholdsAtBodyweight"
+  },
+  {
+    "args": {
+      "bodyweightKg": 45,
+      "sex": "male"
+    },
+    "expected": {
+      "advanced": 299.0,
+      "beginner": 133.0,
+      "bodyweightKg": 45,
+      "clampBracketKg": 50.0,
+      "clamped": "below_min",
+      "elite": 367.0,
+      "intermediate": 235.0,
+      "novice": 179.0,
+      "sex": "male"
+    },
+    "fn": "thresholdsAtBodyweight"
+  },
+  {
+    "args": {
+      "bodyweightKg": 200,
+      "sex": "male"
+    },
+    "expected": {
+      "advanced": 716.0,
+      "beginner": 440.0,
+      "bodyweightKg": 200,
+      "clampBracketKg": 140.0,
+      "clamped": "above_max",
+      "elite": 820.0,
+      "intermediate": 615.0,
+      "novice": 522.0,
+      "sex": "male"
+    },
+    "fn": "thresholdsAtBodyweight"
+  },
+  {
+    "args": {
+      "bodyweightKg": 35,
+      "sex": "female"
+    },
+    "expected": {
+      "advanced": 211.0,
+      "beginner": 83.0,
+      "bodyweightKg": 35,
+      "clampBracketKg": 40.0,
+      "clamped": "below_min",
+      "elite": 265.0,
+      "intermediate": 162.0,
+      "novice": 118.0,
+      "sex": "female"
+    },
+    "fn": "thresholdsAtBodyweight"
+  },
+  {
+    "args": {
+      "bodyweightKg": 130,
+      "sex": "female"
+    },
+    "expected": {
+      "advanced": 380.0,
+      "beginner": 199.0,
+      "bodyweightKg": 130,
+      "clampBracketKg": 120.0,
+      "clamped": "above_max",
+      "elite": 451.0,
+      "intermediate": 312.0,
+      "novice": 251.0,
+      "sex": "female"
+    },
+    "fn": "thresholdsAtBodyweight"
+  },
+  {
+    "args": {
+      "bodyweightKg": 50,
+      "sex": "male"
+    },
+    "expected": {
+      "advanced": 299.0,
+      "beginner": 133.0,
+      "bodyweightKg": 50,
+      "clampBracketKg": null,
+      "clamped": null,
+      "elite": 367.0,
+      "intermediate": 235.0,
+      "novice": 179.0,
+      "sex": "male"
+    },
+    "fn": "thresholdsAtBodyweight"
+  },
+  {
+    "args": {
+      "bodyweightKg": 140,
+      "sex": "male"
+    },
+    "expected": {
+      "advanced": 716.0,
+      "beginner": 440.0,
+      "bodyweightKg": 140,
+      "clampBracketKg": null,
+      "clamped": null,
+      "elite": 820.0,
+      "intermediate": 615.0,
+      "novice": 522.0,
+      "sex": "male"
+    },
+    "fn": "thresholdsAtBodyweight"
+  },
+  {
+    "args": {
+      "bodyweightKg": 93.4,
+      "sex": "male"
+    },
+    "expected": {
+      "advanced": 530.64,
+      "beginner": 297.56,
+      "bodyweightKg": 93.4,
+      "clampBracketKg": null,
+      "clamped": null,
+      "elite": 620.32,
+      "intermediate": 444.28000000000003,
+      "novice": 365.92,
+      "sex": "male"
+    },
+    "fn": "thresholdsAtBodyweight"
+  },
+  {
+    "args": {
+      "bodyweightKg": 100,
+      "sex": "male",
+      "totalKg": 300
+    },
+    "expected": {
+      "bodyweightKg": 100,
+      "nextTier": "beginner",
+      "pctIntoTier": null,
+      "sex": "male",
+      "thresholds": {
+        "advanced": 560.0,
+        "beginner": 320.0,
+        "bodyweightKg": 100,
+        "clampBracketKg": null,
+        "clamped": null,
+        "elite": 652.0,
+        "intermediate": 472.0,
+        "novice": 390.0,
+        "sex": "male"
+      },
+      "tier": "below_beginner",
+      "totalKg": 300,
+      "totalToNextKg": 20.0
+    },
+    "fn": "classifyTier"
+  },
+  {
+    "args": {
+      "bodyweightKg": 100,
+      "sex": "male",
+      "totalKg": 320
+    },
+    "expected": {
+      "bodyweightKg": 100,
+      "nextTier": "novice",
+      "pctIntoTier": 0.0,
+      "sex": "male",
+      "thresholds": {
+        "advanced": 560.0,
+        "beginner": 320.0,
+        "bodyweightKg": 100,
+        "clampBracketKg": null,
+        "clamped": null,
+        "elite": 652.0,
+        "intermediate": 472.0,
+        "novice": 390.0,
+        "sex": "male"
+      },
+      "tier": "beginner",
+      "totalKg": 320,
+      "totalToNextKg": 70.0
+    },
+    "fn": "classifyTier"
+  },
+  {
+    "args": {
+      "bodyweightKg": 100,
+      "sex": "male",
+      "totalKg": 389
+    },
+    "expected": {
+      "bodyweightKg": 100,
+      "nextTier": "novice",
+      "pctIntoTier": 98.57142857142857,
+      "sex": "male",
+      "thresholds": {
+        "advanced": 560.0,
+        "beginner": 320.0,
+        "bodyweightKg": 100,
+        "clampBracketKg": null,
+        "clamped": null,
+        "elite": 652.0,
+        "intermediate": 472.0,
+        "novice": 390.0,
+        "sex": "male"
+      },
+      "tier": "beginner",
+      "totalKg": 389,
+      "totalToNextKg": 1.0
+    },
+    "fn": "classifyTier"
+  },
+  {
+    "args": {
+      "bodyweightKg": 100,
+      "sex": "male",
+      "totalKg": 472
+    },
+    "expected": {
+      "bodyweightKg": 100,
+      "nextTier": "advanced",
+      "pctIntoTier": 0.0,
+      "sex": "male",
+      "thresholds": {
+        "advanced": 560.0,
+        "beginner": 320.0,
+        "bodyweightKg": 100,
+        "clampBracketKg": null,
+        "clamped": null,
+        "elite": 652.0,
+        "intermediate": 472.0,
+        "novice": 390.0,
+        "sex": "male"
+      },
+      "tier": "intermediate",
+      "totalKg": 472,
+      "totalToNextKg": 88.0
+    },
+    "fn": "classifyTier"
+  },
+  {
+    "args": {
+      "bodyweightKg": 100,
+      "sex": "male",
+      "totalKg": 600
+    },
+    "expected": {
+      "bodyweightKg": 100,
+      "nextTier": "elite",
+      "pctIntoTier": 43.47826086956522,
+      "sex": "male",
+      "thresholds": {
+        "advanced": 560.0,
+        "beginner": 320.0,
+        "bodyweightKg": 100,
+        "clampBracketKg": null,
+        "clamped": null,
+        "elite": 652.0,
+        "intermediate": 472.0,
+        "novice": 390.0,
+        "sex": "male"
+      },
+      "tier": "advanced",
+      "totalKg": 600,
+      "totalToNextKg": 52.0
+    },
+    "fn": "classifyTier"
+  },
+  {
+    "args": {
+      "bodyweightKg": 100,
+      "sex": "male",
+      "totalKg": 652
+    },
+    "expected": {
+      "bodyweightKg": 100,
+      "nextTier": null,
+      "pctIntoTier": null,
+      "sex": "male",
+      "thresholds": {
+        "advanced": 560.0,
+        "beginner": 320.0,
+        "bodyweightKg": 100,
+        "clampBracketKg": null,
+        "clamped": null,
+        "elite": 652.0,
+        "intermediate": 472.0,
+        "novice": 390.0,
+        "sex": "male"
+      },
+      "tier": "elite",
+      "totalKg": 652,
+      "totalToNextKg": null
+    },
+    "fn": "classifyTier"
+  },
+  {
+    "args": {
+      "bodyweightKg": 100,
+      "sex": "male",
+      "totalKg": 900
+    },
+    "expected": {
+      "bodyweightKg": 100,
+      "nextTier": null,
+      "pctIntoTier": null,
+      "sex": "male",
+      "thresholds": {
+        "advanced": 560.0,
+        "beginner": 320.0,
+        "bodyweightKg": 100,
+        "clampBracketKg": null,
+        "clamped": null,
+        "elite": 652.0,
+        "intermediate": 472.0,
+        "novice": 390.0,
+        "sex": "male"
+      },
+      "tier": "elite",
+      "totalKg": 900,
+      "totalToNextKg": null
+    },
+    "fn": "classifyTier"
+  },
+  {
+    "args": {
+      "bodyweightKg": 60,
+      "sex": "female",
+      "totalKg": 162
+    },
+    "expected": {
+      "bodyweightKg": 60,
+      "nextTier": "intermediate",
+      "pctIntoTier": 0.0,
+      "sex": "female",
+      "thresholds": {
+        "advanced": 268.0,
+        "beginner": 120.0,
+        "bodyweightKg": 60,
+        "clampBracketKg": null,
+        "clamped": null,
+        "elite": 328.0,
+        "intermediate": 211.0,
+        "novice": 162.0,
+        "sex": "female"
+      },
+      "tier": "novice",
+      "totalKg": 162,
+      "totalToNextKg": 49.0
+    },
+    "fn": "classifyTier"
+  },
+  {
+    "args": {
+      "bodyweightKg": 45,
+      "sex": "male",
+      "totalKg": 150
+    },
+    "expected": {
+      "bodyweightKg": 45,
+      "nextTier": "novice",
+      "pctIntoTier": 36.95652173913044,
+      "sex": "male",
+      "thresholds": {
+        "advanced": 299.0,
+        "beginner": 133.0,
+        "bodyweightKg": 45,
+        "clampBracketKg": 50.0,
+        "clamped": "below_min",
+        "elite": 367.0,
+        "intermediate": 235.0,
+        "novice": 179.0,
+        "sex": "male"
+      },
+      "tier": "beginner",
+      "totalKg": 150,
+      "totalToNextKg": 29.0
+    },
+    "fn": "classifyTier"
+  },
+  {
+    "args": {
+      "bodyweightKg": 102.5,
+      "sex": "male",
+      "totalKg": 500
+    },
+    "expected": {
+      "bodyweightKg": 102.5,
+      "nextTier": "advanced",
+      "pctIntoTier": 20.670391061452513,
+      "sex": "male",
+      "thresholds": {
+        "advanced": 571.0,
+        "beginner": 328.0,
+        "bodyweightKg": 102.5,
+        "clampBracketKg": null,
+        "clamped": null,
+        "elite": 663.5,
+        "intermediate": 481.5,
+        "novice": 399.0,
+        "sex": "male"
+      },
+      "tier": "intermediate",
+      "totalKg": 500,
+      "totalToNextKg": 71.0
+    },
+    "fn": "classifyTier"
+  },
+  {
+    "args": {
+      "bodyweightKg": 93.4,
+      "sex": "male",
+      "totalKg": 620.5
+    },
+    "expected": {
+      "bodyweightKg": 93.4,
+      "nextTier": null,
+      "pctIntoTier": null,
+      "sex": "male",
+      "thresholds": {
+        "advanced": 530.64,
+        "beginner": 297.56,
+        "bodyweightKg": 93.4,
+        "clampBracketKg": null,
+        "clamped": null,
+        "elite": 620.32,
+        "intermediate": 444.28000000000003,
+        "novice": 365.92,
+        "sex": "male"
+      },
+      "tier": "elite",
+      "totalKg": 620.5,
+      "totalToNextKg": null
+    },
+    "fn": "classifyTier"
+  },
+  {
+    "args": {
+      "bodyweightKg": 130,
+      "sex": "female",
+      "totalKg": 250
+    },
+    "expected": {
+      "bodyweightKg": 130,
+      "nextTier": "novice",
+      "pctIntoTier": 98.07692307692308,
+      "sex": "female",
+      "thresholds": {
+        "advanced": 380.0,
+        "beginner": 199.0,
+        "bodyweightKg": 130,
+        "clampBracketKg": 120.0,
+        "clamped": "above_max",
+        "elite": 451.0,
+        "intermediate": 312.0,
+        "novice": 251.0,
+        "sex": "female"
+      },
+      "tier": "beginner",
+      "totalKg": 250,
+      "totalToNextKg": 1.0
+    },
+    "fn": "classifyTier"
+  }
+]

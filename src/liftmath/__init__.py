@@ -69,10 +69,19 @@ from liftmath.templates import (
     round_to_increment,
     training_max,
 )
+from liftmath.tiers import (
+    MEN_TOTAL_KG,
+    TIER_NAMES,
+    WOMEN_TOTAL_KG,
+    TierResult,
+    TierThresholds,
+    classify_tier,
+    thresholds_at_bodyweight,
+)
 from liftmath.volume import LANDMARKS, MUSCLES, band_for, describe_band, resolve_muscle
 from liftmath.warmup import warmup_ramp
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 __all__ = [
     "estimate_one_rm",
@@ -145,6 +154,13 @@ __all__ = [
     "T2_STAGES",
     "nsuns_day",
     "NsunsDay",
+    "thresholds_at_bodyweight",
+    "classify_tier",
+    "TierThresholds",
+    "TierResult",
+    "TIER_NAMES",
+    "MEN_TOTAL_KG",
+    "WOMEN_TOTAL_KG",
     "to_dict",
     "to_json",
     "GLOSSARY",

@@ -14,6 +14,7 @@ import { loadPlates } from "./math/plate-loading.js";
 import { loadPlatesFromInventory, parseInventorySpec } from "./math/plate-inventory.js";
 import { warmupRamp } from "./math/warmup-ramp.js";
 import { score, mcullochScore } from "./math/strength-scores.js";
+import { TIER_NAMES, classifyTier } from "./math/strength-tiers.js";
 import { MOVEMENTS as BW_MOVEMENTS, weightedBodyweightOneRm } from "./math/bodyweight-onerm.js";
 import { scoreSymmetry } from "./math/symmetry.js";
 import {
@@ -1186,6 +1187,24 @@ function renderWarmup() {
 
 let scoresSex = "male";
 
+// Language-neutral tier-key -> i18n-key map for classifyTier()'s `tier`/
+// `nextTier` tokens ("below_beginner" plus math/strength-tiers.js's
+// TIER_NAMES) - mirrors the MUSCLE_LABEL_KEY/MACROS_GOAL_HINT_KEY pattern
+// used elsewhere in this file for the same reason: translate the STABLE
+// token the math module returns, never the math module's own English prose.
+const TIER_LABEL_KEY = {
+  below_beginner: "scores.tier.name.belowBeginner",
+  beginner: "scores.tier.name.beginner",
+  novice: "scores.tier.name.novice",
+  intermediate: "scores.tier.name.intermediate",
+  advanced: "scores.tier.name.advanced",
+  elite: "scores.tier.name.elite",
+};
+
+function tierLabel(tierKey) {
+  return t(TIER_LABEL_KEY[tierKey] || tierKey);
+}
+
 function renderScores() {
   const totalDisplay = parseFloat($("scores-total").value) || 0;
   const bwDisplay = parseFloat($("scores-bodyweight").value) || 0;
@@ -1223,6 +1242,58 @@ function renderScores() {
     }
   }
 
+  // Strength tier: same total/bodyweight/sex already entered above for the
+  // Wilks/DOTS/GL table, so this needs no inputs of its own - see the CLI's
+  // `standards --tier` (same data, same additive framing).
+  let tierHtml = "";
+  try {
+    const tier = classifyTier(totalKg, bwKg, scoresSex);
+    const th = tier.thresholds;
+
+    const rows = TIER_NAMES.map((name) => {
+      const displayValue = fmt(toUnit(th[name], unit));
+      return `<tr class="${name === tier.tier ? "highlight" : ""}"><td>${tierLabel(name)}</td><td>${displayValue} ${unit}</td></tr>`;
+    }).join("");
+
+    let progressHtml = "";
+    if (tier.pctIntoTier !== null) {
+      progressHtml += `<p class="hint">${escapeHtml(t("scores.tier.pctHint", { pct: fmt(tier.pctIntoTier, 0) }))}</p>`;
+    }
+    if (tier.nextTier !== null && tier.totalToNextKg !== null) {
+      progressHtml += `<p class="hint">${escapeHtml(
+        t("scores.tier.nextHint", {
+          amount: fmt(toUnit(tier.totalToNextKg, unit)),
+          unit,
+          tier: tierLabel(tier.nextTier),
+        })
+      )}</p>`;
+    } else if (tier.tier === "elite") {
+      progressHtml += `<p class="hint">${escapeHtml(t("scores.tier.eliteHint"))}</p>`;
+    }
+
+    let clampHtml = "";
+    if (th.clamped === "below_min" || th.clamped === "above_max") {
+      const key = th.clamped === "below_min" ? "scores.tier.clampBelow" : "scores.tier.clampAbove";
+      clampHtml = `<p class="badge warn">${escapeHtml(
+        t(key, { bodyweight: fmt(bwDisplay), bracket: fmt(toUnit(th.clampBracketKg, unit)), unit })
+      )}</p>`;
+    }
+
+    tierHtml = `
+      <h3>${escapeHtml(t("scores.tier.heading"))}${glossaryTriggerHtml("strengthTier")}</h3>
+      <p class="badge ok">${escapeHtml(tierLabel(tier.tier))}</p>
+      ${progressHtml}
+      <table class="data-table">
+        <thead><tr><th>${escapeHtml(t("scores.tier.table.tier"))}</th><th>${escapeHtml(t("scores.tier.table.total"))}</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${clampHtml}
+      <p class="disclaimer">${escapeHtml(t("scores.tier.disclaimer"))}</p>
+    `;
+  } catch (err) {
+    tierHtml = `<p class="badge warn">${escapeHtml(err.message)}</p>`;
+  }
+
   $("scores-results").innerHTML = `
     <table class="data-table">
       <thead><tr><th>${escapeHtml(t("scores.table.formula"))}</th><th>${escapeHtml(t("scores.table.score"))}</th></tr></thead>
@@ -1234,6 +1305,7 @@ function renderScores() {
       </tbody>
     </table>
     ${mcHtml}
+    ${tierHtml}
   `;
 }
 

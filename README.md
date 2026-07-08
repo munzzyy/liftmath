@@ -94,6 +94,8 @@ liftmath nsuns --day bench_day1 --tm 280 --unit lb
 liftmath symmetry --squat 405 --bench 275 --deadlift 495 --bodyweight 185 --sex male --unit lb
 liftmath standards --total 1100 --bodyweight 220 --sex male --unit lb
 liftmath mcculloch --total 300 --age 50 --unit kg
+liftmath tier --total 1100 --bodyweight 220 --sex male --unit lb
+liftmath tier --squat 405 --bench 275 --deadlift 495 --bodyweight 185 --sex male --unit lb
 liftmath glossary
 liftmath glossary --term RIR
 ```
@@ -299,6 +301,46 @@ as gospel.
 coefficient table, ages 40-90), the same idea as the bodyweight-normalizing
 formulas above but normalizing for age instead.
 
+### Strength tiers
+
+`tier` answers the plainer question the formulas above don't: "am I strong?"
+Give it a total (or `--squat`/`--bench`/`--deadlift` to sum) plus bodyweight
+and sex, and it classifies you against five bodyweight-indexed percentile
+thresholds - beginner/novice/intermediate/advanced/elite, the 5th/20th/50th/
+80th/95th percentile of a total at your exact bodyweight - and tells you how
+far into the tier you are and what total the next one takes.
+
+```
+$ liftmath tier --total 1100 --bodyweight 220 --sex male --unit lb
+Strength tier - 1100lb total @ 220lb bodyweight (male):
+  bodyweight-indexed tier thresholds at 220lb (interpolated):
+    beginner          703.9lb
+    novice            858.1lb
+    intermediate     1038.6lb <- your tier
+    advanced         1232.6lb
+    elite            1435.2lb
+  tier: INTERMEDIATE
+    32% of the way through this tier
+    132.6lb to ADVANCED
+```
+
+`standards` can also print this same breakdown inline with `--tier`, off the
+same total/bodyweight/sex you already gave it - pass the flag and you get
+both; leave it off and `standards`'s output is exactly what it always was.
+
+The thresholds are Strength Level's own published TOTAL standards table
+(https://strengthlevel.com/powerlifting-standards/kg) - not summed from
+per-lift standards, which understates low tiers and overstates high ones
+(see `tiers.py`'s docstring for the numbers) - linearly interpolated between
+its published 5kg bodyweight brackets, and clamped (not extrapolated) below
+50kg/above 140kg for men and below 40kg/above 120kg for women. These are
+self-reported population percentiles - Strength Level's own FAQ says its
+loggers skew stronger than the general population - not a training-age
+guarantee, and not a judge-verified competition result. Cross-checked
+against ExRx.net and Dr. Lon Kilgore's independent standards; the two agree
+within about 3-18%, not identically, so treat a tier right at a boundary as
+approximate.
+
 ### Lift-ratio symmetry
 
 `symmetry` compares your squat, bench, and deadlift against the ratios a
@@ -393,9 +435,10 @@ consensus (with a weighted pull-up/dip mode), a %1RM/RIR load chart, weekly
 volume landmarks, a mesocycle set ramp, macro targets (with an optional
 Mifflin-St Jeor or Cunningham TDEE, same as the CLI), plate loading (with an
 SVG barbell render, a women's-bar preset, and a "my plates" inventory mode), a
-warm-up ramp, Wilks/DOTS/IPF GL scores, lift-ratio symmetry, and a program
-builder (5/3/1, GZCLP, nSuns, including filling a training max straight from
-an AMRAP set). Every input recomputes instantly - no submit button - and your
+warm-up ramp, Wilks/DOTS/IPF GL scores (with a bodyweight-indexed strength
+tier - beginner through elite - off the same total), lift-ratio symmetry,
+and a program builder (5/3/1, GZCLP, nSuns, including filling a training max
+straight from an AMRAP set). Every input recomputes instantly - no submit button - and your
 inputs live in the URL so a result is just a link you can send someone.
 Tuned for a phone at the gym - the screen you're actually holding mid-set.
 
@@ -498,7 +541,7 @@ See the module docstrings in `src/liftmath/` for the full API; each module
 covers one area: `onerm.py`, `bodyweight.py`, `loads.py`, `rpe.py`,
 `volume.py`, `program.py`, `mesocycle.py`, `progression.py`, `macros.py`,
 `bulkcut.py`, `bodycomp.py`, `sessionload.py`, `plates.py`, `warmup.py`,
-`standards.py`, `symmetry.py`, `templates.py`, `glossary.py`.
+`standards.py`, `symmetry.py`, `templates.py`, `tiers.py`, `glossary.py`.
 
 ## Where the numbers come from
 
@@ -568,6 +611,16 @@ The weighted-movement bodyweight fractions treat pull-ups, chin-ups, and dips
 as full-bodyweight lifts; the push-up figure people cite (about 64% of
 bodyweight) is Ebben et al. (2011), a ground-reaction-force measurement, which
 is why `bodyweight.py` documents it but doesn't reuse it for a weighted 1RM.
+The strength tiers come from Strength Level's own published TOTAL standards
+table (a different page/table than the per-lift standards `symmetry.py`
+cites below), cross-checked against ExRx.net and Dr. Lon Kilgore's
+independent competition-classification tables - the two land within about
+3-18% of each other, not identically. Strength Level's own FAQ says its
+logged lifts skew stronger than the general population, so read these as
+percentiles among people who log lifts on that site, not a training-age
+guarantee or a judge-verified result - see `tiers.py` for the full sourcing
+and the caveats.
+
 The lift-ratio symmetry benchmarks come from symmetricstrength.com's stated
 methodology, cross-checked against Strength Level's crowd-sourced standards
 tables. The program templates trace to their primary sources: Jim Wendler's

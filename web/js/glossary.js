@@ -38,6 +38,7 @@ export const GLOSSARY_TERMS = [
   "dots",
   "ipfGl",
   "mcculloch",
+  "strengthTier",
   "531",
   "gzclp",
   "nsuns",
