@@ -67,7 +67,7 @@ TIERS = tuple(BULK_RATE_PCT_BY_TIER)
 # Garthe (2013) bulk-phase partition anchors: (rate_pct_per_week, lean_fraction, fat_fraction).
 # Derived from the paper's reported group-mean kg changes (see module docstring):
 # NCG (fast, ~0.38%/wk) +1.7kg lean / +1.1kg fat = 60.7/39.3, rounded to 61/39.
-# ALG (slow, ~0.16%/wk) +1.2kg lean / +0.2kg fat = 85.7/14.3, rounded to 85/15.
+# ALG (slow, ~0.16%/wk) +1.2kg lean / +0.2kg fat = 85.7/14.3, taken as a round 85/15.
 # Directional, not precise - small n, high variance, secondary-source-derived.
 GARTHE_2013_FAST_BULK = {"rate_pct_per_week": 0.38, "lean_fraction": 0.61, "fat_fraction": 0.39}
 GARTHE_2013_SLOW_BULK = {"rate_pct_per_week": 0.16, "lean_fraction": 0.85, "fat_fraction": 0.15}
