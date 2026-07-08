@@ -46,4 +46,10 @@ export const GLOSSARY_TERMS = [
   "sessionLoad",
   "monotony",
   "strain",
+  "tonnage",
+  "prilepin",
+  "inol",
+  "attemptSelection",
+  "skinfold",
+  "e1rmPr",
 ];
