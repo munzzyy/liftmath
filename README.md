@@ -96,6 +96,14 @@ liftmath standards --total 1100 --bodyweight 220 --sex male --unit lb
 liftmath mcculloch --total 300 --age 50 --unit kg
 liftmath tier --total 1100 --bodyweight 220 --sex male --unit lb
 liftmath tier --squat 405 --bench 275 --deadlift 495 --bodyweight 185 --sex male --unit lb
+liftmath prilepin --pct 75 --sets 5 --reps 3
+liftmath inol --set 2x6@60 --set 5x3@75
+liftmath attempts --goal-third 500 --lift squat --unit lb
+liftmath skinfold --sex male --method 3-site --chest 10 --triceps 12 --subscapular 15 --age 30
+liftmath tonnage --set 225x5@75 --set 185x8
+liftmath pr --previous-onerm 300 --new-weight 315 --new-reps 3 --unit lb
+liftmath clubs --squat 405 --bench 315 --deadlift 495 --unit lb
+liftmath gainrate --bodyweight 180 --level intermediate --unit lb
 liftmath glossary
 liftmath glossary --term RIR
 ```
@@ -402,6 +410,122 @@ unsettled (GZCLP never fixes a starting weight; nSuns' T2 percentages aren't
 consistently documented), liftmath asks you for the input rather than guessing.
 nSuns prints T1 only for that reason, and says so in the output.
 
+### Prilepin's table and INOL
+
+`prilepin` looks up which of Prilepin's four intensity zones a %1RM falls
+in - rep range per set, total-rep range, and the "optimal" total reps - and,
+if you pass `--sets`/`--reps` too, grades your planned scheme against it
+(under/optimal/over the zone's total-rep range).
+
+```
+$ liftmath prilepin --pct 75 --sets 5 --reps 3
+Prilepin's table - 75%1RM:
+  zone                70-79%
+  reps per set        3-6
+  total reps (range)  12-24
+  optimal total reps  18
+
+  your scheme: 5x3 @ 75%1RM = 15 total reps
+  verdict: OPTIMAL  (+3 reps vs. optimal)
+```
+
+`inol` computes Hristov's follow-up metric - reps / (100 - %1RM), summed
+across sets - which fixes the table's blind spot at zone boundaries with one
+continuous number instead of four disjoint buckets. Pass one or more
+`--set numxreps@pct` groups:
+
+```
+$ liftmath inol --set 2x6@60 --set 5x3@75
+INOL over 2 set group(s):
+  2x6 @ 60%1RM  ->  INOL 0.30
+  5x3 @ 75%1RM  ->  INOL 0.60
+----------------------------------------
+  TOTAL INOL              0.90
+  per-workout guideline:  fresh, quite doable and optimal if you are not accumulating fatigue
+  weekly guideline:       easy, doable, good to do after more tiring weeks and prepeaking
+```
+
+Both come from the same source: Hristov's 2005 transcription of Prilepin's
+training-log data, built from Olympic weightlifting logs (snatch/clean&jerk),
+not powerlifting-specific - decades of powerlifting-coach use support
+cross-application, but it's worth knowing where the numbers actually come
+from. The worked examples above are the paper's own, pinned as test fixtures.
+
+### Powerlifting meet attempts
+
+`attempts` turns a goal third-attempt weight into an opener, second, and
+third - the headline is Travis, Zourdos & Bazyler's (2021) finding that
+lifters who went 9-for-9 at IPF Classic Worlds averaged an opener around 91%
+of their eventual third, second around 96%. A wider coach-consensus range
+(88-93% / 93-97%) is shown alongside it, since that's the band coaches
+actually work within:
+
+```
+$ liftmath attempts --goal-third 500 --lift squat --unit lb
+Attempt selection for squat - goal third 500.0lb:
+  opener   455.0lb   (91% headline; coach range 440.0-465.0lb)
+  second   480.0lb   (96% headline; coach range 465.0-485.0lb)
+  third    500.0lb   (100%, your goal)
+```
+
+No tested max handy? Pass `--amrap-weight`/`--amrap-reps` instead of
+`--goal-third` - it runs the same six-formula e1RM consensus `1rm` uses and
+treats that as the goal third.
+
+### Skinfold body fat
+
+`skinfold` runs the Jackson-Pollock generalized body-density equations (3-site
+or 7-site, sex-specific) through the Siri equation for a %BF estimate:
+
+```
+$ liftmath skinfold --sex male --method 3-site --chest 10 --triceps 12 --subscapular 15 --age 30
+Jackson-Pollock 3-site (male) - age 30:
+  sites: chest=10mm, triceps=12mm, subscapular=15mm
+  sum of skinfolds     37.0 mm
+  body density       1.0641
+  body fat %          15.2%  (Siri equation)
+```
+
+Worth knowing: more than one "generalized" men's 3-site equation circulates
+under the Jackson-Pollock name, with different coefficients depending on
+which three sites it uses. This ships only the chest+triceps+subscapular
+combination (the one a long-standing, consistently-cited reference actually
+reproduces) and names its sites explicitly in every result rather than
+guessing at a second, unverified combination.
+
+### Tonnage, e1RM PRs, gym milestones, and gain rate
+
+`tonnage` adds up weight x reps across a set list - the "how much weight
+actually moved" complement to session load's "how hard it felt." Pass
+`--set weightxreps` (repeatable), optionally tagged `@pct1rm` for a
+reps-weighted average-intensity readout:
+
+```
+$ liftmath tonnage --set 225x5@75 --set 185x8
+Tonnage (volume-load) over 2 logged set(s):
+  225lb x 5 @ 75%1RM  =  1125lb
+  185lb x 8  =  1480lb
+----------------------------------------
+  total tonnage           2605.0lb
+  average intensity          75.0%1RM  (reps-weighted, sets with a %1RM tag only)
+```
+
+`pr` checks whether a new set's e1RM beats a previous best - either a tested
+1RM or a weight x reps set - by running both through the same six-formula
+consensus `1rm` already uses, no new formulas involved.
+
+`clubs` tracks progress toward gym-culture milestones - the 1000 lb club,
+the plate clubs (135/225/315/405 lb), and the 2-3-4 club - framed honestly
+as culture, not science: no federation recognizes any of these, and the
+output says so every time.
+
+`gainrate` gives an expected muscle-gain range from bodyweight and training
+level, showing McDonald's yearly lb model and the Aragon/Helms %-bodyweight-
+per-month model side by side rather than picking one. Worth flagging: a
+widely-circulated "20-25 lb in year one" version of McDonald's numbers
+couldn't be traced to a current primary source, so it's deliberately not
+used here - only the numbers his own page currently publishes.
+
 ### Plain-English glossary
 
 `glossary` defines every piece of jargon liftmath uses - RIR, TDEE, MEV, IPF
@@ -627,6 +751,28 @@ tables. The program templates trace to their primary sources: Jim Wendler's
 5/3/1, Cody Lefever's GZCL/GZCLP method, and the nSuns LP spreadsheet — with
 the parts each program leaves genuinely unspecified handled as inputs rather
 than invented (see `templates.py`).
+
+Prilepin's table and INOL both trace to the same source: Hristov's (2005)
+transcription of Prilepin's Olympic-weightlifting training-log data,
+published on Powerlifting Watch - a well-corroborated field consensus, but
+resting on one transcription chain rather than an independently-verified
+Prilepin original. Powerlifting meet attempt percentages come from Travis,
+Zourdos & Bazyler (2021), a peer-reviewed study of lifters who successfully
+completed all nine attempts at IPF Classic Worlds, cross-corroborated on
+outcome direction by an independent Australian dataset (van den Hoek et al.,
+2022) and layered alongside a wider practitioner-consensus range. Skinfold
+body density comes from Jackson & Pollock's (1978, men) and Jackson, Pollock
+& Ward's (1980, women) generalized equations, run through Siri's (1961)
+%BF conversion - the men's 3-site equation here is specifically the
+chest+triceps+subscapular combination, since more than one "generalized"
+3-site equation circulates under the same name with different coefficients.
+Muscle-gain rate estimates come from Lyle McDonald's current published
+yearly figures (bodyrecomposition.com, fetched live) and the Aragon/Helms
+%-bodyweight-per-month model - a widely-circulated but unconfirmed higher
+year-one figure for McDonald's model was deliberately left out rather than
+guessed at. Tonnage, e1RM PR detection, and the gym-culture "clubs" (1000 lb
+club, plate clubs) are pure arithmetic or explicitly-labeled cultural
+convention, not sourced claims - `clubs.py` says so in its own output.
 
 Full citations are in the relevant module's docstring, not just this file.
 
