@@ -6,6 +6,7 @@ import { estimateOneRm, HIGH_REP_THRESHOLD } from "./math/one-rep-max.js";
 import { computePlateStack } from "./math/plate-loading.js";
 import { parseInventorySpec, loadPlatesFromInventory } from "./math/plate-inventory.js";
 import { score } from "./math/strength-scores.js";
+import { KG_PER_LB, convertWeight } from "./math/unit-convert.js";
 import { renderBarbellSvg, renderPlateLegend } from "./ui/svg-barbell.js";
 import { wireStepper, minFromInput } from "./ui/steppers.js";
 import { fromUnit, toUnit, roundForDisplay } from "./ui/units.js";
@@ -74,7 +75,7 @@ applyTheme(currentTheme());
 
 let unit = "lb";
 
-const COARSE_FIELDS = ["onerm-weight", "plates-target", "plates-inventory-bar", "score-total"];
+const COARSE_FIELDS = ["onerm-weight", "plates-target", "plates-inventory-bar", "score-total", "convert-weight"];
 const FINE_FIELDS = ["score-bodyweight"];
 const COARSE_STEP = { lb: "5", kg: "2.5" };
 const FINE_STEP = { lb: "1", kg: "0.5" };
@@ -132,7 +133,7 @@ $("unit-kg").addEventListener("click", () => setUnit("kg"));
 // Tabs
 // ---------------------------------------------------------------------------
 
-const TABS = ["onerm", "plates", "score"];
+const TABS = ["onerm", "plates", "score", "convert"];
 
 function selectTab(id) {
   for (const t of TABS) {
@@ -349,6 +350,36 @@ function renderScore() {
 ["score-total", "score-bodyweight"].forEach((id) => $(id).addEventListener("input", renderScore));
 
 // ---------------------------------------------------------------------------
+// Unit convert
+// ---------------------------------------------------------------------------
+
+function renderConvert() {
+  const resultsEl = $("convert-results");
+  const weight = parseFloat($("convert-weight").value);
+
+  if (!Number.isFinite(weight)) {
+    resultsEl.innerHTML = "";
+    return;
+  }
+
+  let converted;
+  try {
+    converted = convertWeight(weight, unit);
+  } catch (err) {
+    resultsEl.innerHTML = `<p class="notice notice-warn">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+
+  resultsEl.innerHTML = `<div class="result-hero">
+    <p class="result-label">${fmt(weight)} ${unit} equals</p>
+    <p class="result-value">${fmt(converted.result)} ${converted.resultUnit}</p>
+    <p class="result-sub">Exact: 1 lb = ${KG_PER_LB} kg</p>
+  </div>`;
+}
+
+$("convert-weight").addEventListener("input", renderConvert);
+
+// ---------------------------------------------------------------------------
 // Init
 // ---------------------------------------------------------------------------
 
@@ -356,11 +387,13 @@ function renderAll() {
   renderOneRm();
   renderPlates();
   renderScore();
+  renderConvert();
 }
 
-["onerm-weight", "onerm-reps", "plates-target", "plates-inventory-bar", "score-total", "score-bodyweight"].forEach(
-  wireStepperFor
-);
+[
+  "onerm-weight", "onerm-reps", "plates-target", "plates-inventory-bar",
+  "score-total", "score-bodyweight", "convert-weight",
+].forEach(wireStepperFor);
 
 // Honor manifest.json's shortcuts (?tab=onerm|plates|score), e.g. from a
 // home-screen long-press shortcut - falls back to the default 1RM tab for

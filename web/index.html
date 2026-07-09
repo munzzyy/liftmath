@@ -38,6 +38,7 @@
   <button class="tab" role="tab" id="tab-btn-onerm" aria-controls="tool-onerm" aria-selected="true" tabindex="0">1RM</button>
   <button class="tab" role="tab" id="tab-btn-plates" aria-controls="tool-plates" aria-selected="false" tabindex="-1">Plates</button>
   <button class="tab" role="tab" id="tab-btn-score" aria-controls="tool-score" aria-selected="false" tabindex="-1">Score</button>
+  <button class="tab" role="tab" id="tab-btn-convert" aria-controls="tool-convert" aria-selected="false" tabindex="-1">Convert</button>
 </nav>
 
 <main id="main-content">
@@ -147,6 +148,24 @@
     </div>
 
     <div class="results" id="score-results" aria-live="polite"></div>
+  </section>
+
+  <!-- ============ Unit convert ============ -->
+  <section class="tool-panel" id="tool-convert" role="tabpanel" aria-labelledby="tab-btn-convert" tabindex="0" hidden>
+    <h2 id="convert-heading">Unit convert</h2>
+    <p class="disclaimer" id="convert-disclaimer">Plain lb &harr; kg, using the exact international avoirdupois pound
+      (1 lb = 0.45359237 kg) - no rounded approximation.</p>
+
+    <div class="field">
+      <label for="convert-weight" id="convert-weight-label">Weight</label>
+      <div class="stepper-row">
+        <button class="stepper-btn" id="convert-weight-dec" aria-label="Decrease weight">&minus;</button>
+        <input type="number" id="convert-weight" inputmode="decimal" value="225" min="0" step="5" />
+        <button class="stepper-btn" id="convert-weight-inc" aria-label="Increase weight">+</button>
+      </div>
+    </div>
+
+    <div class="results" id="convert-results" aria-live="polite"></div>
   </section>
 
 </main>

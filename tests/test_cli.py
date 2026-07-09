@@ -121,6 +121,46 @@ def test_standards_bad_sex_errors(capsys):
         run(capsys, "standards", "--total", "500", "--bodyweight", "90", "--sex", "other")
 
 
+# --- convert ---
+
+def test_convert_lb_to_kg(capsys):
+    code, out, _ = run(capsys, "convert", "--weight", "225", "--unit", "lb")
+    assert code == 0
+    assert "225lb = 102.06kg" in out
+
+
+def test_convert_kg_to_lb(capsys):
+    code, out, _ = run(capsys, "convert", "--weight", "100", "--unit", "kg")
+    assert code == 0
+    assert "100kg = 220.46lb" in out
+
+
+def test_convert_default_unit_is_lb(capsys):
+    code, out, _ = run(capsys, "convert", "--weight", "45")
+    assert code == 0
+    assert "45lb" in out
+
+
+def test_convert_json(capsys):
+    code, out, _ = run(capsys, "convert", "--weight", "225", "--unit", "lb", "--json")
+    assert code == 0
+    data = json.loads(out)
+    assert data["unit"] == "lb"
+    assert data["result_unit"] == "kg"
+    assert data["result"] == pytest.approx(102.05828325)
+
+
+def test_convert_negative_weight_errors(capsys):
+    code, _, err = run(capsys, "convert", "--weight", "-10", "--unit", "lb")
+    assert code == 1
+    assert "error" in err
+
+
+def test_convert_bad_unit_errors(capsys):
+    with pytest.raises(SystemExit):  # argparse choices rejects it before our handler
+        run(capsys, "convert", "--weight", "100", "--unit", "stone")
+
+
 # --- top level ---
 
 def test_no_subcommand_errors(capsys):

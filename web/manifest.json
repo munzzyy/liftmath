@@ -37,6 +37,11 @@
       "name": "Score",
       "url": "./index.html?tab=score",
       "description": "Wilks / DOTS / IPF GL score"
+    },
+    {
+      "name": "Convert",
+      "url": "./index.html?tab=convert",
+      "description": "Convert a weight between lb and kg"
     }
   ]
 }

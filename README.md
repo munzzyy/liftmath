@@ -18,7 +18,9 @@ Three tools:
 - **Strength score**: Wilks, DOTS, and IPF GL points, so you can compare across bodyweights.
 
 That's it. It used to do a lot more; it does less now, on purpose. Every number traces back to a
-named formula, and you can read the whole thing in a sitting.
+named formula, and you can read the whole thing in a sitting. There's also a small lb/kg
+converter (`convert`) bolted on, since plates and strength score already needed exact unit
+conversion internally - it's a utility, not a fourth tool.
 
 The fastest way in is the web app: nothing to install, works on your phone at the gym, offline,
 and the barbell loads itself as you type: **https://munzzyy.github.io/liftmath/**. Everything below
@@ -116,6 +118,17 @@ Relative-strength scores - 1200lb total @ 200lb bodyweight (male):
 All four are fit to different samples and disagree slightly, especially at the extremes of the
 bodyweight range. Treat them as independent opinions, not one ground truth.
 
+### Convert
+
+A plain lb/kg conversion, using the exact international avoirdupois pound (1 lb = 0.45359237 kg),
+not a rounded approximation.
+
+```
+$ liftmath convert --weight 225 --unit lb
+225lb = 102.06kg
+(exact: 1lb = 0.45359237kg, the international avoirdupois pound)
+```
+
 ## As a library
 
 Every command is a thin wrapper around a plain function that returns a dataclass, so you can use the
@@ -143,6 +156,7 @@ from liftmath import (
     score,                                                 # all four scores at once
     wilks_score, wilks_original_score,                     # Wilks 2020 / original
     dots_score, ipf_gl_points,                             # DOTS / IPF GL points
+    lbs_to_kg, kg_to_lbs, convert_weight,                  # exact lb/kg conversion
     to_dict, to_json,                                      # serialize any result
 )
 ```
@@ -156,7 +170,8 @@ from liftmath import estimate_one_rm, to_json
 print(to_json(estimate_one_rm(225, 5, unit="lb")))
 ```
 
-See the module docstrings in `src/liftmath/` for the details: `onerm.py`, `plates.py`, `standards.py`.
+See the module docstrings in `src/liftmath/` for the details: `onerm.py`, `plates.py`, `standards.py`,
+`convert.py`.
 
 ## Where the numbers come from
 
@@ -175,6 +190,10 @@ conventions: the actual formulas federations use, fit by regression to real comp
 not "evidence" in the causal sense. The Wilks and DOTS coefficient tables are cross-checked against
 OpenPowerlifting's implementations; IPF GL came straight from the IPF's own coefficients PDF.
 `standards.py` has the full citations and a note on when the IPF table is due to refresh.
+
+The lb/kg conversion uses the exact international avoirdupois pound (1 lb = 0.45359237 kg, fixed
+by the 1959 international yard-and-pound agreement), not a rounded approximation. It's the same
+factor `standards.py` was already converting with internally for its `--unit lb` handling.
 
 ## What this is not
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "liftmath"
-version = "2.0.0"
+version = "2.1.0"
 description = "A simple gym calculator: estimate a 1RM from a set, work out which plates to load, and score relative strength (Wilks/DOTS/IPF GL). Pure Python stdlib."
 readme = "README.md"
 license = { text = "Prosperity Public License 3.0.0" }

@@ -1,0 +1,106 @@
+[
+  {
+    "args": {
+      "unit": "lb",
+      "value": 225
+    },
+    "expected": {
+      "result": 102.05828325,
+      "resultUnit": "kg",
+      "unit": "lb",
+      "value": 225
+    },
+    "fn": "convertWeight"
+  },
+  {
+    "args": {
+      "unit": "lb",
+      "value": 45
+    },
+    "expected": {
+      "result": 20.41165665,
+      "resultUnit": "kg",
+      "unit": "lb",
+      "value": 45
+    },
+    "fn": "convertWeight"
+  },
+  {
+    "args": {
+      "unit": "lb",
+      "value": 0
+    },
+    "expected": {
+      "result": 0.0,
+      "resultUnit": "kg",
+      "unit": "lb",
+      "value": 0
+    },
+    "fn": "convertWeight"
+  },
+  {
+    "args": {
+      "unit": "lb",
+      "value": 315.5
+    },
+    "expected": {
+      "result": 143.108392735,
+      "resultUnit": "kg",
+      "unit": "lb",
+      "value": 315.5
+    },
+    "fn": "convertWeight"
+  },
+  {
+    "args": {
+      "unit": "kg",
+      "value": 100
+    },
+    "expected": {
+      "result": 220.46226218487757,
+      "resultUnit": "lb",
+      "unit": "kg",
+      "value": 100
+    },
+    "fn": "convertWeight"
+  },
+  {
+    "args": {
+      "unit": "kg",
+      "value": 60
+    },
+    "expected": {
+      "result": 132.27735731092653,
+      "resultUnit": "lb",
+      "unit": "kg",
+      "value": 60
+    },
+    "fn": "convertWeight"
+  },
+  {
+    "args": {
+      "unit": "kg",
+      "value": 0
+    },
+    "expected": {
+      "result": 0.0,
+      "resultUnit": "lb",
+      "unit": "kg",
+      "value": 0
+    },
+    "fn": "convertWeight"
+  },
+  {
+    "args": {
+      "unit": "kg",
+      "value": 142.5
+    },
+    "expected": {
+      "result": 314.15872361345055,
+      "resultUnit": "lb",
+      "unit": "kg",
+      "value": 142.5
+    },
+    "fn": "convertWeight"
+  }
+]

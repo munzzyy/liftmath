@@ -9,11 +9,16 @@ Three things, done well, that you actually reach for at the gym:
   - score relative strength across bodyweights with Wilks (original + 2020),
     DOTS, and IPF GL points.
 
+Plus one small utility the other three lean on: exact lb<->kg conversion
+(`convert_weight`, `lbs_to_kg`, `kg_to_lbs`), the same 0.45359237 factor
+`standards.py` already needed for its own unit handling.
+
 Every formula is cited in the module it lives in. Nothing here is medical or
 nutrition advice - see the README.
 """
 
 from liftmath._serialize import to_dict, to_json
+from liftmath.convert import WeightConversion, convert_weight, kg_to_lbs, lbs_to_kg
 from liftmath.onerm import OneRmEstimate, estimate_one_rm
 from liftmath.plates import (
     InventoryPlateLoad,
@@ -30,7 +35,7 @@ from liftmath.standards import (
     wilks_score,
 )
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 __all__ = [
     "estimate_one_rm",
@@ -45,6 +50,10 @@ __all__ = [
     "wilks_original_score",
     "dots_score",
     "ipf_gl_points",
+    "lbs_to_kg",
+    "kg_to_lbs",
+    "convert_weight",
+    "WeightConversion",
     "to_dict",
     "to_json",
     "__version__",

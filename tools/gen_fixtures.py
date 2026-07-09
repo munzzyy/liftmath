@@ -32,7 +32,7 @@ FIXTURES_DIR = REPO_ROOT / "tests" / "web" / "fixtures"
 
 sys.path.insert(0, str(SRC))
 
-from liftmath import onerm, plates, standards  # noqa: E402
+from liftmath import convert, onerm, plates, standards  # noqa: E402
 from liftmath._serialize import to_dict  # noqa: E402
 
 _CAMEL_RE = re.compile(r"_([a-zA-Z0-9])")
@@ -190,11 +190,30 @@ def gen_strength_scores() -> list[dict]:
     return cases
 
 
+# ---------------------------------------------------------------------------
+# unit-convert.js <- liftmath.convert
+# ---------------------------------------------------------------------------
+
+def gen_unit_convert() -> list[dict]:
+    cases = []
+    for value, unit in [
+        (225, "lb"), (45, "lb"), (0, "lb"), (315.5, "lb"),
+        (100, "kg"), (60, "kg"), (0, "kg"), (142.5, "kg"),
+    ]:
+        cases.append({
+            "fn": "convertWeight",
+            "args": {"value": value, "unit": unit},
+            "expected": dump(convert.convert_weight(value, unit=unit)),
+        })
+    return cases
+
+
 GENERATORS = {
     "one-rep-max": gen_one_rep_max,
     "plate-loading": gen_plate_loading,
     "plate-inventory": gen_plate_inventory,
     "strength-scores": gen_strength_scores,
+    "unit-convert": gen_unit_convert,
 }
 
 

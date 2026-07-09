@@ -5,6 +5,7 @@ Subcommands:
     plates      Plate-loading math for a target barbell weight (add --inventory for a
                 finite per-side plate count instead of an unlimited supply)
     standards   Relative-strength scoring: Wilks (original + 2020), DOTS, IPF GL points
+    convert     Convert a weight between lb and kg (exact avoirdupois pound)
 
 All loads are unit-agnostic (kg or lb); pass --unit. Pass --json (before or after
 the subcommand) for machine-readable JSON instead of the formatted text, e.g.
@@ -18,11 +19,11 @@ import sys
 
 from liftmath import __version__
 from liftmath._serialize import to_json
+from liftmath.convert import KG_PER_LB, convert_weight
+from liftmath.convert import lbs_to_kg as _lbs_to_kg
 from liftmath.onerm import estimate_one_rm
 from liftmath.plates import PRESETS, _parse_inventory_spec, load_plates, load_plates_from_inventory
 from liftmath.standards import score as strength_score
-
-_LB_PER_KG = 0.45359237
 
 
 def cmd_1rm(args: argparse.Namespace) -> int:
@@ -110,8 +111,8 @@ def cmd_plates(args: argparse.Namespace) -> int:
 
 
 def cmd_standards(args: argparse.Namespace) -> int:
-    bodyweight_kg = args.bodyweight * _LB_PER_KG if args.unit == "lb" else args.bodyweight
-    total_kg = args.total * _LB_PER_KG if args.unit == "lb" else args.total
+    bodyweight_kg = _lbs_to_kg(args.bodyweight) if args.unit == "lb" else args.bodyweight
+    total_kg = _lbs_to_kg(args.total) if args.unit == "lb" else args.total
     try:
         result = strength_score(total_kg, bodyweight_kg, args.sex)
     except ValueError as e:
@@ -138,6 +139,22 @@ def cmd_standards(args: argparse.Namespace) -> int:
     print("Wilks-2020 is the IPF's current standard; original Wilks is kept for historical")
     print("comparison. [evidence tier] established as competition scoring CONVENTIONS (real")
     print("federation formulas fit to real competition samples), not evidence in the RCT sense.")
+    return 0
+
+
+def cmd_convert(args: argparse.Namespace) -> int:
+    try:
+        result = convert_weight(args.weight, unit=args.unit)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(result))
+        return 0
+
+    print(f"{args.weight:g}{args.unit} = {result.result:.2f}{result.result_unit}")
+    print(f"(exact: 1lb = {KG_PER_LB}kg, the international avoirdupois pound)")
     return 0
 
 
@@ -191,6 +208,11 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--sex", required=True, choices=["male", "female"])
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_standards)
+
+    s = sub.add_parser("convert", help="convert a weight between lb and kg", parents=[json_parent])
+    s.add_argument("--weight", type=float, required=True)
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"], help="unit the --weight is already in")
+    s.set_defaults(func=cmd_convert)
 
     return p
 
