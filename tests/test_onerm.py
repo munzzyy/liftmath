@@ -73,3 +73,19 @@ def test_zero_weight_raises():
 def test_negative_weight_raises():
     with pytest.raises(ValueError):
         estimate_one_rm(-100, 5)
+
+
+def test_nan_weight_raises():
+    # NaN slips past a plain `weight <= 0` check (every comparison with NaN is
+    # False), every formula then returns NaN, all get excluded from the
+    # consensus, and the median of an empty list used to IndexError.
+    with pytest.raises(ValueError):
+        estimate_one_rm(float("nan"), 5)
+
+
+def test_infinite_weight_raises():
+    # inf also passes `> 0` - this used to print an "inf" consensus.
+    with pytest.raises(ValueError):
+        estimate_one_rm(float("inf"), 5)
+    with pytest.raises(ValueError):
+        estimate_one_rm(float("-inf"), 5)

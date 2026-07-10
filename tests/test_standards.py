@@ -93,6 +93,25 @@ def test_nonpositive_bodyweight_raises():
         score(500, -5, "male")
 
 
+def test_nonpositive_total_raises():
+    # A negative total used to sail through and print negative Wilks/DOTS/IPF GL.
+    with pytest.raises(ValueError):
+        score(-100, 90, "male")
+    with pytest.raises(ValueError):
+        score(0, 90, "male")
+
+
+def test_non_finite_total_or_bodyweight_raises():
+    with pytest.raises(ValueError):
+        score(float("nan"), 90, "male")
+    with pytest.raises(ValueError):
+        score(float("inf"), 90, "male")
+    with pytest.raises(ValueError):
+        score(500, float("nan"), "male")
+    with pytest.raises(ValueError):
+        score(500, float("inf"), "male")
+
+
 def test_score_bundles_wilks_original_too():
     s = score(500, 100, "male")
     assert s.wilks_original == pytest.approx(304.295, abs=0.01)

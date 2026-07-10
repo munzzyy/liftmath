@@ -47,6 +47,20 @@ def test_1rm_bad_reps_errors(capsys):
     assert "error" in err
 
 
+def test_1rm_nan_weight_errors(capsys):
+    # This exact command used to dump an IndexError traceback.
+    code, _, err = run(capsys, "1rm", "--weight", "nan", "--reps", "5")
+    assert code == 1
+    assert "error" in err
+
+
+def test_1rm_inf_weight_errors(capsys):
+    # This exact command used to print "CONSENSUS inflb".
+    code, _, err = run(capsys, "1rm", "--weight", "inf", "--reps", "5")
+    assert code == 1
+    assert "error" in err
+
+
 # --- plates ---
 
 def test_plates_default(capsys):
@@ -89,6 +103,34 @@ def test_plates_below_bar_errors(capsys):
     assert "below the bar" in err
 
 
+def test_plates_zero_denomination_errors(capsys):
+    # This exact command used to dump a ZeroDivisionError traceback.
+    code, _, err = run(capsys, "plates", "--target", "225", "--plates", "0")
+    assert code == 1
+    assert "error" in err
+
+
+def test_plates_negative_bar_errors(capsys):
+    # This exact command used to print "Load 135lb on a -45lb bar".
+    code, _, err = run(capsys, "plates", "--target", "135", "--bar", "-45")
+    assert code == 1
+    assert "error" in err
+
+
+def test_plates_infinite_target_errors(capsys):
+    code, _, err = run(capsys, "plates", "--target", "inf")
+    assert code == 1
+    assert "error" in err
+
+
+def test_plates_inventory_huge_count_errors_instead_of_hanging(capsys):
+    # This exact command used to enumerate 100M+1 combinations - it hung the
+    # CLI until killed. The cap turns it into an immediate error.
+    code, _, err = run(capsys, "plates", "--target", "405", "--inventory", "45x100000000")
+    assert code == 1
+    assert "error" in err
+
+
 # --- standards ---
 
 def test_standards_text(capsys):
@@ -119,6 +161,22 @@ def test_standards_lb_converts_to_kg(capsys):
 def test_standards_bad_sex_errors(capsys):
     with pytest.raises(SystemExit):  # argparse choices rejects it before our handler
         run(capsys, "standards", "--total", "500", "--bodyweight", "90", "--sex", "other")
+
+
+def test_standards_negative_lb_total_errors(capsys):
+    # The lb->kg conversion used to run OUTSIDE the error handler, so this
+    # exact command dumped a raw ValueError traceback.
+    code, _, err = run(capsys, "standards", "--total", "-100", "--bodyweight", "200", "--sex", "male")
+    assert code == 1
+    assert "error" in err
+
+
+def test_standards_negative_kg_total_errors(capsys):
+    # This exact command used to print negative Wilks/DOTS/IPF GL scores.
+    code, _, err = run(capsys, "standards", "--total", "-100", "--bodyweight", "90",
+                       "--sex", "male", "--unit", "kg")
+    assert code == 1
+    assert "error" in err
 
 
 # --- convert ---

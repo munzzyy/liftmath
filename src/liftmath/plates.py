@@ -14,7 +14,19 @@ above unchanged.
 from __future__ import annotations
 
 import itertools
+import math
 from dataclasses import dataclass, field
+
+# Hard caps on the finite-inventory solver. Its exhaustive search enumerates
+# the product of (count + 1) over every plate size (see
+# load_plates_from_inventory's docstring for why greedy can't be used), so
+# unbounded counts turn a sub-second solve into a hang - `--inventory
+# 45x100000000` used to spin until killed. 99 plates of one size per SIDE is
+# already beyond any real rack, and 5M combinations enumerate in well under a
+# second; realistic inventories (a handful of sizes, single-digit counts)
+# don't come near either cap.
+MAX_PLATES_PER_SIZE = 99
+MAX_SEARCH_COMBINATIONS = 5_000_000
 
 DEFAULT_PLATES = {
     "kg": (25, 20, 15, 10, 5, 2.5, 1.25),
@@ -75,8 +87,10 @@ def load_plates(
             plate). Presets are kg-only; pairing one with unit="lb" is an error.
 
     Raises:
-        ValueError: if target is below the bar weight, if `preset` isn't a known
-            preset name, or if `preset` is combined with unit="lb".
+        ValueError: if target isn't a finite number or is below the bar weight,
+            if the bar weight or any plate denomination isn't a finite number
+            > 0, if `preset` isn't a known preset name, or if `preset` is
+            combined with unit="lb".
     """
     if preset is not None:
         if preset not in PRESETS:
@@ -88,6 +102,10 @@ def load_plates(
         plates = plates if plates is not None else preset_plates
 
     bar_weight = bar if bar is not None else DEFAULT_BAR[unit]
+    if not math.isfinite(bar_weight) or bar_weight <= 0:
+        raise ValueError(f"bar weight must be a finite number > 0, got {bar_weight}")
+    if not math.isfinite(target):
+        raise ValueError(f"target must be a finite number, got {target}")
     if target < bar_weight:
         raise ValueError(f"target {target}{unit} is below the bar ({bar_weight}{unit})")
 
@@ -95,6 +113,9 @@ def load_plates(
     # `is None` rather than falsy-or: an explicitly empty plates=() / plates=[]
     # means "no plates available" and must not silently fall back to defaults.
     available = sorted(plates if plates is not None else DEFAULT_PLATES[unit], reverse=True)
+    for p in available:
+        if not math.isfinite(p) or p <= 0:
+            raise ValueError(f"plate denominations must be finite numbers > 0, got {p}")
 
     remaining = per_side
     loaded: list[tuple[float, int]] = []
@@ -122,7 +143,8 @@ def _parse_inventory_spec(spec: str) -> dict[float, int]:
     the bar, so up to four can be loaded on each side independently).
 
     Raises:
-        ValueError: on a malformed term, or a non-positive size/count.
+        ValueError: on a malformed term, a non-positive size/count, or a count
+            over MAX_PLATES_PER_SIZE.
     """
     inventory: dict[float, int] = {}
     for term in spec.split(","):
@@ -136,11 +158,15 @@ def _parse_inventory_spec(spec: str) -> dict[float, int]:
             size, count = float(size_s), int(count_s)
         except ValueError:
             raise ValueError(f"bad inventory term {term!r} - want 'SIZExCOUNT' (e.g. '45x4')")
-        if size <= 0:
-            raise ValueError(f"bad inventory term {term!r} - plate size must be > 0")
+        if not math.isfinite(size) or size <= 0:
+            raise ValueError(f"bad inventory term {term!r} - plate size must be a finite number > 0")
         if count <= 0:
             raise ValueError(f"bad inventory term {term!r} - plate count must be > 0")
         inventory[size] = inventory.get(size, 0) + count
+        if inventory[size] > MAX_PLATES_PER_SIZE:
+            raise ValueError(
+                f"bad inventory term {term!r} - plate count must be <= {MAX_PLATES_PER_SIZE} per size"
+            )
     if not inventory:
         raise ValueError("inventory spec must have at least one 'SIZExCOUNT' term")
     return inventory
@@ -213,18 +239,30 @@ def load_plates_from_inventory(
         bar: bar weight; defaults to 20kg / 45lb.
 
     Raises:
-        ValueError: if target is below the bar weight, or inventory is empty
-            or contains a non-positive size/count.
+        ValueError: if target isn't a finite number or is below the bar weight,
+            if the bar weight isn't a finite number > 0, if inventory is empty
+            or contains a non-positive/non-finite size or non-positive count,
+            or if the inventory is too big to search (a count over
+            MAX_PLATES_PER_SIZE, or more than MAX_SEARCH_COMBINATIONS
+            combinations overall).
     """
     if not inventory:
         raise ValueError("inventory must have at least one plate size")
     for size, count in inventory.items():
-        if size <= 0:
-            raise ValueError(f"plate size must be > 0, got {size}")
+        if not math.isfinite(size) or size <= 0:
+            raise ValueError(f"plate size must be a finite number > 0, got {size}")
         if count <= 0:
             raise ValueError(f"plate count must be > 0, got {count} for size {size}")
+        if count > MAX_PLATES_PER_SIZE:
+            raise ValueError(
+                f"plate count must be <= {MAX_PLATES_PER_SIZE} per size, got {count} for size {size}"
+            )
 
     bar_weight = bar if bar is not None else DEFAULT_BAR[unit]
+    if not math.isfinite(bar_weight) or bar_weight <= 0:
+        raise ValueError(f"bar weight must be a finite number > 0, got {bar_weight}")
+    if not math.isfinite(target):
+        raise ValueError(f"target must be a finite number, got {target}")
     if target < bar_weight:
         raise ValueError(f"target {target}{unit} is below the bar ({bar_weight}{unit})")
 
@@ -232,6 +270,17 @@ def load_plates_from_inventory(
 
     sizes = sorted(inventory, reverse=True)
     counts = [inventory[s] for s in sizes]
+
+    # The exhaustive search below visits the product of (count + 1) over every
+    # size - refuse anything that would take real time instead of hanging.
+    combinations = 1
+    for c in counts:
+        combinations *= c + 1
+    if combinations > MAX_SEARCH_COMBINATIONS:
+        raise ValueError(
+            f"inventory is too big to search ({combinations} combinations, cap {MAX_SEARCH_COMBINATIONS})"
+            " - drop some plate sizes or counts"
+        )
 
     best_combo: tuple[int, ...] = tuple(0 for _ in sizes)
     best_total = 0.0

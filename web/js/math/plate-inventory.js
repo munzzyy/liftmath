@@ -22,6 +22,16 @@
 
 import { DEFAULT_BAR } from "./plate-loading.js";
 
+// Hard caps on the exhaustive search, mirroring plates.py's
+// MAX_PLATES_PER_SIZE / MAX_SEARCH_COMBINATIONS: the solver enumerates the
+// product of (count + 1) over every plate size, so unbounded counts freeze
+// the tab. 99 plates of one size per SIDE is already beyond any real rack,
+// and 5M combinations enumerate in well under a second; realistic
+// inventories (a handful of sizes, single-digit counts) don't come near
+// either cap.
+export const MAX_PLATES_PER_SIZE = 99;
+export const MAX_SEARCH_COMBINATIONS = 5_000_000;
+
 /**
  * Parse a "SIZExCOUNT,SIZExCOUNT,..." inventory spec string into a
  * {size: count} object, e.g. "45x4,25x1,10x2,5x2,2.5x1".
@@ -32,7 +42,8 @@ import { DEFAULT_BAR } from "./plate-loading.js";
  *
  * @param {string} spec
  * @returns {Object<string, number>}
- * @throws {RangeError} on a malformed term, or a non-positive size/count.
+ * @throws {RangeError} on a malformed term, a non-positive size/count, or a
+ *   count over MAX_PLATES_PER_SIZE.
  */
 export function parseInventorySpec(spec) {
   const inventory = {};
@@ -57,6 +68,11 @@ export function parseInventorySpec(spec) {
       throw new RangeError(`bad inventory term ${JSON.stringify(term)} - plate count must be > 0`);
     }
     inventory[size] = (inventory[size] || 0) + count;
+    if (inventory[size] > MAX_PLATES_PER_SIZE) {
+      throw new RangeError(
+        `bad inventory term ${JSON.stringify(term)} - plate count must be <= ${MAX_PLATES_PER_SIZE} per size`
+      );
+    }
   }
   if (Object.keys(inventory).length === 0) {
     throw new RangeError("inventory spec must have at least one 'SIZExCOUNT' term");
@@ -75,8 +91,10 @@ export function parseInventorySpec(spec) {
  * @param {object} [opts]
  * @param {string} [opts.unit="lb"] - "lb" or "kg", selects the default bar weight.
  * @param {number|null} [opts.bar=null] - bar weight; defaults to 20kg / 45lb.
- * @throws {RangeError} if target is below the bar weight, or inventory is
- *   empty or contains a non-positive size/count.
+ * @throws {RangeError} if target is below the bar weight, if inventory is
+ *   empty or contains a non-positive size/count, or if the inventory is too
+ *   big to search (a count over MAX_PLATES_PER_SIZE, or more than
+ *   MAX_SEARCH_COMBINATIONS combinations overall).
  */
 export function loadPlatesFromInventory(target, inventory, opts = {}) {
   const { unit = "lb", bar = null } = opts;
@@ -92,6 +110,11 @@ export function loadPlatesFromInventory(target, inventory, opts = {}) {
     if (count <= 0) {
       throw new RangeError(`plate count must be > 0, got ${count} for size ${size}`);
     }
+    if (count > MAX_PLATES_PER_SIZE) {
+      throw new RangeError(
+        `plate count must be <= ${MAX_PLATES_PER_SIZE} per size, got ${count} for size ${size}`
+      );
+    }
   }
 
   const barWeight = bar !== null ? bar : DEFAULT_BAR[unit];
@@ -104,6 +127,17 @@ export function loadPlatesFromInventory(target, inventory, opts = {}) {
   const sizes = sizeEntries.map(([s]) => s).sort((a, b) => b - a);
   const invBySize = new Map(sizeEntries);
   const counts = sizes.map((s) => invBySize.get(s));
+
+  // The odometer below visits the product of (count + 1) over every size -
+  // refuse anything that would freeze the tab instead of hanging.
+  let combinations = 1;
+  for (const c of counts) combinations *= c + 1;
+  if (combinations > MAX_SEARCH_COMBINATIONS) {
+    throw new RangeError(
+      `inventory is too big to search (${combinations} combinations, cap ${MAX_SEARCH_COMBINATIONS})` +
+        " - drop some plate sizes or counts"
+    );
+  }
 
   let bestCombo = sizes.map(() => 0);
   let bestTotal = 0.0;

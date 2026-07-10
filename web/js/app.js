@@ -9,7 +9,7 @@ import { score } from "./math/strength-scores.js";
 import { KG_PER_LB, convertWeight } from "./math/unit-convert.js";
 import { renderBarbellSvg, renderPlateLegend } from "./ui/svg-barbell.js";
 import { wireStepper, minFromInput } from "./ui/steppers.js";
-import { fromUnit, toUnit, roundForDisplay } from "./ui/units.js";
+import { fromUnit, convertDisplayValue, plateTargetUnit } from "./ui/units.js";
 
 function $(id) {
   return document.getElementById(id);
@@ -85,14 +85,19 @@ function wireStepperFor(idBase) {
   const decBtn = $(`${idBase}-dec`);
   const incBtn = $(`${idBase}-inc`);
   // reps are a plain count, not a weight - don't label their steps with lb/kg.
-  const isReps = idBase === "onerm-reps";
+  // The plates target follows its own display unit (kg while a kg-only
+  // preset is selected), not the global toggle.
+  const label =
+    idBase === "onerm-reps" ? () => "rep"
+    : idBase === "plates-target" ? () => plateTargetUnit(platesMode, unit)
+    : () => unit;
   wireStepper({
     input,
     decBtn,
     incBtn,
     step: parseFloat(input.step) || 1,
     min: minFromInput(input),
-    unitLabel: isReps ? () => "rep" : () => unit,
+    unitLabel: label,
     onChange: renderAll,
   });
 }
@@ -116,11 +121,15 @@ function setUnit(newUnit) {
 
   for (const id of [...COARSE_FIELDS, ...FINE_FIELDS]) {
     const input = $(id);
+    // The plates target is pinned to kg while a kg-only preset is selected
+    // (see plateTargetUnit), so its display unit may not follow the toggle.
+    const fieldOldUnit = id === "plates-target" ? plateTargetUnit(platesMode, oldUnit) : oldUnit;
+    const fieldNewUnit = id === "plates-target" ? plateTargetUnit(platesMode, unit) : unit;
     const v = parseFloat(input.value);
     if (Number.isFinite(v)) {
-      input.value = String(roundForDisplay(toUnit(fromUnit(v, oldUnit), unit), unit));
+      input.value = String(convertDisplayValue(v, fieldOldUnit, fieldNewUnit));
     }
-    input.step = COARSE_FIELDS.includes(id) ? COARSE_STEP[unit] : FINE_STEP[unit];
+    input.step = COARSE_FIELDS.includes(id) ? COARSE_STEP[fieldNewUnit] : FINE_STEP[fieldNewUnit];
     rewireStepper(id);
   }
   renderAll();
@@ -231,7 +240,22 @@ function renderOneRm() {
 let platesMode = "standard"; // standard | womens | metric-no-45 | my-plates
 
 wireChipGroup("plates-preset-group", "preset", (value) => {
+  // Switching to/from a kg-only preset changes what unit the target box
+  // MEANS (a lifter in lb mode with 225 in the box tapping "Women's bar"
+  // would otherwise get a plate stack for 225 kg) - convert the number so it
+  // keeps describing the same real-world weight, and re-step to match.
+  const oldDisplayUnit = plateTargetUnit(platesMode, unit);
   platesMode = value;
+  const newDisplayUnit = plateTargetUnit(platesMode, unit);
+  if (oldDisplayUnit !== newDisplayUnit) {
+    const input = $("plates-target");
+    const v = parseFloat(input.value);
+    if (Number.isFinite(v)) {
+      input.value = String(convertDisplayValue(v, oldDisplayUnit, newDisplayUnit));
+    }
+    input.step = COARSE_STEP[newDisplayUnit];
+    rewireStepper("plates-target");
+  }
   $("plates-inventory-fields").hidden = value !== "my-plates";
   renderPlates();
 });
@@ -250,7 +274,7 @@ function renderPlates() {
   }
 
   let stack;
-  let displayUnit = unit;
+  const displayUnit = plateTargetUnit(platesMode, unit);
 
   try {
     if (platesMode === "my-plates") {
@@ -258,7 +282,6 @@ function renderPlates() {
       const inventory = parseInventorySpec($("plates-inventory-spec").value);
       stack = loadPlatesFromInventory(target, inventory, { unit, bar });
     } else if (platesMode === "womens" || platesMode === "metric-no-45") {
-      displayUnit = "kg";
       stack = computePlateStack(target, { unit: "kg", preset: platesMode });
     } else {
       stack = computePlateStack(target, { unit });

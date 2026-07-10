@@ -111,11 +111,13 @@ class StrengthScore:
     ipf_gl: float
 
 
-def _validate(bodyweight_kg: float, sex: str) -> None:
+def _validate(total_kg: float, bodyweight_kg: float, sex: str) -> None:
     if sex not in _SEXES:
         raise ValueError(f"sex must be one of {_SEXES}, got {sex!r}")
-    if bodyweight_kg <= 0:
-        raise ValueError("bodyweight_kg must be > 0")
+    if not math.isfinite(total_kg) or total_kg <= 0:
+        raise ValueError("total_kg must be a finite number > 0")
+    if not math.isfinite(bodyweight_kg) or bodyweight_kg <= 0:
+        raise ValueError("bodyweight_kg must be a finite number > 0")
 
 
 def wilks_original_score(total_kg: float, bodyweight_kg: float, sex: str) -> float:
@@ -125,7 +127,7 @@ def wilks_original_score(total_kg: float, bodyweight_kg: float, sex: str) -> flo
     standard, but still widely quoted/compared historically, so it's offered
     alongside rather than dropped.
     """
-    _validate(bodyweight_kg, sex)
+    _validate(total_kg, bodyweight_kg, sex)
     a, b, c, d, e, f = _WILKS_ORIGINAL[sex]
     x = bodyweight_kg
     denom = a + b * x + c * x**2 + d * x**3 + e * x**4 + f * x**5
@@ -135,7 +137,7 @@ def wilks_original_score(total_kg: float, bodyweight_kg: float, sex: str) -> flo
 
 def wilks_score(total_kg: float, bodyweight_kg: float, sex: str) -> float:
     """Wilks (2020 revision) score for a total at a given bodyweight."""
-    _validate(bodyweight_kg, sex)
+    _validate(total_kg, bodyweight_kg, sex)
     a, b, c, d, e, f = _WILKS_2020[sex]
     x = bodyweight_kg
     denom = a + b * x + c * x**2 + d * x**3 + e * x**4 + f * x**5
@@ -145,7 +147,7 @@ def wilks_score(total_kg: float, bodyweight_kg: float, sex: str) -> float:
 
 def dots_score(total_kg: float, bodyweight_kg: float, sex: str) -> float:
     """DOTS score for a total at a given bodyweight."""
-    _validate(bodyweight_kg, sex)
+    _validate(total_kg, bodyweight_kg, sex)
     a, b, c, d, e = _DOTS[sex]
     x = bodyweight_kg
     denom = a * x**4 + b * x**3 + c * x**2 + d * x + e
@@ -159,7 +161,7 @@ def ipf_gl_points(total_kg: float, bodyweight_kg: float, sex: str) -> float:
     rounded to 6 decimal places before multiplying by the total, same as the
     procedure in the IPF's official coefficients document.
     """
-    _validate(bodyweight_kg, sex)
+    _validate(total_kg, bodyweight_kg, sex)
     a, b, c = _IPF_GL[sex]
     coefficient = round(100.0 / (a - b * math.exp(-c * bodyweight_kg)), 6)
     return coefficient * total_kg
@@ -175,9 +177,10 @@ def score(total_kg: float, bodyweight_kg: float, sex: str) -> StrengthScore:
             coefficients; there's no equipped/bench-only variant here.
 
     Raises:
-        ValueError: if sex isn't "male"/"female" or bodyweight_kg <= 0.
+        ValueError: if sex isn't "male"/"female", or total_kg/bodyweight_kg
+            isn't a finite number > 0.
     """
-    _validate(bodyweight_kg, sex)
+    _validate(total_kg, bodyweight_kg, sex)
     return StrengthScore(
         total=total_kg,
         bodyweight_kg=bodyweight_kg,

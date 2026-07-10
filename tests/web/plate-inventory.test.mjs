@@ -9,7 +9,11 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { assertParity } from "./assert-parity.mjs";
-import { loadPlatesFromInventory, parseInventorySpec } from "../../web/js/math/plate-inventory.js";
+import {
+  MAX_PLATES_PER_SIZE,
+  loadPlatesFromInventory,
+  parseInventorySpec,
+} from "../../web/js/math/plate-inventory.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const fixtures = JSON.parse(
@@ -86,4 +90,33 @@ test("loadPlatesFromInventory rejects an empty inventory", () => {
 
 test("loadPlatesFromInventory rejects a target below the bar", () => {
   assert.throws(() => loadPlatesFromInventory(20, { 45: 2 }, { unit: "lb" }), RangeError);
+});
+
+// The search caps (mirroring plates.py's MAX_PLATES_PER_SIZE /
+// MAX_SEARCH_COMBINATIONS): an unbounded count used to freeze the tab
+// enumerating every combination - "45x100000000" spun until killed.
+test("parseInventorySpec rejects a count over the per-size cap", () => {
+  assert.throws(() => parseInventorySpec(`45x${MAX_PLATES_PER_SIZE + 1}`), RangeError);
+});
+
+test("parseInventorySpec rejects duplicate terms that merge past the cap", () => {
+  assert.throws(() => parseInventorySpec("45x60,45x60"), RangeError);
+});
+
+test("loadPlatesFromInventory rejects a huge count instead of freezing", () => {
+  assert.throws(() => loadPlatesFromInventory(405, { 45: 100000000 }, { unit: "lb" }), RangeError);
+});
+
+test("loadPlatesFromInventory rejects a search space over the combination cap", () => {
+  // every count under the per-size cap, but the product (100^4) is 100M combos
+  assert.throws(
+    () => loadPlatesFromInventory(405, { 45: 99, 35: 99, 25: 99, 10: 99 }, { unit: "lb" }),
+    RangeError
+  );
+});
+
+test("a realistic big home-gym inventory still solves under the caps", () => {
+  const inv = { 45: 8, 35: 8, 25: 8, 10: 8, 5: 8, 2.5: 8 };
+  const result = loadPlatesFromInventory(405, inv, { unit: "lb" });
+  assert.equal(result.exact, true);
 });

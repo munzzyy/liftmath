@@ -1,6 +1,11 @@
 import pytest
 
-from liftmath.plates import _parse_inventory_spec, load_plates, load_plates_from_inventory
+from liftmath.plates import (
+    MAX_PLATES_PER_SIZE,
+    _parse_inventory_spec,
+    load_plates,
+    load_plates_from_inventory,
+)
 
 
 def test_245lb_on_45lb_bar_default_plates():
@@ -92,6 +97,32 @@ def test_explicit_empty_plates_list_also_means_no_plates_available():
     assert result.shortfall == pytest.approx(45.0)
 
 
+def test_zero_or_negative_plate_denomination_raises():
+    # A 0-denomination plate used to ZeroDivisionError inside the greedy loop.
+    with pytest.raises(ValueError):
+        load_plates(225, unit="lb", plates=(0,))
+    with pytest.raises(ValueError):
+        load_plates(225, unit="lb", plates=(45, -10))
+
+
+def test_non_positive_or_non_finite_bar_raises():
+    # A -45 bar used to be accepted: "Load 135lb on a -45lb bar".
+    with pytest.raises(ValueError):
+        load_plates(135, unit="lb", bar=-45)
+    with pytest.raises(ValueError):
+        load_plates(135, unit="lb", bar=0)
+    with pytest.raises(ValueError):
+        load_plates(135, unit="lb", bar=float("nan"))
+
+
+def test_non_finite_target_raises():
+    # An inf target used to OverflowError inside the greedy loop.
+    with pytest.raises(ValueError):
+        load_plates(float("inf"), unit="lb")
+    with pytest.raises(ValueError):
+        load_plates(float("nan"), unit="lb")
+
+
 # --- custom finite plate inventory (load_plates_from_inventory) -----------------
 
 
@@ -120,6 +151,22 @@ def test_parse_inventory_spec_rejects_non_positive_size_or_count():
 def test_parse_inventory_spec_rejects_empty():
     with pytest.raises(ValueError):
         _parse_inventory_spec("")
+
+
+def test_parse_inventory_spec_rejects_count_over_cap():
+    with pytest.raises(ValueError):
+        _parse_inventory_spec(f"45x{MAX_PLATES_PER_SIZE + 1}")
+
+
+def test_parse_inventory_spec_rejects_merged_counts_over_cap():
+    # Duplicate terms merge, so the cap has to apply to the merged count too.
+    with pytest.raises(ValueError):
+        _parse_inventory_spec("45x60,45x60")
+
+
+def test_parse_inventory_spec_rejects_non_finite_size():
+    with pytest.raises(ValueError):
+        _parse_inventory_spec("infx2")
 
 
 def test_inventory_exact_match_from_brief_example():
@@ -216,3 +263,33 @@ def test_inventory_ties_prefer_fewer_total_plates():
     assert result.per_side == pytest.approx(10.0)
     assert result.plates == [(10, 1)]
     assert result.exact is True
+
+
+def test_inventory_rejects_count_over_per_size_cap():
+    # `--inventory 45x100000000` used to enumerate every combination and hang
+    # until killed - the count cap refuses it up front instead.
+    with pytest.raises(ValueError):
+        load_plates_from_inventory(405, {45: 100_000_000}, unit="lb")
+
+
+def test_inventory_rejects_search_space_over_combination_cap():
+    # Every count is under the per-size cap, but the combination product
+    # (100^4 = 100M) is way past MAX_SEARCH_COMBINATIONS.
+    with pytest.raises(ValueError):
+        load_plates_from_inventory(405, {45: 99, 35: 99, 25: 99, 10: 99}, unit="lb")
+
+
+def test_inventory_realistic_large_home_gym_still_solves():
+    # The caps must not touch a plausibly big real inventory (6 sizes x 8).
+    inv = {45: 8, 35: 8, 25: 8, 10: 8, 5: 8, 2.5: 8}
+    result = load_plates_from_inventory(405, inv, unit="lb")
+    assert result.exact is True
+
+
+def test_inventory_rejects_non_finite_target_or_bar():
+    with pytest.raises(ValueError):
+        load_plates_from_inventory(float("inf"), {45: 4}, unit="lb")
+    with pytest.raises(ValueError):
+        load_plates_from_inventory(225, {45: 4}, unit="lb", bar=float("nan"))
+    with pytest.raises(ValueError):
+        load_plates_from_inventory(225, {45: 4}, unit="lb", bar=-45)

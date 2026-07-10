@@ -124,10 +124,12 @@ def estimate_one_rm(weight: float, reps: int, unit: str = "lb") -> OneRmEstimate
         unit: display unit only ("lb" or "kg"); the math is unit-agnostic.
 
     Raises:
-        ValueError: if reps < 1 or weight <= 0.
+        ValueError: if reps < 1, or weight isn't a finite number > 0.
     """
     if reps < 1:
         raise ValueError("reps must be >= 1")
+    if not math.isfinite(weight):
+        raise ValueError("weight must be a finite number")
     if weight <= 0:
         raise ValueError("weight must be > 0")
 

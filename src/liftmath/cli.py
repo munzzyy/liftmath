@@ -111,9 +111,11 @@ def cmd_plates(args: argparse.Namespace) -> int:
 
 
 def cmd_standards(args: argparse.Namespace) -> int:
-    bodyweight_kg = _lbs_to_kg(args.bodyweight) if args.unit == "lb" else args.bodyweight
-    total_kg = _lbs_to_kg(args.total) if args.unit == "lb" else args.total
     try:
+        # Inside the try: the lb->kg conversion itself rejects negative input,
+        # and that should print "error: ..." like every other bad-input path.
+        bodyweight_kg = _lbs_to_kg(args.bodyweight) if args.unit == "lb" else args.bodyweight
+        total_kg = _lbs_to_kg(args.total) if args.unit == "lb" else args.total
         result = strength_score(total_kg, bodyweight_kg, args.sex)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
