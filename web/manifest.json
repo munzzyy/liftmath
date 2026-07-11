@@ -1,7 +1,7 @@
 {
   "name": "liftmath - 1RM, plates, strength score",
   "short_name": "liftmath",
-  "description": "Three gym calculators: 1RM consensus, plate loading with a barbell diagram, and Wilks/DOTS/IPF GL strength scores. Free, works offline, no account.",
+  "description": "Gym calculators: 1RM consensus, plate loading with a barbell diagram, Wilks/DOTS/IPF GL strength scores, and world records for powerlifting, strongman, and grip. Free, works offline, no account.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -37,6 +37,11 @@
       "name": "Score",
       "url": "./index.html?tab=score",
       "description": "Wilks / DOTS / IPF GL score"
+    },
+    {
+      "name": "Records",
+      "url": "./index.html?tab=records",
+      "description": "World records: powerlifting, strongman, grip"
     },
     {
       "name": "Convert",

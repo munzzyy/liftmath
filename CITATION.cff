@@ -3,14 +3,15 @@ message: "If you use this software, please cite it as below."
 title: "liftmath"
 abstract: >-
   A simple gym calculator: estimate a one-rep max from a weight x reps set,
-  work out which plates to load for a target barbell weight, and score
-  relative strength across bodyweights with Wilks (original + 2020), DOTS,
-  and IPF GL points. Pure Python standard library, no runtime dependencies.
+  work out which plates to load for a target barbell weight, score relative
+  strength across bodyweights with Wilks (original + 2020), DOTS, and IPF GL
+  points, and look up world records for powerlifting, strongman, and grip
+  sport. Pure Python standard library, no runtime dependencies.
 authors:
   - family-names: "Munz"
     given-names: "Cole"
-version: 2.1.0
-date-released: "2026-07-09"
+version: 2.2.0
+date-released: "2026-07-11"
 url: "https://github.com/munzzyy/liftmath"
 repository-code: "https://github.com/munzzyy/liftmath"
 license-url: "https://github.com/munzzyy/liftmath/blob/main/LICENSE"

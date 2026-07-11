@@ -6,10 +6,13 @@ import { estimateOneRm, HIGH_REP_THRESHOLD } from "./math/one-rep-max.js";
 import { computePlateStack } from "./math/plate-loading.js";
 import { parseInventorySpec, loadPlatesFromInventory } from "./math/plate-inventory.js";
 import { score } from "./math/strength-scores.js";
+import {
+  PL_CLASSES, percentOfRecord, recordsAsOf, searchRecords, weightClassFor,
+} from "./math/records.js";
 import { KG_PER_LB, convertWeight } from "./math/unit-convert.js";
 import { renderBarbellSvg, renderPlateLegend } from "./ui/svg-barbell.js";
 import { wireStepper, minFromInput } from "./ui/steppers.js";
-import { fromUnit, convertDisplayValue, plateTargetUnit } from "./ui/units.js";
+import { fromUnit, toUnit, convertDisplayValue, plateTargetUnit } from "./ui/units.js";
 
 function $(id) {
   return document.getElementById(id);
@@ -75,8 +78,9 @@ applyTheme(currentTheme());
 
 let unit = "lb";
 
-const COARSE_FIELDS = ["onerm-weight", "plates-target", "plates-inventory-bar", "score-total", "convert-weight"];
-const FINE_FIELDS = ["score-bodyweight"];
+const COARSE_FIELDS = ["onerm-weight", "plates-target", "plates-inventory-bar", "score-total",
+  "convert-weight", "records-compare"];
+const FINE_FIELDS = ["score-bodyweight", "records-bodyweight"];
 const COARSE_STEP = { lb: "5", kg: "2.5" };
 const FINE_STEP = { lb: "1", kg: "0.5" };
 
@@ -142,7 +146,7 @@ $("unit-kg").addEventListener("click", () => setUnit("kg"));
 // Tabs
 // ---------------------------------------------------------------------------
 
-const TABS = ["onerm", "plates", "score", "convert"];
+const TABS = ["onerm", "plates", "score", "records", "convert"];
 
 function selectTab(id) {
   for (const t of TABS) {
@@ -373,6 +377,172 @@ function renderScore() {
 ["score-total", "score-bodyweight"].forEach((id) => $(id).addEventListener("input", renderScore));
 
 // ---------------------------------------------------------------------------
+// World records
+// ---------------------------------------------------------------------------
+
+let recordsSport = "powerlifting";
+let recordsSex = "male";
+let recordsLift = "deadlift";
+
+const SCOPE_LABELS = {
+  "all-time": "All-time (any sanctioned federation)",
+  "tested": "Drug-tested meets only",
+  "official": "Official",
+  "unofficial": "Unofficial (well documented, outside a sanctioning body)",
+};
+
+function fillRecordsClassSelect() {
+  const select = $("records-class");
+  const previous = select.value;
+  const sexKey = recordsSex === "male" ? "M" : "F";
+  const options = ['<option value="open">Open (all bodyweights)</option>'];
+  const ceilings = PL_CLASSES[sexKey];
+  ceilings.forEach((ceiling, i) => {
+    options.push(`<option value="${ceiling}">${ceiling} kg</option>`);
+    if (i === ceilings.length - 1) {
+      options.push(`<option value="${ceiling}+">${ceiling}+ kg (superheavy)</option>`);
+    }
+  });
+  select.innerHTML = options.join("");
+  // Keep the selection across a sex switch when the same class exists there.
+  select.value = [...select.options].some((o) => o.value === previous) ? previous : "open";
+}
+
+function fillRecordsEventSelect() {
+  const select = $("records-event");
+  const previous = select.value;
+  const seen = new Set();
+  const options = ['<option value="all">All events</option>'];
+  for (const r of searchRecords({ sport: recordsSport })) {
+    if (seen.has(r.lift)) continue;
+    seen.add(r.lift);
+    options.push(`<option value="${escapeHtml(r.lift)}">${escapeHtml(r.liftDisplay)}</option>`);
+  }
+  select.innerHTML = options.join("");
+  select.value = [...select.options].some((o) => o.value === previous) ? previous : "all";
+}
+
+/** A record's headline value in the app's display unit ("442.5 kg (976 lb)"). */
+function recordValueText(r) {
+  if (r.unit !== "kg") return `${fmt(r.value)} ${r.unit === "m" ? "m" : "s"}`;
+  if (unit === "kg") return `${fmt(r.value)} kg`;
+  return `${fmt(toUnit(r.value, "lb"))} lb (${fmt(r.value)} kg)`;
+}
+
+function recordCard(r, compareKg) {
+  const who = [r.athlete, r.country].filter(Boolean).join(", ");
+  const where = [r.competition || r.federation, r.date].filter(Boolean).join(" - ");
+  // "82.5" reads as a kg class; "u105"/"No. 3"-style labels already read as-is.
+  const cls = r.weightClass
+    ? (/^\d/.test(r.weightClass) ? `${r.weightClass} kg class` : r.weightClass)
+    : "open";
+  const equip = r.equipment ? ` - ${r.equipment}` : "";
+  let html = `<div class="result-hero record-card">
+    <p class="result-label">${escapeHtml(r.liftDisplay)} - ${escapeHtml(cls)}${escapeHtml(equip)}
+      <span class="record-scope">${escapeHtml(SCOPE_LABELS[r.scope] || r.scope)}</span></p>
+    <p class="result-value">${recordValueText(r)}</p>
+    <p class="result-sub">${escapeHtml(who)}<br>${escapeHtml(where)}</p>`;
+  if (compareKg != null && r.unit === "kg") {
+    const pct = percentOfRecord(compareKg, r);
+    const gapKg = r.value - compareKg;
+    const gap = gapKg > 0
+      ? `${fmt(toUnit(gapKg, unit))} ${unit} to go`
+      : "you'd have the record";
+    html += `<div class="record-meter" role="img" aria-label="Your lift is ${fmt(pct)}% of this record">
+      <div class="record-meter-fill" style="width:${Math.min(100, pct).toFixed(1)}%"></div>
+    </div>
+    <p class="result-sub">Your lift: ${fmt(pct)}% of this record (${gap})</p>`;
+  }
+  if (r.source) {
+    html += `<p class="result-sub"><a href="${escapeHtml(r.source)}" target="_blank" rel="noopener">source</a></p>`;
+  }
+  if (r.notes) {
+    html += `<p class="result-sub">${escapeHtml(r.notes)}</p>`;
+  }
+  return html + `</div>`;
+}
+
+function renderRecords() {
+  const resultsEl = $("records-results");
+  const isPl = recordsSport === "powerlifting";
+  $("records-pl-fields").hidden = !isPl;
+  $("records-event-fields").hidden = isPl;
+
+  const compareRaw = parseFloat($("records-compare").value);
+  const compareKg = Number.isFinite(compareRaw) && compareRaw > 0 ? fromUnit(compareRaw, unit) : null;
+
+  let matches;
+  try {
+    if (isPl) {
+      matches = searchRecords({
+        sport: "powerlifting", sex: recordsSex, lift: recordsLift,
+        weightClass: $("records-class").value, equipment: $("records-equip").value,
+      });
+    } else {
+      const event = $("records-event").value;
+      matches = searchRecords({
+        sport: recordsSport, sex: recordsSex,
+        lift: event === "all" ? null : event,
+      });
+    }
+  } catch (err) {
+    resultsEl.innerHTML = `<p class="notice notice-warn">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+
+  if (!matches.length) {
+    resultsEl.innerHTML = `<p class="notice">No record in the bundled snapshot for this
+      combination - not every class/equipment cell has a documented mark.</p>`;
+    return;
+  }
+
+  let html = matches.map((r) => recordCard(r, compareKg)).join("");
+  html += `<p class="hint">Snapshot of ${escapeHtml(recordsAsOf())}. Powerlifting: computed from the
+    public-domain <a href="https://www.openpowerlifting.org" target="_blank" rel="noopener">OpenPowerlifting</a>
+    database - these are the heaviest sanctioned lifts in the data, not any federation's official list.
+    Strongman &amp; grip: curated, each entry linking its source.</p>`;
+  resultsEl.innerHTML = html;
+}
+
+wireChipGroup("records-sport-group", "sport", (value) => {
+  recordsSport = value;
+  if (recordsSport !== "powerlifting") fillRecordsEventSelect();
+  renderRecords();
+});
+
+wireChipGroup("records-sex-group", "sex", (value) => {
+  recordsSex = value;
+  fillRecordsClassSelect();
+  if (recordsSport !== "powerlifting") fillRecordsEventSelect();
+  renderRecords();
+});
+
+wireChipGroup("records-lift-group", "lift", (value) => {
+  recordsLift = value;
+  renderRecords();
+});
+
+// Typing a bodyweight resolves the class for you; picking a class by hand
+// clears the bodyweight box so the two controls never disagree.
+$("records-bodyweight").addEventListener("input", () => {
+  const bw = parseFloat($("records-bodyweight").value);
+  if (Number.isFinite(bw) && bw > 0) {
+    $("records-class").value = weightClassFor(fromUnit(bw, unit), recordsSex);
+  }
+  renderRecords();
+});
+$("records-class").addEventListener("change", () => {
+  $("records-bodyweight").value = "";
+  renderRecords();
+});
+$("records-equip").addEventListener("change", renderRecords);
+$("records-event").addEventListener("change", renderRecords);
+$("records-compare").addEventListener("input", renderRecords);
+
+fillRecordsClassSelect();
+fillRecordsEventSelect();
+
+// ---------------------------------------------------------------------------
 // Unit convert
 // ---------------------------------------------------------------------------
 
@@ -410,12 +580,14 @@ function renderAll() {
   renderOneRm();
   renderPlates();
   renderScore();
+  renderRecords();
   renderConvert();
 }
 
 [
   "onerm-weight", "onerm-reps", "plates-target", "plates-inventory-bar",
-  "score-total", "score-bodyweight", "convert-weight",
+  "score-total", "score-bodyweight", "records-bodyweight", "records-compare",
+  "convert-weight",
 ].forEach(wireStepperFor);
 
 // Honor manifest.json's shortcuts (?tab=onerm|plates|score), e.g. from a

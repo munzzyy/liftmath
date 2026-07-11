@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>liftmath - 1RM, plates, strength score</title>
-<meta name="description" content="Three gym calculators: 1RM consensus, plate loading with a barbell diagram, and Wilks/DOTS/IPF GL strength scores. Free, works offline, no account, no ads." />
+<meta name="description" content="Gym calculators: 1RM consensus, plate loading with a barbell diagram, Wilks/DOTS/IPF GL strength scores, and world records for powerlifting, strongman, and grip. Free, works offline, no account, no ads." />
 <meta name="theme-color" content="#101216" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-fWIjZPuIDRs11lC0LAjuD/hjoJVyn2ZdQ9oS2icIdXg='; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" />
 <script>
@@ -38,6 +38,7 @@
   <button class="tab" role="tab" id="tab-btn-onerm" aria-controls="tool-onerm" aria-selected="true" tabindex="0">1RM</button>
   <button class="tab" role="tab" id="tab-btn-plates" aria-controls="tool-plates" aria-selected="false" tabindex="-1">Plates</button>
   <button class="tab" role="tab" id="tab-btn-score" aria-controls="tool-score" aria-selected="false" tabindex="-1">Score</button>
+  <button class="tab" role="tab" id="tab-btn-records" aria-controls="tool-records" aria-selected="false" tabindex="-1">Records</button>
   <button class="tab" role="tab" id="tab-btn-convert" aria-controls="tool-convert" aria-selected="false" tabindex="-1">Convert</button>
 </nav>
 
@@ -148,6 +149,83 @@
     </div>
 
     <div class="results" id="score-results" aria-live="polite"></div>
+  </section>
+
+  <!-- ============ World records ============ -->
+  <section class="tool-panel" id="tool-records" role="tabpanel" aria-labelledby="tab-btn-records" tabindex="0" hidden>
+    <h2 id="records-heading">World records</h2>
+    <p class="disclaimer" id="records-disclaimer">Powerlifting records are computed from the OpenPowerlifting
+      database (all-time = heaviest sanctioned lift in any federation; tested = drug-tested meets only).
+      Strongman and grip records are hand-curated with a citation per entry. A bundled snapshot can trail
+      the current record.</p>
+
+    <div class="field">
+      <span id="records-sport-label">Sport</span>
+      <div class="chip-row" role="group" aria-labelledby="records-sport-label" id="records-sport-group">
+        <button type="button" class="chip" data-sport="powerlifting" aria-pressed="true" id="records-sport-powerlifting-btn">Powerlifting</button>
+        <button type="button" class="chip" data-sport="strongman" aria-pressed="false" id="records-sport-strongman-btn">Strongman</button>
+        <button type="button" class="chip" data-sport="grip" aria-pressed="false" id="records-sport-grip-btn">Grip</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span id="records-sex-label">Sex</span>
+      <div class="radio-row" role="radiogroup" aria-labelledby="records-sex-label" id="records-sex-group">
+        <button type="button" class="chip" data-sex="male" aria-pressed="true" id="records-sex-male-btn">Male</button>
+        <button type="button" class="chip" data-sex="female" aria-pressed="false" id="records-sex-female-btn">Female</button>
+      </div>
+    </div>
+
+    <div id="records-pl-fields">
+      <div class="field">
+        <span id="records-lift-label">Lift</span>
+        <div class="chip-row" role="group" aria-labelledby="records-lift-label" id="records-lift-group">
+          <button type="button" class="chip" data-lift="squat" aria-pressed="false" id="records-lift-squat-btn">Squat</button>
+          <button type="button" class="chip" data-lift="bench" aria-pressed="false" id="records-lift-bench-btn">Bench</button>
+          <button type="button" class="chip" data-lift="deadlift" aria-pressed="true" id="records-lift-deadlift-btn">Deadlift</button>
+          <button type="button" class="chip" data-lift="total" aria-pressed="false" id="records-lift-total-btn">Total</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="records-equip" id="records-equip-label">Equipment</label>
+        <select id="records-equip">
+          <option value="raw" selected>Raw</option>
+          <option value="wraps">Raw + wraps</option>
+          <option value="single-ply">Single-ply</option>
+          <option value="multi-ply">Multi-ply</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="records-class" id="records-class-label">Weight class</label>
+        <select id="records-class"><!-- options filled per sex by app.js --></select>
+      </div>
+      <div class="field">
+        <label for="records-bodyweight" id="records-bodyweight-label">Or your bodyweight (picks the class)</label>
+        <div class="stepper-row">
+          <button class="stepper-btn" id="records-bodyweight-dec" aria-label="Decrease bodyweight">&minus;</button>
+          <input type="number" id="records-bodyweight" inputmode="decimal" min="1" step="1" />
+          <button class="stepper-btn" id="records-bodyweight-inc" aria-label="Increase bodyweight">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="records-event-fields" hidden>
+      <div class="field">
+        <label for="records-event" id="records-event-label">Event</label>
+        <select id="records-event"><!-- options filled per sport by app.js --></select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="records-compare" id="records-compare-label">Your lift (optional - shown as % of the record)</label>
+      <div class="stepper-row">
+        <button class="stepper-btn" id="records-compare-dec" aria-label="Decrease your lift">&minus;</button>
+        <input type="number" id="records-compare" inputmode="decimal" min="0" step="5" />
+        <button class="stepper-btn" id="records-compare-inc" aria-label="Increase your lift">+</button>
+      </div>
+    </div>
+
+    <div class="results" id="records-results" aria-live="polite"></div>
   </section>
 
   <!-- ============ Unit convert ============ -->

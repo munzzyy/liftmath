@@ -9,7 +9,12 @@ Three things, done well, that you actually reach for at the gym:
   - score relative strength across bodyweights with Wilks (original + 2020),
     DOTS, and IPF GL points.
 
-Plus one small utility the other three lean on: exact lb<->kg conversion
+Plus one lookup: world records for powerlifting (computed from the
+OpenPowerlifting public-domain database), strongman, and grip sport
+(hand-curated with citations), searchable by lift/event, sex, weight class,
+and equipment (`search_records`, `percent_of_record`, `weight_class_for`).
+
+And one small utility the others lean on: exact lb<->kg conversion
 (`convert_weight`, `lbs_to_kg`, `kg_to_lbs`), the same 0.45359237 factor
 `standards.py` already needed for its own unit handling.
 
@@ -26,6 +31,13 @@ from liftmath.plates import (
     load_plates,
     load_plates_from_inventory,
 )
+from liftmath.records import (
+    Record,
+    percent_of_record,
+    records_as_of,
+    search_records,
+    weight_class_for,
+)
 from liftmath.standards import (
     StrengthScore,
     dots_score,
@@ -35,7 +47,7 @@ from liftmath.standards import (
     wilks_score,
 )
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 
 __all__ = [
     "estimate_one_rm",
@@ -46,6 +58,11 @@ __all__ = [
     "InventoryPlateLoad",
     "score",
     "StrengthScore",
+    "search_records",
+    "Record",
+    "percent_of_record",
+    "weight_class_for",
+    "records_as_of",
     "wilks_score",
     "wilks_original_score",
     "dots_score",

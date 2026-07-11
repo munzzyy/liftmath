@@ -1,0 +1,548 @@
+[
+  {
+    "args": {
+      "bodyweightKg": 50,
+      "sex": "male"
+    },
+    "expected": "52",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "bodyweightKg": 52,
+      "sex": "male"
+    },
+    "expected": "52",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "bodyweightKg": 52.1,
+      "sex": "male"
+    },
+    "expected": "56",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "bodyweightKg": 82.5,
+      "sex": "male"
+    },
+    "expected": "82.5",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "bodyweightKg": 83,
+      "sex": "male"
+    },
+    "expected": "90",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "bodyweightKg": 140,
+      "sex": "male"
+    },
+    "expected": "140",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "bodyweightKg": 140.5,
+      "sex": "male"
+    },
+    "expected": "140+",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "bodyweightKg": 200,
+      "sex": "male"
+    },
+    "expected": "140+",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "bodyweightKg": 44,
+      "sex": "female"
+    },
+    "expected": "44",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "bodyweightKg": 44.1,
+      "sex": "female"
+    },
+    "expected": "48",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "bodyweightKg": 63,
+      "sex": "female"
+    },
+    "expected": "67.5",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "bodyweightKg": 110,
+      "sex": "female"
+    },
+    "expected": "110",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "bodyweightKg": 111,
+      "sex": "female"
+    },
+    "expected": "110+",
+    "fn": "weightClassFor"
+  },
+  {
+    "args": {
+      "equipment": "raw",
+      "lift": "deadlift",
+      "sex": "male",
+      "sport": "powerlifting",
+      "weightClass": "100"
+    },
+    "expected": [
+      {
+        "athlete": "Krzysztof Wierzbicki",
+        "bodyweightKg": 97.9,
+        "competition": "Siberian Championships",
+        "confidence": null,
+        "country": "Russia",
+        "date": "2020-03-08",
+        "equipment": "raw",
+        "federation": "NAP",
+        "lift": "deadlift",
+        "liftDisplay": "Deadlift",
+        "notes": null,
+        "scope": "all-time",
+        "sex": "M",
+        "source": null,
+        "sport": "powerlifting",
+        "unit": "kg",
+        "value": 433.5,
+        "weightClass": "100"
+      },
+      {
+        "athlete": "Hunter Olsen",
+        "bodyweightKg": 96.9,
+        "competition": "Age Division Nationals",
+        "confidence": null,
+        "country": "USA",
+        "date": "2026-05-19",
+        "equipment": "raw",
+        "federation": "AMP",
+        "lift": "deadlift",
+        "liftDisplay": "Deadlift",
+        "notes": null,
+        "scope": "tested",
+        "sex": "M",
+        "source": null,
+        "sport": "powerlifting",
+        "unit": "kg",
+        "value": 400.5,
+        "weightClass": "100"
+      }
+    ],
+    "fn": "searchRecords"
+  },
+  {
+    "args": {
+      "equipment": "raw",
+      "lift": "total",
+      "scope": "tested",
+      "sex": "female",
+      "sport": "powerlifting",
+      "weightClass": "open"
+    },
+    "expected": [
+      {
+        "athlete": "Brittany Schlater",
+        "bodyweightKg": 131.05,
+        "competition": "World Classic Powerlifting Championships",
+        "confidence": null,
+        "country": "Lithuania",
+        "date": "2026-06-13",
+        "equipment": "raw",
+        "federation": "IPF",
+        "lift": "total",
+        "liftDisplay": "Total",
+        "notes": null,
+        "scope": "tested",
+        "sex": "F",
+        "source": null,
+        "sport": "powerlifting",
+        "unit": "kg",
+        "value": 756.5,
+        "weightClass": null
+      }
+    ],
+    "fn": "searchRecords"
+  },
+  {
+    "args": {
+      "bodyweightKg": 91.7,
+      "equipment": "single-ply",
+      "lift": "bench",
+      "sex": "male",
+      "sport": "powerlifting"
+    },
+    "expected": [
+      {
+        "athlete": "Sebastian D\u0105browski",
+        "bodyweightKg": 97.7,
+        "competition": "Mistrzostwa Polski",
+        "confidence": null,
+        "country": "Poland",
+        "date": "2025-04-26",
+        "equipment": "single-ply",
+        "federation": "WPA",
+        "lift": "bench",
+        "liftDisplay": "Bench",
+        "notes": null,
+        "scope": "all-time",
+        "sex": "M",
+        "source": null,
+        "sport": "powerlifting",
+        "unit": "kg",
+        "value": 375.0,
+        "weightClass": "100"
+      },
+      {
+        "athlete": "Greg Powell",
+        "bodyweightKg": 100.0,
+        "competition": "Tourn 18 State BP & DL",
+        "confidence": null,
+        "country": "USA",
+        "date": "2017-06-10",
+        "equipment": "single-ply",
+        "federation": "WABDL",
+        "lift": "bench",
+        "liftDisplay": "Bench",
+        "notes": null,
+        "scope": "tested",
+        "sex": "M",
+        "source": null,
+        "sport": "powerlifting",
+        "unit": "kg",
+        "value": 365.0,
+        "weightClass": "100"
+      }
+    ],
+    "fn": "searchRecords"
+  },
+  {
+    "args": {
+      "sex": "female",
+      "sport": "strongman"
+    },
+    "expected": [
+      {
+        "athlete": "Nicole Genrich",
+        "bodyweightKg": null,
+        "competition": "Log Deadlift Stone Championships, Melbourne",
+        "confidence": "high",
+        "country": "Australia",
+        "date": "2024-05",
+        "equipment": null,
+        "federation": "Guinness World Records",
+        "lift": "atlas-stone",
+        "liftDisplay": "Atlas Stone (heaviest lifted)",
+        "notes": "Open/absolute record; lighter weight-class marks (Moore 171, Lovelace ~147 u64) are separate.",
+        "scope": "official",
+        "sex": "F",
+        "source": "https://www.guinnessworldrecords.com/news/2025/10/aussie-strongwoman-smashes-record-by-lifting-atlas-stone-heavier-than-a-panda",
+        "sport": "strongman",
+        "unit": "kg",
+        "value": 180,
+        "weightClass": null
+      },
+      {
+        "athlete": "Annabelle Chapman",
+        "bodyweightKg": null,
+        "competition": "Tamworth's Strongest Man, Staffordshire, England",
+        "confidence": "medium",
+        "country": "UK",
+        "date": "2021",
+        "equipment": null,
+        "federation": "Tamworth's Strongest Man",
+        "lift": "axle-press",
+        "liftDisplay": "Axle Press",
+        "notes": "Sources disagree on the exact year (2021 vs 2023), so year only. Broke Samantha Coleman's 118.2 (2017).",
+        "scope": "official",
+        "sex": "F",
+        "source": "https://fitnessvolt.com/annabelle-chapman-290-3lb-axle-press-record/",
+        "sport": "strongman",
+        "unit": "kg",
+        "value": 131.7,
+        "weightClass": null
+      },
+      {
+        "athlete": "Lucy Underdown",
+        "bodyweightKg": null,
+        "competition": "2024 World Deadlift Championship, Las Vegas",
+        "confidence": "high",
+        "country": "UK",
+        "date": "2024-09-28",
+        "equipment": null,
+        "federation": "Giants Live",
+        "lift": "deadlift",
+        "liftDisplay": "Deadlift (standard bar)",
+        "notes": "Her third time breaking her own record, after 318 in 2023.",
+        "scope": "official",
+        "sex": "F",
+        "source": "https://fitnessvolt.com/lucy-underdown-325-kg-deadlift-world-record/",
+        "sport": "strongman",
+        "unit": "kg",
+        "value": 325,
+        "weightClass": null
+      },
+      {
+        "athlete": "Lucy Underdown",
+        "bodyweightKg": null,
+        "competition": "2026 Arnold Strongwoman Classic, Columbus, Ohio",
+        "confidence": "medium",
+        "country": "UK",
+        "date": "2026-03-05",
+        "equipment": null,
+        "federation": "Arnold Strongwoman Classic",
+        "lift": "elephant-bar-deadlift",
+        "liftDisplay": "Elephant Bar Deadlift (no suit)",
+        "notes": "Very recent mark with limited coverage so far; progression 306.6 (2025 Arnold) to 318 (2026 Arnold).",
+        "scope": "official",
+        "sex": "F",
+        "source": "https://fitnessvolt.com/lucy-underdown-elephant-bar-deadlift-world-record-2026-arnold-strongwoman-classic/",
+        "sport": "strongman",
+        "unit": "kg",
+        "value": 318,
+        "weightClass": null
+      },
+      {
+        "athlete": "Andrea Thompson",
+        "bodyweightKg": null,
+        "competition": "SBD World Log Lift Championships, Ipswich, UK",
+        "confidence": "high",
+        "country": "UK",
+        "date": "2022-10-09",
+        "equipment": null,
+        "federation": "SBD World Log Lift Championships / Guinness World Records",
+        "lift": "log-lift",
+        "liftDisplay": "Log Lift",
+        "notes": "Broke her own 135 from 2020.",
+        "scope": "official",
+        "sex": "F",
+        "source": "https://www.guinnessworldrecords.com/world-records/632302-heaviest-log-lift-female",
+        "sport": "strongman",
+        "unit": "kg",
+        "value": 140,
+        "weightClass": null
+      }
+    ],
+    "fn": "searchRecords"
+  },
+  {
+    "args": {
+      "lift": "deadlift",
+      "sex": "male",
+      "sport": "strongman"
+    },
+    "expected": [
+      {
+        "athlete": "Dan Benson",
+        "bodyweightKg": null,
+        "competition": "2023 Blackpool's Strongest Man",
+        "confidence": "medium",
+        "country": "UK",
+        "date": "2023-08-26",
+        "equipment": null,
+        "federation": "Blackpool's Strongest Man",
+        "lift": "deadlift",
+        "liftDisplay": "Deadlift (standard bar, suit + straps)",
+        "notes": "First under-90kg strongman past 400; some sources give 401.55.",
+        "scope": "official",
+        "sex": "M",
+        "source": "https://fitnessvolt.com/dan-benson-401-5-kg-deadlift-world-record/",
+        "sport": "strongman",
+        "unit": "kg",
+        "value": 401.5,
+        "weightClass": "u90"
+      },
+      {
+        "athlete": "Hafthor Julius Bjornsson",
+        "bodyweightKg": null,
+        "competition": "World Deadlift Championships 2025, Birmingham, UK",
+        "confidence": "high",
+        "country": "Iceland",
+        "date": "2025-09-06",
+        "equipment": null,
+        "federation": "Giants Live / Guinness World Records",
+        "lift": "deadlift",
+        "liftDisplay": "Deadlift (standard bar, suit + straps)",
+        "notes": "Suit and straps are permitted under strongman deadlift rules. Lineage: Eddie Hall 500 (2016), Bjornsson 501 (2020), 505 (Jul 2025), 510 (Sep 2025); Bjornsson's 515 attempt in Jul 2026 failed.",
+        "scope": "official",
+        "sex": "M",
+        "source": "https://www.guinnessworldrecords.com/world-records/heaviest-deadlift",
+        "sport": "strongman",
+        "unit": "kg",
+        "value": 510,
+        "weightClass": null
+      }
+    ],
+    "fn": "searchRecords"
+  },
+  {
+    "args": {
+      "lift": "silver-bullet-hold",
+      "sport": "grip"
+    },
+    "expected": [
+      {
+        "athlete": "Amy Wattles",
+        "bodyweightKg": null,
+        "competition": null,
+        "confidence": "high",
+        "country": "USA",
+        "date": "2014-01-26",
+        "equipment": null,
+        "federation": "IronMind",
+        "lift": "silver-bullet-hold",
+        "liftDisplay": "CoC Silver Bullet Hold",
+        "notes": "The women's ladder uses the No. 2 gripper.",
+        "scope": "official",
+        "sex": "F",
+        "source": "https://ironmind.com/certification/coc-silver-bullet/rules-and-world-records/",
+        "sport": "grip",
+        "unit": "s",
+        "value": 45.42,
+        "weightClass": "No. 2"
+      },
+      {
+        "athlete": "Dmitriy Suhovarov",
+        "bodyweightKg": null,
+        "competition": null,
+        "confidence": "high",
+        "country": "Russia",
+        "date": "2016-05-14",
+        "equipment": null,
+        "federation": "IronMind",
+        "lift": "silver-bullet-hold",
+        "liftDisplay": "CoC Silver Bullet Hold",
+        "notes": "Timed hold with the No. 3 gripper.",
+        "scope": "official",
+        "sex": "M",
+        "source": "https://ironmind.com/certification/coc-silver-bullet/rules-and-world-records/",
+        "sport": "grip",
+        "unit": "s",
+        "value": 58.53,
+        "weightClass": "No. 3"
+      },
+      {
+        "athlete": "Tanner Merkle",
+        "bodyweightKg": null,
+        "competition": null,
+        "confidence": "high",
+        "country": "USA",
+        "date": "2019-01-27",
+        "equipment": null,
+        "federation": "IronMind",
+        "lift": "silver-bullet-hold",
+        "liftDisplay": "CoC Silver Bullet Hold",
+        "notes": "Timed hold with the No. 4 gripper - a separate ladder from the No. 3.",
+        "scope": "official",
+        "sex": "M",
+        "source": "https://ironmind.com/certification/coc-silver-bullet/rules-and-world-records/",
+        "sport": "grip",
+        "unit": "s",
+        "value": 30.98,
+        "weightClass": "No. 4"
+      }
+    ],
+    "fn": "searchRecords"
+  },
+  {
+    "args": {
+      "lift": "rolling-thunder",
+      "sex": "female",
+      "sport": "grip"
+    },
+    "expected": [
+      {
+        "athlete": "Lyudmila Gaiduchenko",
+        "bodyweightKg": null,
+        "competition": null,
+        "confidence": "high",
+        "country": "Ukraine",
+        "date": "2012-09-22",
+        "equipment": null,
+        "federation": "IronMind",
+        "lift": "rolling-thunder",
+        "liftDisplay": "Rolling Thunder One-Hand Deadlift",
+        "notes": "IronMind's listed record; see the newer unofficial 80.0 by Hafsa Mason.",
+        "scope": "official",
+        "sex": "F",
+        "source": "https://ironmind.com/product-info/certification/rolling-thunder/rules-and-world-records/",
+        "sport": "grip",
+        "unit": "kg",
+        "value": 77.2,
+        "weightClass": null
+      },
+      {
+        "athlete": "Hafsa Mason",
+        "bodyweightKg": null,
+        "competition": "Hands of Doom II",
+        "confidence": "medium",
+        "country": "USA",
+        "date": "2024-08-21",
+        "equipment": null,
+        "federation": "West Coast Arm Sports",
+        "lift": "rolling-thunder",
+        "liftDisplay": "Rolling Thunder One-Hand Deadlift",
+        "notes": "Heaviest documented mark, set outside IronMind's own list, which still shows Gaiduchenko's 77.2 - a genuine cross-federation discrepancy.",
+        "scope": "unofficial",
+        "sex": "F",
+        "source": "https://en.wikipedia.org/wiki/Rolling_Thunder_(exercise)",
+        "sport": "grip",
+        "unit": "kg",
+        "value": 80.0,
+        "weightClass": null
+      }
+    ],
+    "fn": "searchRecords"
+  },
+  {
+    "args": {
+      "liftKg": 100.0,
+      "record": {
+        "athlete": "Alexey Tyukalov",
+        "bodyweightKg": null,
+        "competition": null,
+        "confidence": "high",
+        "country": "Russia",
+        "date": "2013-06-30",
+        "equipment": null,
+        "federation": "IronMind",
+        "lift": "rolling-thunder",
+        "liftDisplay": "Rolling Thunder One-Hand Deadlift",
+        "notes": "On the current V3 handle; higher marks on the discontinued V1/V2 handles were nullified when the design changed.",
+        "scope": "official",
+        "sex": "M",
+        "source": "https://ironmind.com/product-info/certification/rolling-thunder/rules-and-world-records/",
+        "sport": "grip",
+        "unit": "kg",
+        "value": 130.5,
+        "weightClass": null
+      }
+    },
+    "expected": 76.62835249042146,
+    "fn": "percentOfRecord"
+  }
+]

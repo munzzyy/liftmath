@@ -17,10 +17,14 @@ Three tools:
 - **Plates**: what to hang on the bar for a target weight.
 - **Strength score**: Wilks, DOTS, and IPF GL points, so you can compare across bodyweights.
 
+Plus one lookup: **Records** - world records for powerlifting, strongman, and grip sport,
+searchable by lift or event, sex, weight class, and equipment, with your own lift shown as a
+percentage of the record.
+
 That's it. It used to do a lot more; it does less now, on purpose. Every number traces back to a
-named formula, and you can read the whole thing in a sitting. There's also a small lb/kg
-converter (`convert`) bolted on, since plates and strength score already needed exact unit
-conversion internally - it's a utility, not a fourth tool.
+named formula or a cited record, and you can read the whole thing in a sitting. There's also a
+small lb/kg converter (`convert`) bolted on, since plates and strength score already needed exact
+unit conversion internally - it's a utility, not another tool.
 
 The fastest way in is the web app: nothing to install, works on your phone at the gym, offline,
 and the barbell loads itself as you type: **https://munzzyy.github.io/liftmath/**. Everything below
@@ -118,6 +122,33 @@ Relative-strength scores - 1200lb total @ 200lb bodyweight (male):
 All four are fit to different samples and disagree slightly, especially at the extremes of the
 bodyweight range. Treat them as independent opinions, not one ground truth.
 
+### Records
+
+World records, bundled as a dated snapshot so lookups work offline like everything else here.
+Powerlifting records are computed from the OpenPowerlifting project's public-domain database of
+~4M sanctioned meet results, in two scopes: all-time (heaviest ever done in any sanctioned
+federation) and tested (drug-tested meets only). Strongman and grip sport have no open database
+anywhere, so those records are hand-curated, each entry carrying its own citation URL.
+
+```
+$ liftmath records --sport powerlifting --lift deadlift --sex male --bodyweight 220 --equip raw --compare 500
+World records matching your filters (snapshot of 2026-07-11):
+  ...
+  [powerlifting] Deadlift 100 M raw (all-time)
+      433.5kg (956lb)    Krzysztof Wierzbicki  (Siberian Championships, 2020-03-08)
+      your 500lb = 52.3% of this record (456lb to go)
+  [powerlifting] Deadlift 100 M raw (tested)
+      400.5kg (883lb)    Hunter Olsen  (Age Division Nationals, 2026-05-19)
+      your 500lb = 56.6% of this record (383lb to go)
+```
+
+Pass `--class` directly (`82.5`, `140+`, `open`) or `--bodyweight` and it resolves the
+traditional class for you. `--sport strongman` and `--sport grip` cover the events with a real
+documented record (log lift, atlas stone, keg toss, Rolling Thunder, Apollon's Axle, two hands
+pinch, ...). `--json` carries the source URL, sanctioning body, and confidence grade for every
+curated entry. Powerlifting rows are the empirical maxima in the data, NOT any federation's
+official record list - federations curate those separately and reset them on rule changes.
+
 ### Convert
 
 A plain lb/kg conversion, using the exact international avoirdupois pound (1 lb = 0.45359237 kg),
@@ -156,6 +187,8 @@ from liftmath import (
     score,                                                 # all four scores at once
     wilks_score, wilks_original_score,                     # Wilks 2020 / original
     dots_score, ipf_gl_points,                             # DOTS / IPF GL points
+    search_records, weight_class_for, percent_of_record,   # world-record lookup
+    records_as_of,                                         # dataset snapshot date
     lbs_to_kg, kg_to_lbs, convert_weight,                  # exact lb/kg conversion
     to_dict, to_json,                                      # serialize any result
 )
@@ -171,7 +204,7 @@ print(to_json(estimate_one_rm(225, 5, unit="lb")))
 ```
 
 See the module docstrings in `src/liftmath/` for the details: `onerm.py`, `plates.py`, `standards.py`,
-`convert.py`.
+`records.py`, `convert.py`.
 
 ## Where the numbers come from
 
@@ -190,6 +223,17 @@ conventions: the actual formulas federations use, fit by regression to real comp
 not "evidence" in the causal sense. The Wilks and DOTS coefficient tables are cross-checked against
 OpenPowerlifting's implementations; IPF GL came straight from the IPF's own coefficients PDF.
 `standards.py` has the full citations and a note on when the IPF table is due to refresh.
+
+The world records come in two layers. Powerlifting is computed by `tools/build_records.py` from
+the OpenPowerlifting project's bulk CSV (public domain, refreshed daily -
+[openpowerlifting.org](https://www.openpowerlifting.org)): the best sanctioned lift per sex,
+equipment, traditional weight class, and lift, in all-time and drug-tested scopes, with doping
+disqualifications excluded. Strongman and grip sport publish no machine-readable records at all,
+so `tools/data/curated_records.json` holds hand-verified entries - each with a citation URL,
+sanctioning body, and a confidence grade - and its header documents what was deliberately left
+out (events with no standardized implement, or marks with no verifiable source). The bundle is a
+dated snapshot; records move, so `tools/build_records.py`'s docstring explains how to regenerate
+it from a fresh CSV.
 
 The lb/kg conversion uses the exact international avoirdupois pound (1 lb = 0.45359237 kg, fixed
 by the 1959 international yard-and-pound agreement), not a rounded approximation. It's the same

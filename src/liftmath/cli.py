@@ -5,6 +5,8 @@ Subcommands:
     plates      Plate-loading math for a target barbell weight (add --inventory for a
                 finite per-side plate count instead of an unlimited supply)
     standards   Relative-strength scoring: Wilks (original + 2020), DOTS, IPF GL points
+    records     Search bundled world records (powerlifting / strongman / grip) by
+                lift or event, sex, weight class or bodyweight, and equipment
     convert     Convert a weight between lb and kg (exact avoirdupois pound)
 
 All loads are unit-agnostic (kg or lb); pass --unit. Pass --json (before or after
@@ -23,6 +25,7 @@ from liftmath.convert import KG_PER_LB, convert_weight
 from liftmath.convert import lbs_to_kg as _lbs_to_kg
 from liftmath.onerm import estimate_one_rm
 from liftmath.plates import PRESETS, _parse_inventory_spec, load_plates, load_plates_from_inventory
+from liftmath.records import percent_of_record, records_as_of, search_records
 from liftmath.standards import score as strength_score
 
 
@@ -144,6 +147,64 @@ def cmd_standards(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_records(args: argparse.Namespace) -> int:
+    bodyweight_kg = None
+    if args.bodyweight is not None:
+        bodyweight_kg = _lbs_to_kg(args.bodyweight) if args.unit == "lb" else args.bodyweight
+    compare_kg = None
+    if args.compare is not None:
+        compare_kg = _lbs_to_kg(args.compare) if args.unit == "lb" else args.compare
+
+    try:
+        matches = search_records(sport=args.sport, lift=args.lift, sex=args.sex,
+                                 weight_class=args.weight_class, bodyweight_kg=bodyweight_kg,
+                                 equipment=args.equip, scope=args.scope)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json({"as_of": records_as_of(), "matches": matches}))
+        return 0
+
+    if not matches:
+        print("No records match those filters. Lift/event keys are e.g. squat, bench, deadlift,")
+        print("total (powerlifting) or event keys like log-lift, atlas-stone, two-hands-pinch -")
+        print("run with just --sport strongman or --sport grip to list a sport's events.")
+        return 0
+
+    if len(matches) > 40 and not args.all:
+        print(f"{len(matches)} records match - narrow with --sport/--lift/--sex/--class/--equip,")
+        print("or pass --all (or --json) to print everything.")
+        return 0
+
+    print(f"World records matching your filters (snapshot of {records_as_of()}):")
+    print("  Powerlifting rows are computed from the OpenPowerlifting database - all-time =")
+    print("  any sanctioned federation, tested = drug-tested meets only. Strongman and grip")
+    print("  are curated with per-entry citations (--json carries the source URLs).")
+    print("-" * 84)
+    for r in matches:
+        if r.unit == "kg":
+            value = f"{r.value:g}kg ({r.value / KG_PER_LB:.0f}lb)" if args.unit == "lb" else f"{r.value:g}kg"
+        else:
+            value = f"{r.value:g}{r.unit}"
+        cls = f" {r.weight_class}" if r.weight_class else " open"
+        equip = f" {r.equipment}" if r.equipment else ""
+        detail = ", ".join(x for x in (r.competition or r.federation, r.date) if x)
+        print(f"  [{r.sport}] {r.lift_display}{cls} {r.sex}{equip} ({r.scope})")
+        print(f"      {value:<18} {r.athlete}  ({detail})")
+        if compare_kg is not None and r.unit == "kg":
+            pct = percent_of_record(compare_kg, r)
+            gap = r.value - compare_kg
+            gap_txt = f"{gap:g}kg" if args.unit == "kg" else f"{gap / KG_PER_LB:.0f}lb"
+            print(f"      your {args.compare:g}{args.unit} = {pct:.1f}% of this record"
+                  + (f" ({gap_txt} to go)" if gap > 0 else " - you'd have the record"))
+    print("-" * 84)
+    print("Records move; a bundled snapshot can trail the current record. Official federation")
+    print("lists (e.g. the IPF's) are curated separately and differ from all-time-in-the-data.")
+    return 0
+
+
 def cmd_convert(args: argparse.Namespace) -> int:
     try:
         result = convert_weight(args.weight, unit=args.unit)
@@ -210,6 +271,29 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--sex", required=True, choices=["male", "female"])
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_standards)
+
+    s = sub.add_parser("records", help="search world records: powerlifting/strongman/grip",
+                       parents=[json_parent])
+    s.add_argument("--sport", choices=["powerlifting", "strongman", "grip"])
+    s.add_argument("--lift", "--event", dest="lift",
+                   help="lift or event key: squat/bench/deadlift/total, log-lift, atlas-stone, "
+                        "rolling-thunder, ... (list a sport's events with just --sport)")
+    s.add_argument("--sex", choices=["male", "female"])
+    s.add_argument("--class", dest="weight_class", metavar="CLASS",
+                   help="weight class label: e.g. 82.5, 140+, u105, or 'open'")
+    s.add_argument("--bodyweight", type=float,
+                   help="your bodyweight (in --unit) - resolves the weight class for you "
+                        "(powerlifting; needs --sex)")
+    s.add_argument("--equip", choices=["raw", "wraps", "single-ply", "multi-ply"],
+                   help="powerlifting equipment filter")
+    s.add_argument("--scope", choices=["all-time", "tested", "official", "unofficial"],
+                   help="powerlifting: all-time (any sanctioned fed) or tested (drug-tested "
+                        "meets); strongman/grip: official or unofficial")
+    s.add_argument("--compare", type=float, metavar="WEIGHT",
+                   help="your lift (in --unit) - shown as %% of each matching record")
+    s.add_argument("--all", action="store_true", help="print every match, however many")
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.set_defaults(func=cmd_records)
 
     s = sub.add_parser("convert", help="convert a weight between lb and kg", parents=[json_parent])
     s.add_argument("--weight", type=float, required=True)

@@ -219,6 +219,58 @@ def test_convert_bad_unit_errors(capsys):
         run(capsys, "convert", "--weight", "100", "--unit", "stone")
 
 
+# --- records ---
+
+def test_records_powerlifting_class_lookup(capsys):
+    code, out, _ = run(capsys, "records", "--sport", "powerlifting", "--lift", "deadlift",
+                       "--sex", "male", "--class", "100", "--equip", "raw", "--unit", "kg")
+    assert code == 0
+    assert "[powerlifting] Deadlift 100 M raw (all-time)" in out
+    assert "(tested)" in out
+
+
+def test_records_bodyweight_resolves_class_in_lb(capsys):
+    # 220lb ~ 99.8kg -> the 100kg class
+    code, out, _ = run(capsys, "records", "--sport", "powerlifting", "--lift", "deadlift",
+                       "--sex", "male", "--bodyweight", "220", "--equip", "raw")
+    assert code == 0
+    assert "Deadlift 100 M raw" in out
+
+
+def test_records_compare_shows_percent(capsys):
+    code, out, _ = run(capsys, "records", "--sport", "grip", "--lift", "rolling-thunder",
+                       "--sex", "male", "--compare", "65.25", "--unit", "kg")
+    assert code == 0
+    assert "50.0% of this record" in out
+
+
+def test_records_json_carries_sources(capsys):
+    code, out, _ = run(capsys, "records", "--sport", "strongman", "--sex", "female", "--json")
+    assert code == 0
+    data = json.loads(out)
+    assert data["as_of"]
+    assert all(m["source"].startswith("http") for m in data["matches"])
+
+
+def test_records_conflicting_filters_error(capsys):
+    code, _, err = run(capsys, "records", "--sex", "male", "--class", "100",
+                       "--bodyweight", "220")
+    assert code == 1
+    assert "error" in err
+
+
+def test_records_too_many_matches_hint(capsys):
+    code, out, _ = run(capsys, "records")
+    assert code == 0
+    assert "narrow with" in out
+
+
+def test_records_no_match_message(capsys):
+    code, out, _ = run(capsys, "records", "--sport", "grip", "--lift", "no-such-event")
+    assert code == 0
+    assert "No records match" in out
+
+
 # --- top level ---
 
 def test_no_subcommand_errors(capsys):

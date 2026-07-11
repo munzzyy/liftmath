@@ -32,7 +32,7 @@ FIXTURES_DIR = REPO_ROOT / "tests" / "web" / "fixtures"
 
 sys.path.insert(0, str(SRC))
 
-from liftmath import convert, onerm, plates, standards  # noqa: E402
+from liftmath import convert, onerm, plates, records, standards  # noqa: E402
 from liftmath._serialize import to_dict  # noqa: E402
 
 _CAMEL_RE = re.compile(r"_([a-zA-Z0-9])")
@@ -208,12 +208,62 @@ def gen_unit_convert() -> list[dict]:
     return cases
 
 
+# ---------------------------------------------------------------------------
+# records.js <- liftmath.records
+# ---------------------------------------------------------------------------
+
+def gen_records() -> list[dict]:
+    cases = []
+    # class-mapping boundaries: exactly on a ceiling stays in that class,
+    # just over it moves up, past the last ceiling goes superheavy.
+    for bw, sex in [
+        (50, "male"), (52, "male"), (52.1, "male"), (82.5, "male"), (83, "male"),
+        (140, "male"), (140.5, "male"), (200, "male"),
+        (44, "female"), (44.1, "female"), (63, "female"), (110, "female"), (111, "female"),
+    ]:
+        cases.append({
+            "fn": "weightClassFor",
+            "args": {"bodyweightKg": bw, "sex": sex},
+            "expected": records.weight_class_for(bw, sex),
+        })
+    # search filters across all three sports, incl. bodyweight->class
+    # resolution and the open class - full result lists pin sort order too.
+    searches = [
+        {"sport": "powerlifting", "lift": "deadlift", "sex": "male",
+         "weight_class": "100", "equipment": "raw"},
+        {"sport": "powerlifting", "lift": "total", "sex": "female",
+         "weight_class": "open", "equipment": "raw", "scope": "tested"},
+        {"sport": "powerlifting", "lift": "bench", "sex": "male", "bodyweight_kg": 91.7,
+         "equipment": "single-ply"},
+        {"sport": "strongman", "sex": "female"},
+        {"sport": "strongman", "lift": "deadlift", "sex": "male"},
+        {"sport": "grip", "lift": "silver-bullet-hold"},
+        {"sport": "grip", "lift": "rolling-thunder", "sex": "female"},
+    ]
+    for kwargs in searches:
+        cases.append({
+            "fn": "searchRecords",
+            "args": to_camel(dict(kwargs)),
+            "expected": dump(records.search_records(**kwargs)),
+        })
+    # percent-of-record against a real bundled record
+    rt = records.search_records(sport="grip", lift="rolling-thunder", sex="male",
+                                scope="official")[0]
+    cases.append({
+        "fn": "percentOfRecord",
+        "args": {"liftKg": 100.0, "record": dump(rt)},
+        "expected": records.percent_of_record(100.0, rt),
+    })
+    return cases
+
+
 GENERATORS = {
     "one-rep-max": gen_one_rep_max,
     "plate-loading": gen_plate_loading,
     "plate-inventory": gen_plate_inventory,
     "strength-scores": gen_strength_scores,
     "unit-convert": gen_unit_convert,
+    "records": gen_records,
 }
 
 
