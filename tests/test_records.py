@@ -2,7 +2,6 @@ import pytest
 
 from liftmath.records import percent_of_record, records_as_of, search_records, weight_class_for
 
-
 # --- weight_class_for ---
 
 @pytest.mark.parametrize("bw,sex,expected", [
