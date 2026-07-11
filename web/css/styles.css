@@ -542,3 +542,13 @@ table.result-table td.num {
 .results .hint a {
   color: var(--color-accent);
 }
+
+/* Six tabs now share the bar - shrink the labels a notch on narrow phones
+   so "Records" and "Convert" don't overflow their pills. */
+@media (max-width: 480px) {
+  .tab {
+    font-size: 0.82rem;
+    padding-left: 0.1rem;
+    padding-right: 0.1rem;
+  }
+}

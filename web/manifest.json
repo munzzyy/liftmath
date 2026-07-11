@@ -44,6 +44,11 @@
       "description": "World records: powerlifting, strongman, grip"
     },
     {
+      "name": "Track",
+      "url": "./index.html?tab=track",
+      "description": "Track & field records: world, college, high school"
+    },
+    {
       "name": "Convert",
       "url": "./index.html?tab=convert",
       "description": "Convert a weight between lb and kg"

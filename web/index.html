@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>liftmath - 1RM, plates, strength score</title>
-<meta name="description" content="Gym calculators: 1RM consensus, plate loading with a barbell diagram, Wilks/DOTS/IPF GL strength scores, and world records for powerlifting, strongman, and grip. Free, works offline, no account, no ads." />
+<meta name="description" content="Gym calculators: 1RM consensus, plate loading with a barbell diagram, Wilks/DOTS/IPF GL strength scores, and records for powerlifting, strongman, grip, and track &amp; field (world, college, high school). Free, works offline, no account, no ads." />
 <meta name="theme-color" content="#101216" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-fWIjZPuIDRs11lC0LAjuD/hjoJVyn2ZdQ9oS2icIdXg='; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" />
 <script>
@@ -39,6 +39,7 @@
   <button class="tab" role="tab" id="tab-btn-plates" aria-controls="tool-plates" aria-selected="false" tabindex="-1">Plates</button>
   <button class="tab" role="tab" id="tab-btn-score" aria-controls="tool-score" aria-selected="false" tabindex="-1">Score</button>
   <button class="tab" role="tab" id="tab-btn-records" aria-controls="tool-records" aria-selected="false" tabindex="-1">Records</button>
+  <button class="tab" role="tab" id="tab-btn-track" aria-controls="tool-track" aria-selected="false" tabindex="-1">Track</button>
   <button class="tab" role="tab" id="tab-btn-convert" aria-controls="tool-convert" aria-selected="false" tabindex="-1">Convert</button>
 </nav>
 
@@ -226,6 +227,43 @@
     </div>
 
     <div class="results" id="records-results" aria-live="polite"></div>
+  </section>
+
+  <!-- ============ Track & field records ============ -->
+  <section class="tool-panel" id="tool-track" role="tabpanel" aria-labelledby="tab-btn-track" tabindex="0" hidden>
+    <h2 id="track-heading">Track &amp; field records</h2>
+    <p class="disclaimer" id="track-disclaimer">World records (World Athletics), US collegiate records, and US
+      national high-school records, hand-curated with a citation per entry. Levels aren't directly comparable -
+      high-school throws use lighter implements, noted per record.</p>
+
+    <div class="field">
+      <span id="track-level-label">Level</span>
+      <div class="chip-row" role="group" aria-labelledby="track-level-label" id="track-level-group">
+        <button type="button" class="chip" data-level="world" aria-pressed="true" id="track-level-world-btn">World</button>
+        <button type="button" class="chip" data-level="college" aria-pressed="false" id="track-level-college-btn">College</button>
+        <button type="button" class="chip" data-level="high-school" aria-pressed="false" id="track-level-hs-btn">High school</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span id="track-sex-label">Sex</span>
+      <div class="radio-row" role="radiogroup" aria-labelledby="track-sex-label" id="track-sex-group">
+        <button type="button" class="chip" data-sex="male" aria-pressed="true" id="track-sex-male-btn">Male</button>
+        <button type="button" class="chip" data-sex="female" aria-pressed="false" id="track-sex-female-btn">Female</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="track-event" id="track-event-label">Event</label>
+      <select id="track-event"><!-- options filled per level+sex by app.js --></select>
+    </div>
+
+    <div class="field">
+      <label for="track-compare" id="track-compare-label">Your mark (optional - "10.85", "4:12.3", or meters/points)</label>
+      <input type="text" id="track-compare" inputmode="decimal" placeholder="e.g. 12.4 or 5:30" />
+    </div>
+
+    <div class="results" id="track-results" aria-live="polite"></div>
   </section>
 
   <!-- ============ Unit convert ============ -->

@@ -5,12 +5,13 @@ abstract: >-
   A simple gym calculator: estimate a one-rep max from a weight x reps set,
   work out which plates to load for a target barbell weight, score relative
   strength across bodyweights with Wilks (original + 2020), DOTS, and IPF GL
-  points, and look up world records for powerlifting, strongman, and grip
-  sport. Pure Python standard library, no runtime dependencies.
+  points, and look up records for powerlifting, strongman, grip sport, and
+  track & field (world, US collegiate, and US high-school levels). Pure
+  Python standard library, no runtime dependencies.
 authors:
   - family-names: "Munz"
     given-names: "Cole"
-version: 2.2.0
+version: 2.3.0
 date-released: "2026-07-11"
 url: "https://github.com/munzzyy/liftmath"
 repository-code: "https://github.com/munzzyy/liftmath"

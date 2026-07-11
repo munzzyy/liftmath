@@ -226,6 +226,26 @@ def gen_records() -> list[dict]:
             "args": {"bodyweightKg": bw, "sex": sex},
             "expected": records.weight_class_for(bw, sex),
         })
+    for bw, sex in [(59, "male"), (83, "male"), (100, "male"), (121, "male"),
+                    (47, "female"), (63.2, "female"), (85, "female")]:
+        cases.append({
+            "fn": "weightClassFor",
+            "args": {"bodyweightKg": bw, "sex": sex, "scheme": "ipf"},
+            "expected": records.weight_class_for(bw, sex, scheme="ipf"),
+        })
+    # track-mark parsing and rendering
+    for text in ["9.58", "58.53s", "1:40.91", "3:26.00", "2:00:35", " 12.4 "]:
+        cases.append({
+            "fn": "parseMark",
+            "args": {"text": text},
+            "expected": records.parse_mark(text),
+        })
+    for seconds in [9.58, 59.994, 100.91, 206.0, 7235, 3599.996]:
+        cases.append({
+            "fn": "formatSeconds",
+            "args": {"seconds": seconds},
+            "expected": records.format_seconds(seconds),
+        })
     # search filters across all three sports, incl. bodyweight->class
     # resolution and the open class - full result lists pin sort order too.
     searches = [
@@ -235,10 +255,17 @@ def gen_records() -> list[dict]:
          "weight_class": "open", "equipment": "raw", "scope": "tested"},
         {"sport": "powerlifting", "lift": "bench", "sex": "male", "bodyweight_kg": 91.7,
          "equipment": "single-ply"},
+        {"sport": "powerlifting", "lift": "squat", "sex": "male", "bodyweight_kg": 100,
+         "equipment": "raw", "scheme": "ipf"},
+        {"sport": "powerlifting", "lift": "total", "sex": "female", "equipment": "raw",
+         "scope": "all-time", "scheme": "ipf"},
         {"sport": "strongman", "sex": "female"},
         {"sport": "strongman", "lift": "deadlift", "sex": "male"},
         {"sport": "grip", "lift": "silver-bullet-hold"},
         {"sport": "grip", "lift": "rolling-thunder", "sex": "female"},
+        {"sport": "track", "lift": "100m", "sex": "male", "level": "world"},
+        {"sport": "track", "level": "high-school", "sex": "female"},
+        {"sport": "track", "lift": "pole-vault"},
     ]
     for kwargs in searches:
         cases.append({
@@ -246,14 +273,21 @@ def gen_records() -> list[dict]:
             "args": to_camel(dict(kwargs)),
             "expected": dump(records.search_records(**kwargs)),
         })
-    # percent-of-record against a real bundled record
+    # percent-of-record against real bundled records, both directions
     rt = records.search_records(sport="grip", lift="rolling-thunder", sex="male",
                                 scope="official")[0]
     cases.append({
         "fn": "percentOfRecord",
-        "args": {"liftKg": 100.0, "record": dump(rt)},
+        "args": {"value": 100.0, "record": dump(rt)},
         "expected": records.percent_of_record(100.0, rt),
     })
+    sprint = records.search_records(sport="track", lift="100m", sex="male", level="world")
+    if sprint:  # present once the track dataset is merged
+        cases.append({
+            "fn": "percentOfRecord",
+            "args": {"value": 12.4, "record": dump(sprint[0])},
+            "expected": records.percent_of_record(12.4, sprint[0]),
+        })
     return cases
 
 

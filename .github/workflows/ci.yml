@@ -42,8 +42,11 @@ jobs:
           liftmath plates --target 405 --inventory 45x3,25x1,10x1
           liftmath standards --total 1200 --bodyweight 200 --sex male
           liftmath convert --weight 225 --unit lb
+          liftmath records --sport powerlifting --lift deadlift --sex male --bodyweight 220 --equip raw --compare 500
+          liftmath records --sport track --event 100m --sex male --level world --compare 12.4
           liftmath 1rm --weight 225 --reps 5 --json
           liftmath --json plates --target 245
+          liftmath --json records --sport strongman --sex female
 
   version-sync:
     runs-on: ubuntu-latest

@@ -225,16 +225,33 @@ def test_records_powerlifting_class_lookup(capsys):
     code, out, _ = run(capsys, "records", "--sport", "powerlifting", "--lift", "deadlift",
                        "--sex", "male", "--class", "100", "--equip", "raw", "--unit", "kg")
     assert code == 0
-    assert "[powerlifting] Deadlift 100 M raw (all-time)" in out
+    assert "[powerlifting] Deadlift 100 [traditional] M raw (all-time)" in out
     assert "(tested)" in out
 
 
 def test_records_bodyweight_resolves_class_in_lb(capsys):
-    # 220lb ~ 99.8kg -> the 100kg class
+    # 220lb ~ 99.8kg -> the 100kg class (traditional scheme by default)
     code, out, _ = run(capsys, "records", "--sport", "powerlifting", "--lift", "deadlift",
                        "--sex", "male", "--bodyweight", "220", "--equip", "raw")
     assert code == 0
-    assert "Deadlift 100 M raw" in out
+    assert "Deadlift 100 [traditional] M raw" in out
+
+
+def test_records_ipf_scheme_bodyweight(capsys):
+    # 100kg bodyweight -> the IPF 105 class
+    code, out, _ = run(capsys, "records", "--sport", "powerlifting", "--lift", "deadlift",
+                       "--sex", "male", "--bodyweight", "100", "--scheme", "ipf",
+                       "--equip", "raw", "--unit", "kg")
+    assert code == 0
+    assert "Deadlift 105 [ipf] M raw" in out
+
+
+def test_records_track_event_with_time_compare(capsys):
+    code, out, _ = run(capsys, "records", "--sport", "track", "--event", "100m",
+                       "--sex", "male", "--level", "world", "--compare", "12.40")
+    assert code == 0
+    assert "[track] " in out
+    assert "% of record pace" in out
 
 
 def test_records_compare_shows_percent(capsys):

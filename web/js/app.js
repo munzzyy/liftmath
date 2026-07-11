@@ -7,7 +7,8 @@ import { computePlateStack } from "./math/plate-loading.js";
 import { parseInventorySpec, loadPlatesFromInventory } from "./math/plate-inventory.js";
 import { score } from "./math/strength-scores.js";
 import {
-  PL_CLASSES, percentOfRecord, recordsAsOf, searchRecords, weightClassFor,
+  PL_CLASSES, formatSeconds, parseMark, percentOfRecord, recordsAsOf, searchRecords,
+  weightClassFor,
 } from "./math/records.js";
 import { KG_PER_LB, convertWeight } from "./math/unit-convert.js";
 import { renderBarbellSvg, renderPlateLegend } from "./ui/svg-barbell.js";
@@ -146,7 +147,7 @@ $("unit-kg").addEventListener("click", () => setUnit("kg"));
 // Tabs
 // ---------------------------------------------------------------------------
 
-const TABS = ["onerm", "plates", "score", "records", "convert"];
+const TABS = ["onerm", "plates", "score", "records", "track", "convert"];
 
 function selectTab(id) {
   for (const t of TABS) {
@@ -389,21 +390,34 @@ const SCOPE_LABELS = {
   "tested": "Drug-tested meets only",
   "official": "Official",
   "unofficial": "Unofficial (well documented, outside a sanctioning body)",
+  "pending": "Pending ratification",
+};
+
+const LEVEL_LABELS = {
+  "world": "World record",
+  "college": "US collegiate record",
+  "high-school": "US high-school record",
 };
 
 function fillRecordsClassSelect() {
   const select = $("records-class");
   const previous = select.value;
   const sexKey = recordsSex === "male" ? "M" : "F";
-  const options = ['<option value="open">Open (all bodyweights)</option>'];
-  const ceilings = PL_CLASSES[sexKey];
-  ceilings.forEach((ceiling, i) => {
-    options.push(`<option value="${ceiling}">${ceiling} kg</option>`);
-    if (i === ceilings.length - 1) {
-      options.push(`<option value="${ceiling}+">${ceiling}+ kg (superheavy)</option>`);
-    }
-  });
-  select.innerHTML = options.join("");
+  // Option values encode scheme + class ("ipf:83"); "open" is scheme-neutral.
+  const parts = ['<option value="open">Open (all bodyweights)</option>'];
+  const labels = { traditional: "Traditional (all-time) classes", ipf: "IPF classes" };
+  for (const scheme of ["traditional", "ipf"]) {
+    parts.push(`<optgroup label="${labels[scheme]}">`);
+    const ceilings = PL_CLASSES[scheme][sexKey];
+    ceilings.forEach((ceiling, i) => {
+      parts.push(`<option value="${scheme}:${ceiling}">${ceiling} kg</option>`);
+      if (i === ceilings.length - 1) {
+        parts.push(`<option value="${scheme}:${ceiling}+">${ceiling}+ kg (superheavy)</option>`);
+      }
+    });
+    parts.push("</optgroup>");
+  }
+  select.innerHTML = parts.join("");
   // Keep the selection across a sex switch when the same class exists there.
   select.value = [...select.options].some((o) => o.value === previous) ? previous : "open";
 }
@@ -422,36 +436,68 @@ function fillRecordsEventSelect() {
   select.value = [...select.options].some((o) => o.value === previous) ? previous : "all";
 }
 
-/** A record's headline value in the app's display unit ("442.5 kg (976 lb)"). */
+/** A record's headline value in the app's display unit ("442.5 kg (976 lb)", "1:40.91"). */
 function recordValueText(r) {
-  if (r.unit !== "kg") return `${fmt(r.value)} ${r.unit === "m" ? "m" : "s"}`;
-  if (unit === "kg") return `${fmt(r.value)} kg`;
-  return `${fmt(toUnit(r.value, "lb"))} lb (${fmt(r.value)} kg)`;
+  if (r.unit === "kg") {
+    if (unit === "kg") return `${fmt(r.value)} kg`;
+    return `${fmt(toUnit(r.value, "lb"))} lb (${fmt(r.value)} kg)`;
+  }
+  if (r.unit === "s") {
+    if (r.direction === "lower") return r.display || formatSeconds(r.value);
+    return `${fmt(r.value)} s`;
+  }
+  if (r.unit === "pts") return `${r.display || fmt(r.value)} pts`;
+  return `${r.display || fmt(r.value)} m`;
 }
 
-function recordCard(r, compareKg) {
+function compareMeterHtml(r, compareValue) {
+  const pct = percentOfRecord(compareValue, r);
+  let gap;
+  if (r.direction === "lower") {
+    const off = compareValue - r.value;
+    gap = off > 0
+      ? `${formatSeconds(off)}${off < 60 ? "s" : ""} off the record`
+      : "you'd have the record";
+  } else if (r.unit === "kg") {
+    const gapKg = r.value - compareValue;
+    gap = gapKg > 0 ? `${fmt(toUnit(gapKg, unit))} ${unit} to go` : "you'd have the record";
+  } else {
+    const rest = r.value - compareValue;
+    gap = rest > 0 ? `${fmt(rest)} ${r.unit === "pts" ? "pts" : r.unit} to go` : "you'd have the record";
+  }
+  const label = r.direction === "lower" ? "of record pace" : "of this record";
+  return `<div class="record-meter" role="img" aria-label="Your mark is ${fmt(pct)}% ${label}">
+      <div class="record-meter-fill" style="width:${Math.min(100, pct).toFixed(1)}%"></div>
+    </div>
+    <p class="result-sub">Your mark: ${fmt(pct)}% ${label} (${gap})</p>`;
+}
+
+function recordCard(r, compareValue) {
   const who = [r.athlete, r.country].filter(Boolean).join(", ");
   const where = [r.competition || r.federation, r.date].filter(Boolean).join(" - ");
   // "82.5" reads as a kg class; "u105"/"No. 3"-style labels already read as-is.
   const cls = r.weightClass
     ? (/^\d/.test(r.weightClass) ? `${r.weightClass} kg class` : r.weightClass)
-    : "open";
+    : (r.sport === "track" ? "" : "open");
+  const scheme = r.scheme ? ` (${r.scheme === "ipf" ? "IPF" : "traditional"})` : "";
+  const level = r.level ? LEVEL_LABELS[r.level] : "";
   const equip = r.equipment ? ` - ${r.equipment}` : "";
+  const headline = [r.liftDisplay, level || null, cls ? cls + scheme : null]
+    .filter(Boolean).join(" - ");
   let html = `<div class="result-hero record-card">
-    <p class="result-label">${escapeHtml(r.liftDisplay)} - ${escapeHtml(cls)}${escapeHtml(equip)}
+    <p class="result-label">${escapeHtml(headline)}${escapeHtml(equip)}
       <span class="record-scope">${escapeHtml(SCOPE_LABELS[r.scope] || r.scope)}</span></p>
     <p class="result-value">${recordValueText(r)}</p>
     <p class="result-sub">${escapeHtml(who)}<br>${escapeHtml(where)}</p>`;
-  if (compareKg != null && r.unit === "kg") {
-    const pct = percentOfRecord(compareKg, r);
-    const gapKg = r.value - compareKg;
-    const gap = gapKg > 0
-      ? `${fmt(toUnit(gapKg, unit))} ${unit} to go`
-      : "you'd have the record";
-    html += `<div class="record-meter" role="img" aria-label="Your lift is ${fmt(pct)}% of this record">
-      <div class="record-meter-fill" style="width:${Math.min(100, pct).toFixed(1)}%"></div>
-    </div>
-    <p class="result-sub">Your lift: ${fmt(pct)}% of this record (${gap})</p>`;
+  if (r.sport === "powerlifting" && (r.bodyweightKg || r.dots || r.goodlift)) {
+    const extras = [];
+    if (r.bodyweightKg) extras.push(`at ${fmt(r.bodyweightKg)} kg bodyweight`);
+    if (r.dots) extras.push(`${fmt(r.dots)} Dots`);
+    if (r.goodlift) extras.push(`${fmt(r.goodlift)} IPF GL`);
+    html += `<p class="result-sub">${escapeHtml(extras.join(" - "))}</p>`;
+  }
+  if (compareValue != null) {
+    html += compareMeterHtml(r, compareValue);
   }
   if (r.source) {
     html += `<p class="result-sub"><a href="${escapeHtml(r.source)}" target="_blank" rel="noopener">source</a></p>`;
@@ -474,9 +520,13 @@ function renderRecords() {
   let matches;
   try {
     if (isPl) {
+      // The class select's values encode scheme + class ("ipf:83"); "open"
+      // is scheme-neutral.
+      const selected = $("records-class").value;
+      const [scheme, cls] = selected === "open" ? [null, "open"] : selected.split(":");
       matches = searchRecords({
         sport: "powerlifting", sex: recordsSex, lift: recordsLift,
-        weightClass: $("records-class").value, equipment: $("records-equip").value,
+        weightClass: cls, scheme, equipment: $("records-equip").value,
       });
     } else {
       const event = $("records-event").value;
@@ -522,12 +572,16 @@ wireChipGroup("records-lift-group", "lift", (value) => {
   renderRecords();
 });
 
-// Typing a bodyweight resolves the class for you; picking a class by hand
-// clears the bodyweight box so the two controls never disagree.
+// Typing a bodyweight resolves the class for you (in whichever scheme the
+// select is currently on; traditional when it's on open); picking a class
+// by hand clears the bodyweight box so the two controls never disagree.
 $("records-bodyweight").addEventListener("input", () => {
   const bw = parseFloat($("records-bodyweight").value);
   if (Number.isFinite(bw) && bw > 0) {
-    $("records-class").value = weightClassFor(fromUnit(bw, unit), recordsSex);
+    const current = $("records-class").value;
+    const scheme = current.startsWith("ipf:") ? "ipf" : "traditional";
+    $("records-class").value =
+      `${scheme}:${weightClassFor(fromUnit(bw, unit), recordsSex, scheme)}`;
   }
   renderRecords();
 });
@@ -541,6 +595,87 @@ $("records-compare").addEventListener("input", renderRecords);
 
 fillRecordsClassSelect();
 fillRecordsEventSelect();
+
+// ---------------------------------------------------------------------------
+// Track & field records
+// ---------------------------------------------------------------------------
+
+let trackLevel = "world";
+let trackSex = "male";
+
+function fillTrackEventSelect() {
+  const select = $("track-event");
+  const previous = select.value;
+  const seen = new Set();
+  const options = ['<option value="all">All events</option>'];
+  for (const r of searchRecords({ sport: "track", level: trackLevel, sex: trackSex })) {
+    if (seen.has(r.lift)) continue;
+    seen.add(r.lift);
+    options.push(`<option value="${escapeHtml(r.lift)}">${escapeHtml(r.liftDisplay)}</option>`);
+  }
+  select.innerHTML = options.join("");
+  select.value = [...select.options].some((o) => o.value === previous) ? previous : "all";
+}
+
+function renderTrack() {
+  const resultsEl = $("track-results");
+  const event = $("track-event").value;
+
+  let compareValue = null;
+  const compareRaw = $("track-compare").value.trim();
+  if (compareRaw) {
+    try {
+      const parsed = parseMark(compareRaw);
+      if (parsed > 0) compareValue = parsed;
+    } catch {
+      // Half-typed mark ("4:") - just render without the comparison.
+    }
+  }
+
+  let matches;
+  try {
+    matches = searchRecords({
+      sport: "track", level: trackLevel, sex: trackSex,
+      lift: event === "all" ? null : event,
+    });
+  } catch (err) {
+    resultsEl.innerHTML = `<p class="notice notice-warn">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+
+  if (!matches.length) {
+    resultsEl.innerHTML = `<p class="notice">No record in the bundled snapshot for this
+      combination.</p>`;
+    return;
+  }
+
+  // With no event picked, comparing one mark against every event is noise -
+  // only show the meter once an event is chosen.
+  const compareFor = event === "all" ? null : compareValue;
+  let html = matches.map((r) => recordCard(r, compareFor)).join("");
+  html += `<p class="hint">Snapshot of ${escapeHtml(recordsAsOf())}. World records per World Athletics;
+    US collegiate and high-school records per the Track &amp; Field News record lists - all curated,
+    each entry linking its source. High-school throws use lighter implements, so levels aren't
+    directly comparable.</p>`;
+  resultsEl.innerHTML = html;
+}
+
+wireChipGroup("track-level-group", "level", (value) => {
+  trackLevel = value;
+  fillTrackEventSelect();
+  renderTrack();
+});
+
+wireChipGroup("track-sex-group", "sex", (value) => {
+  trackSex = value;
+  fillTrackEventSelect();
+  renderTrack();
+});
+
+$("track-event").addEventListener("change", renderTrack);
+$("track-compare").addEventListener("input", renderTrack);
+
+fillTrackEventSelect();
 
 // ---------------------------------------------------------------------------
 // Unit convert
@@ -581,6 +716,7 @@ function renderAll() {
   renderPlates();
   renderScore();
   renderRecords();
+  renderTrack();
   renderConvert();
 }
 

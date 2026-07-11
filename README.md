@@ -17,9 +17,10 @@ Three tools:
 - **Plates**: what to hang on the bar for a target weight.
 - **Strength score**: Wilks, DOTS, and IPF GL points, so you can compare across bodyweights.
 
-Plus one lookup: **Records** - world records for powerlifting, strongman, and grip sport,
-searchable by lift or event, sex, weight class, and equipment, with your own lift shown as a
-percentage of the record.
+Plus one lookup: **Records** - records for powerlifting, strongman, grip sport, and track &
+field (world, US collegiate, and US high-school levels), searchable by lift or event, sex,
+weight class, equipment, and level, with your own lift or mark shown as a percentage of the
+record.
 
 That's it. It used to do a lot more; it does less now, on purpose. Every number traces back to a
 named formula or a cited record, and you can read the whole thing in a sitting. There's also a
@@ -142,12 +143,29 @@ World records matching your filters (snapshot of 2026-07-11):
       your 500lb = 56.6% of this record (383lb to go)
 ```
 
-Pass `--class` directly (`82.5`, `140+`, `open`) or `--bodyweight` and it resolves the
-traditional class for you. `--sport strongman` and `--sport grip` cover the events with a real
-documented record (log lift, atlas stone, keg toss, Rolling Thunder, Apollon's Axle, two hands
-pinch, ...). `--json` carries the source URL, sanctioning body, and confidence grade for every
-curated entry. Powerlifting rows are the empirical maxima in the data, NOT any federation's
-official record list - federations curate those separately and reset them on rule changes.
+Pass `--class` directly (`82.5`, `140+`, `open`) or `--bodyweight` and it resolves the class
+for you - in either weight-class scheme (`--scheme traditional` for the all-time-record
+convention, `--scheme ipf` for the IPF's current classes). `--sport strongman` and `--sport
+grip` cover the events with a real documented record (log lift, atlas stone, keg toss, Rolling
+Thunder, Apollon's Axle, two hands pinch, ...). `--json` carries the source URL, sanctioning
+body, and confidence grade for every curated entry. Powerlifting rows are the empirical maxima
+in the data, NOT any federation's official record list - federations curate those separately
+and reset them on rule changes.
+
+Track & field gets three levels - `--level world` (World Athletics), `--level college` (US
+collegiate records), `--level high-school` (US national high-school records) - and the compare
+flag reads times the way they're written:
+
+```
+$ liftmath records --sport track --event 1500m --sex male --level world --compare 4:30
+  [track] 1500m world M (official)
+      3:26.00            Hicham El Guerrouj, Morocco  (Rome, 1998-07-14)
+      your 4:30 = 76.3% of record pace (1:04.00 off)
+```
+
+Times are direction-aware (lower is better, so 100% always means record-equalling), and
+high-school throws use lighter implements than college/world - each such record's notes say
+so, because the levels are deliberately not cross-comparable.
 
 ### Convert
 
@@ -187,7 +205,8 @@ from liftmath import (
     score,                                                 # all four scores at once
     wilks_score, wilks_original_score,                     # Wilks 2020 / original
     dots_score, ipf_gl_points,                             # DOTS / IPF GL points
-    search_records, weight_class_for, percent_of_record,   # world-record lookup
+    search_records, weight_class_for, percent_of_record,   # record lookup
+    parse_mark, format_seconds,                            # "4:12.3" <-> seconds
     records_as_of,                                         # dataset snapshot date
     lbs_to_kg, kg_to_lbs, convert_weight,                  # exact lb/kg conversion
     to_dict, to_json,                                      # serialize any result
@@ -224,16 +243,19 @@ not "evidence" in the causal sense. The Wilks and DOTS coefficient tables are cr
 OpenPowerlifting's implementations; IPF GL came straight from the IPF's own coefficients PDF.
 `standards.py` has the full citations and a note on when the IPF table is due to refresh.
 
-The world records come in two layers. Powerlifting is computed by `tools/build_records.py` from
+The records come in three layers. Powerlifting is computed by `tools/build_records.py` from
 the OpenPowerlifting project's bulk CSV (public domain, refreshed daily -
 [openpowerlifting.org](https://www.openpowerlifting.org)): the best sanctioned lift per sex,
-equipment, traditional weight class, and lift, in all-time and drug-tested scopes, with doping
-disqualifications excluded. Strongman and grip sport publish no machine-readable records at all,
-so `tools/data/curated_records.json` holds hand-verified entries - each with a citation URL,
-sanctioning body, and a confidence grade - and its header documents what was deliberately left
-out (events with no standardized implement, or marks with no verifiable source). The bundle is a
-dated snapshot; records move, so `tools/build_records.py`'s docstring explains how to regenerate
-it from a fresh CSV.
+equipment, weight class (in both the traditional and IPF class schemes), and lift, in all-time
+and drug-tested scopes, with doping disqualifications excluded. Strongman and grip sport
+publish no machine-readable records at all, so `tools/data/curated_records.json` holds
+hand-verified entries - each with a citation URL, sanctioning body, and a confidence grade -
+and its header documents what was deliberately left out (events with no standardized implement,
+or marks with no verifiable source). Track & field lives in `tools/data/track_records.json` on
+the same terms: World Athletics world records plus the US collegiate and national high-school
+lists (Track & Field News convention), every entry cited, ratification-pending marks flagged.
+The bundle is a dated snapshot; records move, so `tools/build_records.py`'s docstring explains
+how to regenerate it from a fresh CSV.
 
 The lb/kg conversion uses the exact international avoirdupois pound (1 lb = 0.45359237 kg, fixed
 by the 1959 international yard-and-pound agreement), not a rounded approximation. It's the same

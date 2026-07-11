@@ -7,14 +7,22 @@
 
 import { DATASET } from "../records-data.js";
 
-export const SPORTS = ["powerlifting", "strongman", "grip"];
+export const SPORTS = ["powerlifting", "strongman", "grip", "track"];
 export const POWERLIFTING_LIFTS = ["squat", "bench", "deadlift", "total"];
 export const EQUIPMENT = ["raw", "wraps", "single-ply", "multi-ply"];
+export const LEVELS = ["world", "college", "high-school"];
+export const SCHEMES = ["traditional", "ipf"];
 
-// Traditional all-time weight-class ceilings, kg (same table as the Python).
+// Weight-class ceilings, kg, per scheme (same tables as the Python).
 export const PL_CLASSES = {
-  M: [52, 56, 60, 67.5, 75, 82.5, 90, 100, 110, 125, 140],
-  F: [44, 48, 52, 56, 60, 67.5, 75, 82.5, 90, 100, 110],
+  traditional: {
+    M: [52, 56, 60, 67.5, 75, 82.5, 90, 100, 110, 125, 140],
+    F: [44, 48, 52, 56, 60, 67.5, 75, 82.5, 90, 100, 110],
+  },
+  ipf: {
+    M: [59, 66, 74, 83, 93, 105, 120],
+    F: [47, 52, 57, 63, 69, 76, 84],
+  },
 };
 
 const SEX_ALIASES = { m: "M", male: "M", f: "F", female: "F" };
@@ -29,14 +37,52 @@ function canonicalSex(sex) {
   return canonical;
 }
 
-/** Traditional powerlifting weight-class label ("82.5", "140+") for a bodyweight. */
-export function weightClassFor(bodyweightKg, sex) {
+/** Powerlifting weight-class label ("82.5", "140+") for a bodyweight, per scheme. */
+export function weightClassFor(bodyweightKg, sex, scheme = "traditional") {
   if (!(bodyweightKg > 0)) throw new Error("bodyweightKg must be > 0");
-  const ceilings = PL_CLASSES[canonicalSex(sex)];
+  if (!SCHEMES.includes(scheme)) {
+    throw new Error(`scheme must be one of ${SCHEMES.join("/")}, got ${scheme}`);
+  }
+  const ceilings = PL_CLASSES[scheme][canonicalSex(sex)];
   for (const ceiling of ceilings) {
     if (bodyweightKg <= ceiling) return String(ceiling);
   }
   return `${ceilings[ceilings.length - 1]}+`;
+}
+
+/**
+ * Parse a track-style mark into seconds (or a plain number for field marks).
+ * Accepts "9.58", "1:40.91" (M:SS), "2:00:35" (H:MM:SS); trailing "s" tolerated.
+ */
+export function parseMark(text) {
+  const cleaned = String(text).trim().replace(/s$/, "");
+  if (!cleaned) throw new Error("empty mark");
+  const parts = cleaned.split(":");
+  if (parts.length > 3) throw new Error(`can't parse mark ${text}`);
+  let total = 0;
+  for (const part of parts) {
+    const value = Number(part);
+    if (!Number.isFinite(value) || part.trim() === "") throw new Error(`can't parse mark ${text}`);
+    if (value < 0) throw new Error("mark parts must be >= 0");
+    total = total * 60 + value;
+  }
+  return total;
+}
+
+/** Format seconds the way track marks are written: 9.58, 1:40.91, 2:00:35. */
+export function formatSeconds(seconds) {
+  if (seconds < 0) throw new Error("seconds must be >= 0");
+  if (seconds < 60) return seconds.toFixed(2);
+  if (seconds < 3600) {
+    const minutes = Math.floor(seconds / 60);
+    const rest = seconds - minutes * 60;
+    return `${minutes}:${rest.toFixed(2).padStart(5, "0")}`;
+  }
+  const whole = Math.round(seconds);
+  const hours = Math.floor(whole / 3600);
+  const minutes = Math.floor((whole % 3600) / 60);
+  const secs = whole % 60;
+  return `${hours}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 }
 
 function toRecord(raw) {
@@ -50,12 +96,19 @@ function toRecord(raw) {
     scope: raw.scope,
     value: raw.value,
     unit: raw.unit,
+    direction: raw.direction ?? "higher",
+    display: raw.display ?? null,
     athlete: raw.athlete,
     date: raw.date,
     federation: raw.fed ?? null,
     competition: raw.meet ?? null,
     country: raw.country ?? null,
+    meetCountry: raw.meet_country ?? null,
     bodyweightKg: raw.bw ?? null,
+    level: raw.level ?? null,
+    scheme: raw.scheme ?? null,
+    dots: raw.dots ?? null,
+    goodlift: raw.goodlift ?? null,
     source: raw.source ?? null,
     confidence: raw.confidence ?? null,
     notes: raw.notes ?? null,
@@ -74,7 +127,7 @@ function clsRank(cls) {
 /** Filter the bundled records; every option left undefined/null is a wildcard. */
 export function searchRecords({
   sport = null, lift = null, sex = null, weightClass = null,
-  bodyweightKg = null, equipment = null, scope = null,
+  bodyweightKg = null, equipment = null, scope = null, level = null, scheme = null,
 } = {}) {
   if (sport !== null && !SPORTS.includes(sport)) {
     throw new Error(`sport must be one of ${SPORTS.join("/")}, got ${sport}`);
@@ -82,11 +135,17 @@ export function searchRecords({
   if (equipment !== null && !EQUIPMENT.includes(equipment)) {
     throw new Error(`equipment must be one of ${EQUIPMENT.join("/")}, got ${equipment}`);
   }
+  if (level !== null && !LEVELS.includes(level)) {
+    throw new Error(`level must be one of ${LEVELS.join("/")}, got ${level}`);
+  }
+  if (scheme !== null && !SCHEMES.includes(scheme)) {
+    throw new Error(`scheme must be one of ${SCHEMES.join("/")}, got ${scheme}`);
+  }
   if (sex !== null) sex = canonicalSex(sex);
   if (bodyweightKg !== null) {
     if (weightClass !== null) throw new Error("pass weightClass or bodyweightKg, not both");
     if (sex === null) throw new Error("bodyweightKg needs sex to resolve a weight class");
-    weightClass = weightClassFor(bodyweightKg, sex);
+    weightClass = weightClassFor(bodyweightKg, sex, scheme ?? "traditional");
   }
 
   const matches = [];
@@ -97,6 +156,9 @@ export function searchRecords({
     if (weightClass !== null && raw.cls !== weightClass) continue;
     if (equipment !== null && (raw.equip ?? null) !== equipment) continue;
     if (scope !== null && raw.scope !== scope) continue;
+    if (level !== null && (raw.level ?? null) !== level) continue;
+    // Scheme filters class rows only; the open class belongs to both.
+    if (scheme !== null && (raw.scheme ?? null) !== null && raw.scheme !== scheme) continue;
     matches.push(toRecord(raw));
   }
 
@@ -104,11 +166,17 @@ export function searchRecords({
     if (a.sport !== b.sport) return a.sport < b.sport ? -1 : 1;
     if (a.lift !== b.lift) return a.lift < b.lift ? -1 : 1;
     if (a.sex !== b.sex) return a.sex < b.sex ? -1 : 1;
+    const lva = a.level ?? "";
+    const lvb = b.level ?? "";
+    if (lva !== lvb) return lva < lvb ? -1 : 1;
     const [ga, va, la] = clsRank(a.weightClass);
     const [gb, vb, lb] = clsRank(b.weightClass);
     if (ga !== gb) return ga - gb;
     if (va !== vb) return va - vb;
     if (la !== lb) return la < lb ? -1 : 1;
+    const sca = a.scheme ?? "";
+    const scb = b.scheme ?? "";
+    if (sca !== scb) return sca < scb ? -1 : 1;
     const ea = a.equipment ?? "";
     const eb = b.equipment ?? "";
     if (ea !== eb) return ea < eb ? -1 : 1;
@@ -118,12 +186,13 @@ export function searchRecords({
   return matches;
 }
 
-/** Your lift as a percentage of a (kg-unit) record. */
-export function percentOfRecord(liftKg, record) {
-  if (!(liftKg > 0)) throw new Error("liftKg must be > 0");
-  if (record.unit !== "kg") {
-    throw new Error(`record for ${record.liftDisplay} is measured in ${record.unit}, not kg - ` +
-      "can't compare a weight to it");
-  }
-  return (liftKg / record.value) * 100.0;
+/**
+ * Your lift/mark as a percentage of a record, direction-aware: for
+ * "lower"-is-better track times it inverts (record/value) so 100% always
+ * means record-equalling and bigger is always better.
+ */
+export function percentOfRecord(value, record) {
+  if (!(value > 0)) throw new Error("value must be > 0");
+  if (record.direction === "lower") return (record.value / value) * 100.0;
+  return (value / record.value) * 100.0;
 }

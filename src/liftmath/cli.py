@@ -5,8 +5,8 @@ Subcommands:
     plates      Plate-loading math for a target barbell weight (add --inventory for a
                 finite per-side plate count instead of an unlimited supply)
     standards   Relative-strength scoring: Wilks (original + 2020), DOTS, IPF GL points
-    records     Search bundled world records (powerlifting / strongman / grip) by
-                lift or event, sex, weight class or bodyweight, and equipment
+    records     Search bundled records (powerlifting / strongman / grip / track & field)
+                by lift or event, sex, weight class or bodyweight, equipment, and level
     convert     Convert a weight between lb and kg (exact avoirdupois pound)
 
 All loads are unit-agnostic (kg or lb); pass --unit. Pass --json (before or after
@@ -25,7 +25,13 @@ from liftmath.convert import KG_PER_LB, convert_weight
 from liftmath.convert import lbs_to_kg as _lbs_to_kg
 from liftmath.onerm import estimate_one_rm
 from liftmath.plates import PRESETS, _parse_inventory_spec, load_plates, load_plates_from_inventory
-from liftmath.records import percent_of_record, records_as_of, search_records
+from liftmath.records import (
+    format_seconds,
+    parse_mark,
+    percent_of_record,
+    records_as_of,
+    search_records,
+)
 from liftmath.standards import score as strength_score
 
 
@@ -147,18 +153,58 @@ def cmd_standards(args: argparse.Namespace) -> int:
     return 0
 
 
+def _record_value_text(r, display_unit: str) -> str:
+    """A record's headline value: '433.5kg (956lb)', '1:40.91', '7.77m', '9126 pts'."""
+    if r.unit == "kg":
+        if display_unit == "lb":
+            return f"{r.value:g}kg ({r.value / KG_PER_LB:.0f}lb)"
+        return f"{r.value:g}kg"
+    if r.display:
+        return r.display + (" pts" if r.unit == "pts" else "m" if r.unit == "m" else "")
+    if r.unit == "s":
+        return format_seconds(r.value) if r.direction == "lower" else f"{r.value:g}s"
+    return f"{r.value:g}{'m' if r.unit == 'm' else ' pts'}"
+
+
+def _compare_line(r, compare_raw: str, display_unit: str) -> str | None:
+    """The 'your X = Y% of this record' line, direction- and unit-aware."""
+    try:
+        if r.unit == "kg":
+            weight = float(compare_raw)
+            value = _lbs_to_kg(weight) if display_unit == "lb" else weight
+            yours = f"{weight:g}{display_unit}"
+        else:
+            value = parse_mark(compare_raw)
+            yours = compare_raw
+        pct = percent_of_record(value, r)
+    except ValueError:
+        return None
+    if r.direction == "lower":
+        gap = value - r.value
+        if gap <= 0:
+            return f"      your {yours} = {pct:.1f}% of record pace - you'd have the record"
+        gap_txt = format_seconds(gap) + ("s" if gap < 60 else "")
+        return f"      your {yours} = {pct:.1f}% of record pace ({gap_txt} off)"
+    gap = r.value - value
+    if gap <= 0:
+        return f"      your {yours} = {pct:.1f}% of this record - you'd have the record"
+    if r.unit == "kg":
+        gap_txt = f"{gap:g}kg" if display_unit == "kg" else f"{gap / KG_PER_LB:.0f}lb"
+    else:
+        gap_txt = f"{gap:g}{'m' if r.unit == 'm' else r.unit}"
+    return f"      your {yours} = {pct:.1f}% of this record ({gap_txt} to go)"
+
+
 def cmd_records(args: argparse.Namespace) -> int:
     bodyweight_kg = None
     if args.bodyweight is not None:
         bodyweight_kg = _lbs_to_kg(args.bodyweight) if args.unit == "lb" else args.bodyweight
-    compare_kg = None
-    if args.compare is not None:
-        compare_kg = _lbs_to_kg(args.compare) if args.unit == "lb" else args.compare
 
     try:
         matches = search_records(sport=args.sport, lift=args.lift, sex=args.sex,
                                  weight_class=args.weight_class, bodyweight_kg=bodyweight_kg,
-                                 equipment=args.equip, scope=args.scope)
+                                 equipment=args.equip, scope=args.scope,
+                                 level=args.level, scheme=args.scheme)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -169,36 +215,43 @@ def cmd_records(args: argparse.Namespace) -> int:
 
     if not matches:
         print("No records match those filters. Lift/event keys are e.g. squat, bench, deadlift,")
-        print("total (powerlifting) or event keys like log-lift, atlas-stone, two-hands-pinch -")
-        print("run with just --sport strongman or --sport grip to list a sport's events.")
+        print("total (powerlifting), log-lift, atlas-stone, two-hands-pinch, 100m, pole-vault -")
+        print("run with just --sport strongman/grip/track to list a sport's events.")
         return 0
 
     if len(matches) > 40 and not args.all:
-        print(f"{len(matches)} records match - narrow with --sport/--lift/--sex/--class/--equip,")
-        print("or pass --all (or --json) to print everything.")
+        print(f"{len(matches)} records match - narrow with --sport/--lift/--sex/--class/--equip/")
+        print("--level/--scheme, or pass --all (or --json) to print everything.")
         return 0
 
-    print(f"World records matching your filters (snapshot of {records_as_of()}):")
+    print(f"Records matching your filters (snapshot of {records_as_of()}):")
     print("  Powerlifting rows are computed from the OpenPowerlifting database - all-time =")
-    print("  any sanctioned federation, tested = drug-tested meets only. Strongman and grip")
-    print("  are curated with per-entry citations (--json carries the source URLs).")
+    print("  any sanctioned federation, tested = drug-tested meets only. Strongman, grip, and")
+    print("  track & field are curated with per-entry citations (--json carries the sources).")
     print("-" * 84)
     for r in matches:
-        if r.unit == "kg":
-            value = f"{r.value:g}kg ({r.value / KG_PER_LB:.0f}lb)" if args.unit == "lb" else f"{r.value:g}kg"
-        else:
-            value = f"{r.value:g}{r.unit}"
-        cls = f" {r.weight_class}" if r.weight_class else " open"
+        value = _record_value_text(r, args.unit)
+        cls = f" {r.weight_class}" if r.weight_class else ("" if r.sport == "track" else " open")
+        scheme = f" [{r.scheme}]" if r.scheme else ""
         equip = f" {r.equipment}" if r.equipment else ""
+        level = f" {r.level}" if r.level else ""
         detail = ", ".join(x for x in (r.competition or r.federation, r.date) if x)
-        print(f"  [{r.sport}] {r.lift_display}{cls} {r.sex}{equip} ({r.scope})")
-        print(f"      {value:<18} {r.athlete}  ({detail})")
-        if compare_kg is not None and r.unit == "kg":
-            pct = percent_of_record(compare_kg, r)
-            gap = r.value - compare_kg
-            gap_txt = f"{gap:g}kg" if args.unit == "kg" else f"{gap / KG_PER_LB:.0f}lb"
-            print(f"      your {args.compare:g}{args.unit} = {pct:.1f}% of this record"
-                  + (f" ({gap_txt} to go)" if gap > 0 else " - you'd have the record"))
+        who = ", ".join(x for x in (r.athlete, r.country) if x)
+        print(f"  [{r.sport}] {r.lift_display}{level}{cls}{scheme} {r.sex}{equip} ({r.scope})")
+        print(f"      {value:<18} {who}  ({detail})")
+        if r.sport == "powerlifting" and (r.bodyweight_kg or r.dots):
+            extras = []
+            if r.bodyweight_kg:
+                extras.append(f"@ {r.bodyweight_kg:g}kg bw")
+            if r.dots:
+                extras.append(f"{r.dots:g} Dots")
+            if r.goodlift:
+                extras.append(f"{r.goodlift:g} IPF GL")
+            print(f"      {' - '.join(extras)}")
+        if args.compare is not None:
+            line = _compare_line(r, args.compare, args.unit)
+            if line:
+                print(line)
     print("-" * 84)
     print("Records move; a bundled snapshot can trail the current record. Official federation")
     print("lists (e.g. the IPF's) are curated separately and differ from all-time-in-the-data.")
@@ -272,25 +325,34 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_standards)
 
-    s = sub.add_parser("records", help="search world records: powerlifting/strongman/grip",
+    s = sub.add_parser("records",
+                       help="search records: powerlifting/strongman/grip/track & field",
                        parents=[json_parent])
-    s.add_argument("--sport", choices=["powerlifting", "strongman", "grip"])
+    s.add_argument("--sport", choices=["powerlifting", "strongman", "grip", "track"])
     s.add_argument("--lift", "--event", dest="lift",
                    help="lift or event key: squat/bench/deadlift/total, log-lift, atlas-stone, "
-                        "rolling-thunder, ... (list a sport's events with just --sport)")
+                        "rolling-thunder, 100m, pole-vault, ... (list a sport's events with "
+                        "just --sport)")
     s.add_argument("--sex", choices=["male", "female"])
     s.add_argument("--class", dest="weight_class", metavar="CLASS",
                    help="weight class label: e.g. 82.5, 140+, u105, or 'open'")
     s.add_argument("--bodyweight", type=float,
                    help="your bodyweight (in --unit) - resolves the weight class for you "
-                        "(powerlifting; needs --sex)")
+                        "(powerlifting; needs --sex; uses --scheme, default traditional)")
     s.add_argument("--equip", choices=["raw", "wraps", "single-ply", "multi-ply"],
                    help="powerlifting equipment filter")
-    s.add_argument("--scope", choices=["all-time", "tested", "official", "unofficial"],
+    s.add_argument("--scheme", choices=["traditional", "ipf"],
+                   help="powerlifting weight-class scheme (traditional all-time classes or "
+                        "current IPF classes); open-class rows match either")
+    s.add_argument("--level", choices=["world", "college", "high-school"],
+                   help="track & field level filter")
+    s.add_argument("--scope", choices=["all-time", "tested", "official", "unofficial", "pending"],
                    help="powerlifting: all-time (any sanctioned fed) or tested (drug-tested "
-                        "meets); strongman/grip: official or unofficial")
-    s.add_argument("--compare", type=float, metavar="WEIGHT",
-                   help="your lift (in --unit) - shown as %% of each matching record")
+                        "meets); curated sports: official/unofficial (track ratifications "
+                        "in progress show 'pending')")
+    s.add_argument("--compare", metavar="MARK",
+                   help="your lift (in --unit) or track mark ('10.85', '4:12.3') - shown as "
+                        "%% of each matching record")
     s.add_argument("--all", action="store_true", help="print every match, however many")
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
     s.set_defaults(func=cmd_records)
