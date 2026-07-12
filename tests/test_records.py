@@ -82,6 +82,15 @@ def test_parse_mark_rejects_junk(bad):
     (100.91, "1:40.91"),
     (206.0, "3:26.00"),
     (7235, "2:00:35"),
+    (75.4, "1:15.40"),
+    (60.0, "1:00.00"),
+    # These round up to the next bucket at display precision (hundredths
+    # under an hour, whole seconds past it) - the bucket has to be picked
+    # on the rounded value, or you get invalid output like "60.00",
+    # "1:60.00", "59:60.00".
+    (59.999, "1:00.00"),
+    (119.995, "2:00.00"),
+    (3599.996, "1:00:00"),
 ])
 def test_format_seconds(seconds, expected):
     assert format_seconds(seconds) == expected

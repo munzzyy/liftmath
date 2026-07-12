@@ -181,10 +181,15 @@ def format_seconds(seconds: float) -> str:
     """
     if seconds < 0:
         raise ValueError("seconds must be >= 0")
-    if seconds < 60:
-        return f"{seconds:.2f}"
-    if seconds < 3600:
-        minutes, rest = divmod(seconds, 60)
+    # Round to display precision before picking a bucket, not after - a raw
+    # value within half a unit of a boundary (59.999, 3599.996) otherwise
+    # slips into the lower bucket and then rounds up during formatting,
+    # printing an invalid "60.00" or "59:60.00" instead of crossing over.
+    rounded = round(seconds, 2)
+    if rounded < 60:
+        return f"{rounded:.2f}"
+    if rounded < 3600:
+        minutes, rest = divmod(rounded, 60)
         return f"{int(minutes)}:{rest:05.2f}"
     hours, rest = divmod(round(seconds), 3600)
     minutes, whole = divmod(rest, 60)
