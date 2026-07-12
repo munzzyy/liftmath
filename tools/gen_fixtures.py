@@ -181,6 +181,9 @@ def gen_strength_scores() -> list[dict]:
         (500, 83, "male"), (300, 60, "female"), (700, 120, "male"),
         (200, 50, "female"), (1000, 140, "male"), (150, 45, "female"),
         (620.5, 93.4, "male"),
+        # out-of-range bodyweights: past a formula's fitted domain the score
+        # inverts sign unless clamped. These pin the clamp so both engines agree.
+        (500, 250, "male"), (400, 170, "female"), (300, 35, "male"),
     ]:
         cases.append({
             "fn": "score",

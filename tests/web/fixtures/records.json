@@ -247,7 +247,7 @@
     "args": {
       "seconds": 3599.996
     },
-    "expected": "59:60.00",
+    "expected": "1:00:00",
     "fn": "formatSeconds"
   },
   {

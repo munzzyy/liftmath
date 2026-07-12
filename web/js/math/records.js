@@ -6,6 +6,7 @@
 // what "record" means per sport (computed vs curated) and the caveats.
 
 import { DATASET } from "../records-data.js";
+import { pyRound } from "./py-round.js";
 
 export const SPORTS = ["powerlifting", "strongman", "grip", "track"];
 export const POWERLIFTING_LIFTS = ["squat", "bench", "deadlift", "total"];
@@ -72,13 +73,18 @@ export function parseMark(text) {
 /** Format seconds the way track marks are written: 9.58, 1:40.91, 2:00:35. */
 export function formatSeconds(seconds) {
   if (seconds < 0) throw new Error("seconds must be >= 0");
-  if (seconds < 60) return seconds.toFixed(2);
-  if (seconds < 3600) {
-    const minutes = Math.floor(seconds / 60);
-    const rest = seconds - minutes * 60;
+  // Round to display precision before picking a bucket, not after - a raw value
+  // within half a unit of a boundary (59.999, 3599.996) otherwise slips into the
+  // lower bucket and rounds up while formatting, printing an invalid "60.00" or
+  // "59:60.00". pyRound so this stays bit-for-bit with the Python spec.
+  const rounded = pyRound(seconds, 2);
+  if (rounded < 60) return rounded.toFixed(2);
+  if (rounded < 3600) {
+    const minutes = Math.floor(rounded / 60);
+    const rest = rounded - minutes * 60;
     return `${minutes}:${rest.toFixed(2).padStart(5, "0")}`;
   }
-  const whole = Math.round(seconds);
+  const whole = pyRound(seconds);
   const hours = Math.floor(whole / 3600);
   const minutes = Math.floor((whole % 3600) / 60);
   const secs = whole % 60;

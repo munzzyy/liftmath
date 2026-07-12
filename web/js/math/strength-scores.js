@@ -46,6 +46,17 @@ const IPF_GL = {
 
 const SEXES = ["male", "female"];
 
+// Each polynomial was fit over a bounded bodyweight domain; past its edges the
+// denominator extrapolates through a zero crossing and the score inverts sign.
+// Clamp bodyweight into the fitted range before evaluating - the same bounds
+// the reference implementations use (opl-data wilks.rs / wilks2020.rs /
+// dots.rs), mirrored from src/liftmath/standards.py. IPF GL is exempt: its
+// exponential form never crosses zero for a positive bodyweight, so it isn't
+// clamped in either engine.
+const WILKS_ORIGINAL_BW_RANGE = { male: [40.0, 201.9], female: [26.51, 154.53] };
+const WILKS_2020_BW_RANGE = { male: [40.0, 200.95], female: [40.0, 150.95] };
+const DOTS_BW_RANGE = { male: [40.0, 210.0], female: [40.0, 150.0] };
+
 function validate(bodyweightKg, sex) {
   if (!SEXES.includes(sex)) {
     throw new RangeError(`sex must be one of ${JSON.stringify(SEXES)}, got ${JSON.stringify(sex)}`);
@@ -53,6 +64,11 @@ function validate(bodyweightKg, sex) {
   if (bodyweightKg <= 0) {
     throw new RangeError("bodyweightKg must be > 0");
   }
+}
+
+function clampBodyweight(bodyweightKg, range, sex) {
+  const [low, high] = range[sex];
+  return Math.min(Math.max(bodyweightKg, low), high);
 }
 
 /**
@@ -63,7 +79,7 @@ function validate(bodyweightKg, sex) {
 export function wilksOriginalScore(totalKg, bodyweightKg, sex) {
   validate(bodyweightKg, sex);
   const [a, b, c, d, e, f] = WILKS_ORIGINAL[sex];
-  const x = bodyweightKg;
+  const x = clampBodyweight(bodyweightKg, WILKS_ORIGINAL_BW_RANGE, sex);
   const denom = a + b * x + c * x ** 2 + d * x ** 3 + e * x ** 4 + f * x ** 5;
   const coefficient = 500.0 / denom;
   return totalKg * coefficient;
@@ -73,7 +89,7 @@ export function wilksOriginalScore(totalKg, bodyweightKg, sex) {
 export function wilksScore(totalKg, bodyweightKg, sex) {
   validate(bodyweightKg, sex);
   const [a, b, c, d, e, f] = WILKS_2020[sex];
-  const x = bodyweightKg;
+  const x = clampBodyweight(bodyweightKg, WILKS_2020_BW_RANGE, sex);
   const denom = a + b * x + c * x ** 2 + d * x ** 3 + e * x ** 4 + f * x ** 5;
   const coefficient = 600.0 / denom;
   return totalKg * coefficient;
@@ -83,7 +99,7 @@ export function wilksScore(totalKg, bodyweightKg, sex) {
 export function dotsScore(totalKg, bodyweightKg, sex) {
   validate(bodyweightKg, sex);
   const [a, b, c, d, e] = DOTS[sex];
-  const x = bodyweightKg;
+  const x = clampBodyweight(bodyweightKg, DOTS_BW_RANGE, sex);
   const denom = a * x ** 4 + b * x ** 3 + c * x ** 2 + d * x + e;
   return (totalKg * 500.0) / denom;
 }
