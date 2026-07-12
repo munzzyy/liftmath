@@ -21,6 +21,10 @@ Sources:
         gitlab.com/openpowerlifting/opl-data), which ships this exact table
         with its own pinned unit tests, and matches Wikipedia's "Wilks
         coefficient" page and europowerlifting.org's formula sheet.
+        Bodyweight is clamped to the domain the polynomial was fit over
+        (men 40-201.9kg, women 26.51-154.53kg) before evaluating, same as
+        wilks.rs's own clamp - past that range the denominator crosses zero
+        and the score flips sign instead of leveling off at the boundary.
     Wilks, R. (revised 2020). The Wilks-2020 formula. Same polynomial form,
         but a **600** divisor (not 500) and a different a-f table from the
         original. Cross-checked against an OpenPowerlifting-derived
@@ -29,14 +33,18 @@ Sources:
         Coefficients" table. (An early web-search snippet claimed Wilks-2020
         reuses the original's 500 divisor with new coefficients - that's
         wrong; resolved by reading two independent source-code
-        implementations directly.)
+        implementations directly.) Same clamp-before-evaluate treatment as
+        the original, bounded to wilks2020.rs's fitted domain (men
+        40-200.95kg, women 40-150.95kg).
     DOTS (2019). Introduced by Tim Konertz / German Powerlifting Federation
         as a bodyweight-independent alternative to Wilks, adopted by USAPL/
         IPF in 2019-2020 as an interim/parallel standard. Coefficients:
         total * 500 / (a*x^4 + b*x^3 + c*x^2 + d*x + e), x = bodyweight in kg.
         Cross-checked against an OpenPowerlifting-derived TypeScript port
         (dots.ts) and an independent web source giving matching men's
-        constants.
+        constants. Bodyweight is clamped to dots.rs's fitted domain (men
+        40-210kg, women 40-150kg) before evaluating, for the same reason as
+        Wilks above.
     International Powerlifting Federation (May 2020). The IPF GL Coefficients
         for Relative Scoring. IPF GL Coefficient = 100 / (A - B*e^(-C*Bwt));
         IPF GL Points = Coefficient * Total. Classic (raw) powerlifting
@@ -54,6 +62,10 @@ Sources:
         the table; re-check powerlifting.sport's own coefficients page
         periodically (roughly every 4 years, per the IPF's own cadence) and
         update `_IPF_GL` if a newer table is published.
+        NO CLAMP NEEDED: unlike Wilks/DOTS this is an exponential form, not
+        a polynomial - the denominator A - B*e^(-C*Bwt) stays positive for
+        every bodyweight > 0 since B < A in both published coefficient sets,
+        so there's no sign-inversion failure mode to guard against here.
 """
 
 from __future__ import annotations
@@ -69,6 +81,12 @@ _WILKS_ORIGINAL = {
                4.731582e-05, -9.054e-08),
 }
 
+# Bodyweight domain the polynomial above was fit over, kg (min, max) per sex.
+# Outside this range the denominator crosses zero and the score flips sign
+# instead of leveling off, so it gets clamped in before evaluating - same
+# approach as wilks.rs. See module docstring for the citation.
+_WILKS_ORIGINAL_BW_RANGE = {"male": (40.0, 201.9), "female": (26.51, 154.53)}
+
 # Wilks 2020 revision. a,b,c,d,e,f per sex; coefficient = 600 / (a+bx+cx^2+cx^3+ex^4+fx^5)
 _WILKS_2020 = {
     "male": (47.46178854, 8.472061379, 0.07369410346, -0.001395833811,
@@ -77,11 +95,17 @@ _WILKS_2020 = {
                9.38773881462799e-06, -2.3334613884954e-08),
 }
 
+# Same idea as _WILKS_ORIGINAL_BW_RANGE, per wilks2020.rs's clamp.
+_WILKS_2020_BW_RANGE = {"male": (40.0, 200.95), "female": (40.0, 150.95)}
+
 # DOTS. a,b,c,d,e per sex; score = total * 500 / (a*x^4 + b*x^3 + c*x^2 + d*x + e)
 _DOTS = {
     "male": (-0.0000010930, 0.0007391293, -0.1918759221, 24.0900756, -307.75076),
     "female": (-0.0000010706, 0.0005158568, -0.1126655495, 13.6175032, -57.96288),
 }
+
+# Same idea again, per dots.rs's clamp.
+_DOTS_BW_RANGE = {"male": (40.0, 210.0), "female": (40.0, 150.0)}
 
 # IPF GL, classic (raw) powerlifting only. A,B,C per sex.
 # Coefficient = 100 / (A - B*e^(-C*Bwt)); points = coefficient * total.
@@ -120,6 +144,17 @@ def _validate(total_kg: float, bodyweight_kg: float, sex: str) -> None:
         raise ValueError("bodyweight_kg must be a finite number > 0")
 
 
+def _clamp_bodyweight(bodyweight_kg: float, bw_range: dict, sex: str) -> float:
+    """Clamp bodyweight into the domain a formula's polynomial was fit over.
+
+    A lifter outside the fitted range still gets a score - just the one at
+    the nearest domain edge, instead of a coefficient computed from a
+    denominator that has extrapolated past its zero crossing.
+    """
+    low, high = bw_range[sex]
+    return min(max(bodyweight_kg, low), high)
+
+
 def wilks_original_score(total_kg: float, bodyweight_kg: float, sex: str) -> float:
     """Original Wilks (1994) score for a total at a given bodyweight.
 
@@ -129,7 +164,7 @@ def wilks_original_score(total_kg: float, bodyweight_kg: float, sex: str) -> flo
     """
     _validate(total_kg, bodyweight_kg, sex)
     a, b, c, d, e, f = _WILKS_ORIGINAL[sex]
-    x = bodyweight_kg
+    x = _clamp_bodyweight(bodyweight_kg, _WILKS_ORIGINAL_BW_RANGE, sex)
     denom = a + b * x + c * x**2 + d * x**3 + e * x**4 + f * x**5
     coefficient = 500.0 / denom
     return total_kg * coefficient
@@ -139,7 +174,7 @@ def wilks_score(total_kg: float, bodyweight_kg: float, sex: str) -> float:
     """Wilks (2020 revision) score for a total at a given bodyweight."""
     _validate(total_kg, bodyweight_kg, sex)
     a, b, c, d, e, f = _WILKS_2020[sex]
-    x = bodyweight_kg
+    x = _clamp_bodyweight(bodyweight_kg, _WILKS_2020_BW_RANGE, sex)
     denom = a + b * x + c * x**2 + d * x**3 + e * x**4 + f * x**5
     coefficient = 600.0 / denom
     return total_kg * coefficient
@@ -149,7 +184,7 @@ def dots_score(total_kg: float, bodyweight_kg: float, sex: str) -> float:
     """DOTS score for a total at a given bodyweight."""
     _validate(total_kg, bodyweight_kg, sex)
     a, b, c, d, e = _DOTS[sex]
-    x = bodyweight_kg
+    x = _clamp_bodyweight(bodyweight_kg, _DOTS_BW_RANGE, sex)
     denom = a * x**4 + b * x**3 + c * x**2 + d * x + e
     return total_kg * 500.0 / denom
 

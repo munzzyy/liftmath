@@ -19,6 +19,33 @@ def test_wilks_female_reference_value():
     assert wilks_score(300, 60, "female") == pytest.approx(395.710, abs=0.01)
 
 
+def test_wilks_male_clamps_bodyweight_above_fitted_domain():
+    # Past the men's 200.95kg fitted domain the unclamped quintic's
+    # denominator crosses zero and the score inverts sign; wilks2020.rs
+    # clamps bodyweight to the boundary before evaluating instead, and so
+    # do we. Verified bug report values: 250kg used to give 371.58, 300kg
+    # used to go negative (-599.43) - both should now land on 306.09.
+    boundary = wilks_score(500, 200.95, "male")
+    assert boundary == pytest.approx(306.09, abs=0.01)
+    assert wilks_score(500, 250, "male") == pytest.approx(boundary, abs=0.01)
+    assert wilks_score(500, 300, "male") == pytest.approx(boundary, abs=0.01)
+
+
+def test_wilks_female_clamps_bodyweight_above_fitted_domain():
+    boundary = wilks_score(300, 150.95, "female")
+    assert wilks_score(300, 220, "female") == pytest.approx(boundary, abs=0.01)
+    assert wilks_score(300, 300, "female") == pytest.approx(boundary, abs=0.01)
+    assert wilks_score(300, 300, "female") > 0
+
+
+def test_wilks_clamps_bodyweight_below_fitted_domain():
+    # Both sexes floor at 40kg - an implausibly light "bodyweight" shouldn't
+    # get an inflated coefficient any more than an implausibly heavy one
+    # should get an inverted one.
+    assert wilks_score(200, 20, "male") == pytest.approx(wilks_score(200, 40, "male"), abs=0.01)
+    assert wilks_score(150, 20, "female") == pytest.approx(wilks_score(150, 40, "female"), abs=0.01)
+
+
 def test_wilks_original_male_matches_openpowerlifting_pinned_test():
     # OpenPowerlifting's own Rust unit test: M, 100kg BW, 1000kg total -> 608.589.
     assert wilks_original_score(1000, 100, "male") == pytest.approx(608.589, abs=0.01)
@@ -36,6 +63,21 @@ def test_wilks_original_and_2020_disagree_meaningfully():
     assert original != pytest.approx(revised, abs=1.0)
 
 
+def test_wilks_original_clamps_bodyweight_above_fitted_domain():
+    # Same failure mode as Wilks-2020, same fix: wilks.rs clamps to
+    # [40, 201.9]kg (men) before evaluating its own quintic.
+    boundary = wilks_original_score(500, 201.9, "male")
+    assert wilks_original_score(500, 300, "male") == pytest.approx(boundary, abs=0.01)
+    assert wilks_original_score(500, 300, "male") > 0
+
+
+def test_wilks_original_female_clamps_bodyweight_below_fitted_domain():
+    # The original formula's female floor is 26.51kg, not the 40kg used
+    # everywhere else - worth its own test since it's the odd one out.
+    boundary = wilks_original_score(300, 26.51, "female")
+    assert wilks_original_score(300, 15, "female") == pytest.approx(boundary, abs=0.01)
+
+
 def test_dots_male_reference_value():
     # Hand-calculated from the DOTS coefficients at bodyweight 100kg, 500kg total.
     assert dots_score(500, 100, "male") == pytest.approx(307.758, abs=0.01)
@@ -43,6 +85,25 @@ def test_dots_male_reference_value():
 
 def test_dots_female_reference_value():
     assert dots_score(300, 60, "female") == pytest.approx(332.564, abs=0.01)
+
+
+def test_dots_male_clamps_bodyweight_above_fitted_domain():
+    # Past the men's 210kg fitted domain the unclamped quartic's denominator
+    # crosses zero too; dots.rs clamps the same way Wilks does.
+    boundary = dots_score(500, 210, "male")
+    assert dots_score(500, 260, "male") == pytest.approx(boundary, abs=0.01)
+    assert dots_score(500, 300, "male") == pytest.approx(boundary, abs=0.01)
+
+
+def test_dots_female_clamps_bodyweight_above_fitted_domain():
+    boundary = dots_score(300, 150, "female")
+    assert dots_score(300, 200, "female") == pytest.approx(boundary, abs=0.01)
+    assert dots_score(300, 300, "female") == pytest.approx(boundary, abs=0.01)
+    assert dots_score(300, 300, "female") > 0
+
+
+def test_dots_clamps_bodyweight_below_fitted_domain():
+    assert dots_score(200, 20, "male") == pytest.approx(dots_score(200, 40, "male"), abs=0.01)
 
 
 def test_ipf_gl_matches_official_worked_example_equipped_men():
