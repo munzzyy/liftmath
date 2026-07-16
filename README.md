@@ -285,3 +285,7 @@ Questions and contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 [Prosperity Public License 3.0.0](LICENSE): free for noncommercial use. Commercial use gets a
 30-day free trial, then requires a paid license. See `LICENSE` for the full terms.
+
+## Support
+
+If liftmath runs your training math, [sponsoring](https://github.com/sponsors/munzzyy) is what keeps it maintained.
