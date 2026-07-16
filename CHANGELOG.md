@@ -23,8 +23,17 @@ forever.
   for 225 kg (~496 lb). The result pane did relabel to kg, but the number
   changed meaning. The box value now converts to kg when you switch in and
   back to lb when you switch out.
+- `standards`: IPF GL points for a woman under ~17.7kg bodyweight came out
+  negative (or, right at that boundary, absurdly large) instead of leveling
+  off - the women's classic coefficient table has B > A, so the formula's own
+  denominator inverts sign below that point. The IPF's own formula document
+  states a domain floor for this (40kg men, 35kg women); bodyweight is now
+  clamped to that floor before evaluating, same treatment Wilks/DOTS already
+  got for their own out-of-range bodyweights. Unreachable for any real adult
+  lifter, but the function had no floor of its own, so a bad unit conversion
+  upstream could've silently returned a nonsense score.
 
-22 new Python tests, 13 new JS tests.
+24 new Python tests, 15 new JS tests.
 
 Releases before this file existed are documented on the
 [GitHub releases page](https://github.com/munzzyy/liftmath/releases).

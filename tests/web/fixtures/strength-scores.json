@@ -161,11 +161,45 @@
     "expected": {
       "bodyweightKg": 35,
       "dots": 381.3330032574515,
-      "ipfGl": 65.6397,
+      "ipfGl": 61.1664,
       "sex": "male",
       "total": 300,
       "wilks": 416.8590221739187,
       "wilksOriginal": 400.6268598861594
+    },
+    "fn": "score"
+  },
+  {
+    "args": {
+      "bodyweightKg": 20,
+      "sex": "female",
+      "totalKg": 300
+    },
+    "expected": {
+      "bodyweightKg": 20,
+      "dots": 445.4389704244797,
+      "ipfGl": 119.7456,
+      "sex": "female",
+      "total": 300,
+      "wilks": 554.5905656713995,
+      "wilksOriginal": 503.226055835117
+    },
+    "fn": "score"
+  },
+  {
+    "args": {
+      "bodyweightKg": 20,
+      "sex": "male",
+      "totalKg": 500
+    },
+    "expected": {
+      "bodyweightKg": 20,
+      "dots": 635.5550054290858,
+      "ipfGl": 101.944,
+      "sex": "male",
+      "total": 500,
+      "wilks": 694.7650369565312,
+      "wilksOriginal": 667.711433143599
     },
     "fn": "score"
   }

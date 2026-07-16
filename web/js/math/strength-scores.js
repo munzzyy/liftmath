@@ -44,6 +44,13 @@ const IPF_GL = {
   female: [610.32796, 1045.59282, 0.03048],
 };
 
+// The IPF's own formula statement gives this equation a domain floor of
+// Bwt >= 40kg (men) / Bwt >= 35kg (women) - not just a convention: the
+// women's table has B > A, so the denominator goes negative below ~17.66kg
+// and only turns positive again above that. This floor sits safely above
+// that crossing for both sexes. No upper bound needed - see standards.py.
+const IPF_GL_BW_FLOOR = { male: 40.0, female: 35.0 };
+
 const SEXES = ["male", "female"];
 
 // Each polynomial was fit over a bounded bodyweight domain; past its edges the
@@ -107,12 +114,16 @@ export function dotsScore(totalKg, bodyweightKg, sex) {
 /**
  * IPF GL points for a total at a given bodyweight (classic/raw powerlifting).
  * Matches the IPF's own published rounding: the equalization coefficient is
- * rounded to 6 decimal places before multiplying by the total.
+ * rounded to 6 decimal places before multiplying by the total. Bodyweight is
+ * floored at the IPF's own stated domain (40kg men / 35kg women) before
+ * evaluating - below that, the women's coefficient table inverts sign
+ * instead of leveling off.
  */
 export function ipfGlPoints(totalKg, bodyweightKg, sex) {
   validate(bodyweightKg, sex);
   const [a, b, c] = IPF_GL[sex];
-  const coefficient = pyRound(100.0 / (a - b * Math.exp(-c * bodyweightKg)), 6);
+  const x = Math.max(bodyweightKg, IPF_GL_BW_FLOOR[sex]);
+  const coefficient = pyRound(100.0 / (a - b * Math.exp(-c * x)), 6);
   return coefficient * totalKg;
 }
 

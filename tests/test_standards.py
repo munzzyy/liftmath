@@ -119,6 +119,30 @@ def test_ipf_gl_matches_official_worked_example_equipped_men():
     assert round(coefficient * 1035.0, 6) == pytest.approx(112.855365, abs=1e-3)
 
 
+def test_ipf_gl_female_clamps_bodyweight_below_stated_domain_floor():
+    # The IPF's own formula document states this equation's domain as
+    # Bwt >= 35kg for women. That floor isn't just a convention here: the
+    # women's classic table has B > A (1045.59282 > 610.32796), so the
+    # denominator A - B*e^(-C*Bwt) is negative at low bodyweight and only
+    # crosses back to positive around 17.66kg - well inside the region the
+    # IPF's own domain statement already excludes. Below the 35kg floor this
+    # used to return a negative (or, near the crossing, wildly blown-up)
+    # score instead of the flat-line-at-the-boundary value every other
+    # formula here gives past its fitted domain.
+    boundary = ipf_gl_points(300, 35, "female")
+    assert boundary > 0
+    assert ipf_gl_points(300, 20, "female") == pytest.approx(boundary, abs=0.01)
+    assert ipf_gl_points(300, 10, "female") == pytest.approx(boundary, abs=0.01)
+
+
+def test_ipf_gl_male_clamps_bodyweight_below_stated_domain_floor():
+    # Men's classic table has A > B, so it never inverts sign at any positive
+    # bodyweight - but the IPF's own domain statement still starts at 40kg,
+    # so an implausible bodyweight below that is floored the same way.
+    boundary = ipf_gl_points(500, 40, "male")
+    assert ipf_gl_points(500, 20, "male") == pytest.approx(boundary, abs=0.01)
+
+
 def test_ipf_gl_classic_male_reasonable_range():
     # Classic powerlifting men's coefficients, elite-ish total at a mid bodyweight.
     # An 800kg total at 100kg bodyweight should land in the low-100s GL points range,

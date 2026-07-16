@@ -54,18 +54,34 @@ Sources:
         IPF_GL_Coefficients-2020.pdf). Coefficients are stated by the IPF as
         in effect May 1 2020 - Dec 31 2023 and are refreshed on a roughly
         4-year cycle; treat them as "current best known," not permanent.
-        CURRENCY NOTE: coefficients below were verified current as of the
-        liftmath 1.3.0 release (mid-2026) - that's already past the IPF's
-        own stated Dec 31 2023 window for this table, with no newer official
-        publication found as of that check. IPF GL points computed here may
-        drift from the IPF's own current live scoring once it next refreshes
-        the table; re-check powerlifting.sport's own coefficients page
-        periodically (roughly every 4 years, per the IPF's own cadence) and
-        update `_IPF_GL` if a newer table is published.
-        NO CLAMP NEEDED: unlike Wilks/DOTS this is an exponential form, not
-        a polynomial - the denominator A - B*e^(-C*Bwt) stays positive for
-        every bodyweight > 0 since B < A in both published coefficient sets,
-        so there's no sign-inversion failure mode to guard against here.
+        CURRENCY NOTE: coefficients below were re-verified against that same
+        official PDF in mid-2026 - it's still the only coefficients document
+        linked from the IPF's own formula page, with no newer table published
+        despite being past its stated Dec 31 2023 window. IPF GL points
+        computed here may drift from the IPF's own current live scoring once
+        it next refreshes the table; re-check powerlifting.sport's own
+        coefficients page periodically (roughly every 4 years, per the IPF's
+        own cadence) and update `_IPF_GL` if a newer table is published.
+        DOES need a floor clamp, same failure mode as Wilks/DOTS: the
+        official PDF's own formula statement gives the coefficient equation a
+        stated domain of "Bwt >= 40kg for men and Bwt >= 35kg for women," and
+        that floor is load-bearing, not stylistic - the women's classic table
+        has B > A (1045.59282 > 610.32796), so the denominator A - B*e^(-C*Bwt)
+        is NEGATIVE at Bwt=0 and only crosses back to positive around
+        17.66kg, well inside the region the IPF's own domain statement
+        already excludes. Below that crossing point the coefficient (and so
+        the points) flips sign; near it, the coefficient blows up toward
+        +/-infinity. This is unreachable for any real adult female lifter
+        (women's weight classes start at 44kg) but the function itself had no
+        floor, so a bad upstream unit conversion or typo'd bodyweight could
+        silently return a wildly wrong score instead of an error. Fixed by
+        clamping to the IPF's own stated floor (40kg men / 35kg women) before
+        evaluating, same treatment as `_clamp_bodyweight` gives Wilks/DOTS -
+        comfortably inside the region where the men's table (A > B, never
+        crosses zero) and the women's table (crosses at ~17.66kg) both stay
+        positive. No upper clamp: the exponential's denominator approaches A
+        (positive, since A > 0 in both tables) as bodyweight grows, so it
+        never crosses zero again past the floor.
 """
 
 from __future__ import annotations
@@ -118,6 +134,13 @@ _IPF_GL = {
     "male": (1199.72839, 1025.18162, 0.00921),
     "female": (610.32796, 1045.59282, 0.03048),
 }
+
+# The IPF's own formula statement gives this equation a domain floor of
+# Bwt >= 40kg (men) / Bwt >= 35kg (women), and it's load-bearing here: the
+# women's table has B > A, so the denominator is negative below ~17.66kg and
+# only turns positive again above that. This floor sits safely above that
+# crossing for both sexes. No upper bound needed - see module docstring.
+_IPF_GL_BW_FLOOR = {"male": 40.0, "female": 35.0}
 
 _SEXES = ("male", "female")
 
@@ -194,11 +217,15 @@ def ipf_gl_points(total_kg: float, bodyweight_kg: float, sex: str) -> float:
 
     Matches the IPF's own published rounding: the equalization coefficient is
     rounded to 6 decimal places before multiplying by the total, same as the
-    procedure in the IPF's official coefficients document.
+    procedure in the IPF's official coefficients document. Bodyweight is
+    floored at the IPF's own stated domain (40kg men / 35kg women) before
+    evaluating - below that, the women's coefficient table inverts sign
+    instead of leveling off; see the module docstring.
     """
     _validate(total_kg, bodyweight_kg, sex)
     a, b, c = _IPF_GL[sex]
-    coefficient = round(100.0 / (a - b * math.exp(-c * bodyweight_kg)), 6)
+    x = max(bodyweight_kg, _IPF_GL_BW_FLOOR[sex])
+    coefficient = round(100.0 / (a - b * math.exp(-c * x)), 6)
     return coefficient * total_kg
 
 

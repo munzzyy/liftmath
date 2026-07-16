@@ -184,6 +184,9 @@ def gen_strength_scores() -> list[dict]:
         # out-of-range bodyweights: past a formula's fitted domain the score
         # inverts sign unless clamped. These pin the clamp so both engines agree.
         (500, 250, "male"), (400, 170, "female"), (300, 35, "male"),
+        # below the IPF GL domain floor (40kg men / 35kg women) - the
+        # women's coefficient table inverts sign below ~17.66kg if unclamped.
+        (300, 20, "female"), (500, 20, "male"),
     ]:
         cases.append({
             "fn": "score",
