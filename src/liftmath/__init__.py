@@ -20,12 +20,24 @@ And one small utility the others lean on: exact lb<->kg conversion
 (`convert_weight`, `lbs_to_kg`, `kg_to_lbs`), the same 0.45359237 factor
 `standards.py` already needed for its own unit handling.
 
+Plus importing your own workout history from a Strong or Hevy CSV export
+(`parse_strong_csv`, `parse_hevy_csv`), turned into e1RM trend and weekly
+tonnage (`e1rm_trend`, `weekly_tonnage`) - the two things a single set can't
+tell you that a logged history can.
+
 Every formula is cited in the module it lives in. Nothing here is medical or
 nutrition advice - see the README.
 """
 
 from liftmath._serialize import to_dict, to_json
 from liftmath.convert import WeightConversion, convert_weight, kg_to_lbs, lbs_to_kg
+from liftmath.imports import (
+    WorkoutSet,
+    e1rm_trend,
+    parse_hevy_csv,
+    parse_strong_csv,
+    weekly_tonnage,
+)
 from liftmath.onerm import OneRmEstimate, estimate_one_rm
 from liftmath.plates import (
     InventoryPlateLoad,
@@ -79,5 +91,10 @@ __all__ = [
     "WeightConversion",
     "to_dict",
     "to_json",
+    "WorkoutSet",
+    "parse_strong_csv",
+    "parse_hevy_csv",
+    "e1rm_trend",
+    "weekly_tonnage",
     "__version__",
 ]

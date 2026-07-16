@@ -49,6 +49,9 @@ jobs:
           liftmath 1rm --weight 225 --reps 5 --json
           liftmath --json plates --target 245
           liftmath --json records --sport strongman --sex female
+          printf 'Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE\n2026-06-01 18:00:00,"Push Day",1h,"Bench Press (Barbell)",1,185,5,0,0,,,\n' > /tmp/smoke_strong.csv
+          liftmath import --file /tmp/smoke_strong.csv
+          liftmath --json import --file /tmp/smoke_strong.csv
 
   version-sync:
     runs-on: ubuntu-latest

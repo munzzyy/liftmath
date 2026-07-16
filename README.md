@@ -25,7 +25,9 @@ record.
 That's it. It used to do a lot more; it does less now, on purpose. Every number traces back to a
 named formula or a cited record, and you can read the whole thing in a sitting. There's also a
 small lb/kg converter (`convert`) bolted on, since plates and strength score already needed exact
-unit conversion internally - it's a utility, not another tool.
+unit conversion internally, and an `import` command that reads your own history out of a Strong or
+Hevy export and runs it through the 1RM math above - neither is a fourth tool, they're utilities
+that feed the ones already here.
 
 The fastest way in is the web app: nothing to install, works on your phone at the gym, offline,
 and the barbell loads itself as you type: **https://munzzyy.github.io/liftmath/**. Everything below
@@ -178,6 +180,32 @@ $ liftmath convert --weight 225 --unit lb
 (exact: 1lb = 0.45359237kg, the international avoirdupois pound)
 ```
 
+### Import
+
+Read your own workout history out of a Strong or Hevy CSV export and get the two things a single
+logged set can't tell you: best estimated 1RM per exercise, and total tonnage (weight x reps) per
+week.
+
+```
+$ liftmath import --file strong_export.csv
+Imported 214 sets from a strong export (2026-01-04 to 2026-06-30).
+  9 distinct exercises.
+----------------------------------------------
+  Best estimated 1RM per exercise, most recent session:
+  Bench Press (Barbell)          228.4lb  (2026-06-08)
+  ...
+----------------------------------------------
+  Total tonnage (weight x reps) per week:
+  2026-W23         2620lb
+  2026-W24         2700lb
+  ...
+```
+
+The export format is auto-detected from its header row; pass `--source strong` or `--source hevy`
+if you'd rather be explicit. Strong's own export has no weight-unit column in its most common
+(iOS) form - `--unit` is both what that's assumed to already be in, and what a Hevy export (always
+kg internally) gets converted to for display.
+
 ## As a library
 
 Every command is a thin wrapper around a plain function that returns a dataclass, so you can use the
@@ -209,6 +237,8 @@ from liftmath import (
     parse_mark, format_seconds,                            # "4:12.3" <-> seconds
     records_as_of,                                         # dataset snapshot date
     lbs_to_kg, kg_to_lbs, convert_weight,                  # exact lb/kg conversion
+    parse_strong_csv, parse_hevy_csv,                      # Strong/Hevy CSV export -> WorkoutSet
+    e1rm_trend, weekly_tonnage,                            # derived views over imported history
     to_dict, to_json,                                      # serialize any result
 )
 ```
@@ -223,7 +253,7 @@ print(to_json(estimate_one_rm(225, 5, unit="lb")))
 ```
 
 See the module docstrings in `src/liftmath/` for the details: `onerm.py`, `plates.py`, `standards.py`,
-`records.py`, `convert.py`.
+`records.py`, `convert.py`, `imports.py`.
 
 ## Where the numbers come from
 
@@ -260,6 +290,13 @@ how to regenerate it from a fresh CSV.
 The lb/kg conversion uses the exact international avoirdupois pound (1 lb = 0.45359237 kg, fixed
 by the 1959 international yard-and-pound agreement), not a rounded approximation. It's the same
 factor `standards.py` was already converting with internally for its `--unit lb` handling.
+
+Neither Strong nor Hevy publishes their CSV export schema - Strong's help center confirms export
+exists but not its columns, and Hevy's doesn't document its CSV at all. `imports.py`'s column
+layout was built from real exports pulled from public workout-log-tooling repos plus a few
+independent open-source importers for cross-checking, not guessed from either app's marketing
+copy - its docstring says exactly what came from where, including that Strong's own schema has
+changed across app versions and differs between iOS and Android.
 
 ## What this is not
 

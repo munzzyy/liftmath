@@ -8,6 +8,8 @@ Subcommands:
     records     Search bundled records (powerlifting / strongman / grip / track & field)
                 by lift or event, sex, weight class or bodyweight, equipment, and level
     convert     Convert a weight between lb and kg (exact avoirdupois pound)
+    import      Import workout history from a Strong or Hevy CSV export - e1RM trend
+                and weekly tonnage per exercise
 
 All loads are unit-agnostic (kg or lb); pass --unit. Pass --json (before or after
 the subcommand) for machine-readable JSON instead of the formatted text, e.g.
@@ -23,6 +25,7 @@ from liftmath import __version__
 from liftmath._serialize import to_json
 from liftmath.convert import KG_PER_LB, convert_weight
 from liftmath.convert import lbs_to_kg as _lbs_to_kg
+from liftmath.imports import e1rm_trend, parse_hevy_csv, parse_strong_csv, weekly_tonnage
 from liftmath.onerm import estimate_one_rm
 from liftmath.plates import PRESETS, _parse_inventory_spec, load_plates, load_plates_from_inventory
 from liftmath.records import (
@@ -274,6 +277,66 @@ def cmd_convert(args: argparse.Namespace) -> int:
     return 0
 
 
+def _detect_import_source(csv_text: str) -> str | None:
+    """Guess "strong" or "hevy" from the export's own header row, or None if neither matches."""
+    header = csv_text.splitlines()[0] if csv_text.splitlines() else ""
+    if "exercise_title" in header:
+        return "hevy"
+    if "Exercise Name" in header:
+        return "strong"
+    return None
+
+
+def cmd_import(args: argparse.Namespace) -> int:
+    try:
+        with open(args.file, encoding="utf-8-sig") as f:
+            text = f.read()
+    except OSError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    source = args.source or _detect_import_source(text)
+    if source is None:
+        print("error: couldn't tell if this is a Strong or Hevy export - pass --source strong|hevy",
+              file=sys.stderr)
+        return 1
+
+    try:
+        sets = parse_strong_csv(text, unit=args.unit) if source == "strong" \
+            else parse_hevy_csv(text, unit=args.unit)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    trend = e1rm_trend(sets)
+    tonnage = weekly_tonnage(sets)
+
+    if args.json:
+        print(to_json({"source": source, "sets": sets, "e1rm_trend": trend, "weekly_tonnage": tonnage}))
+        return 0
+
+    dates = sorted(s.date[:10] for s in sets if s.date)
+    exercises = sorted({s.exercise for s in sets if s.exercise})
+    span = f" ({dates[0]} to {dates[-1]})" if dates else ""
+    print(f"Imported {len(sets)} sets from a {source} export{span}.")
+    print(f"  {len(exercises)} distinct exercises.")
+
+    if trend:
+        print("-" * 46)
+        print("  Best estimated 1RM per exercise, most recent session:")
+        for exercise in sorted(trend):
+            last_day = max(trend[exercise])
+            print(f"  {exercise:<28} {trend[exercise][last_day]:7.1f}{args.unit}  ({last_day})")
+
+    if tonnage:
+        print("-" * 46)
+        print("  Total tonnage (weight x reps) per week:")
+        for week in sorted(tonnage):
+            print(f"  {week}   {tonnage[week]:10.0f}{args.unit}")
+
+    return 0
+
+
 def _json_parent(*, suppress_default: bool) -> argparse.ArgumentParser:
     """Shared --json flag, usable before or after the subcommand name.
 
@@ -361,6 +424,17 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--weight", type=float, required=True)
     s.add_argument("--unit", default="lb", choices=["lb", "kg"], help="unit the --weight is already in")
     s.set_defaults(func=cmd_convert)
+
+    s = sub.add_parser("import", help="import workout history from a Strong or Hevy CSV export",
+                       parents=[json_parent])
+    s.add_argument("--file", required=True, metavar="PATH", help="path to the exported CSV file")
+    s.add_argument("--source", choices=["strong", "hevy"],
+                   help="export format; auto-detected from the header row if omitted")
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"],
+                   help="unit to report weights in - also the assumed unit for a Strong "
+                        "export's own Weight column, which doesn't record one (Hevy always "
+                        "records kg, so this only affects Hevy's *output*)")
+    s.set_defaults(func=cmd_import)
 
     return p
 

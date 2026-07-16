@@ -288,6 +288,82 @@ def test_records_no_match_message(capsys):
     assert "No records match" in out
 
 
+# --- import ---
+
+STRONG_CSV = (
+    "Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,"
+    "Notes,Workout Notes,RPE\n"
+    '2020-12-30 18:51:52,"Evening Workout",2h 38m,"Snatch (Barbell)",1,40.0,3,0,0,"","",\n'
+    '2020-12-30 18:51:52,"Evening Workout",2h 38m,"Snatch (Barbell)",2,50.0,2,0,0,,,\n'
+)
+
+HEVY_CSV = (
+    '"title","start_time","end_time","description","exercise_title","superset_id",'
+    '"exercise_notes","set_index","set_type","weight_kg","reps","distance_km",'
+    '"duration_seconds","rpe"\n'
+    '"Morning workout","22 Dec 2025, 08:00","22 Dec 2025, 08:37","","Pull Up (Assisted)",,'
+    '"",0,"normal",21,10,,0,8.5\n'
+)
+
+
+def test_import_strong_auto_detected(capsys, tmp_path):
+    csv_file = tmp_path / "strong.csv"
+    csv_file.write_text(STRONG_CSV)
+    code, out, _ = run(capsys, "import", "--file", str(csv_file))
+    assert code == 0
+    assert "Imported 2 sets from a strong export" in out
+    assert "Snatch (Barbell)" in out
+
+
+def test_import_hevy_auto_detected(capsys, tmp_path):
+    csv_file = tmp_path / "hevy.csv"
+    csv_file.write_text(HEVY_CSV)
+    code, out, _ = run(capsys, "import", "--file", str(csv_file))
+    assert code == 0
+    assert "Imported 1 sets from a hevy export" in out
+
+
+def test_import_explicit_source_overrides_detection(capsys, tmp_path):
+    csv_file = tmp_path / "strong.csv"
+    csv_file.write_text(STRONG_CSV)
+    code, out, _ = run(capsys, "import", "--file", str(csv_file), "--source", "strong")
+    assert code == 0
+    assert "strong export" in out
+
+
+def test_import_json(capsys, tmp_path):
+    csv_file = tmp_path / "strong.csv"
+    csv_file.write_text(STRONG_CSV)
+    code, out, _ = run(capsys, "import", "--file", str(csv_file), "--json")
+    assert code == 0
+    data = json.loads(out)
+    assert data["source"] == "strong"
+    assert len(data["sets"]) == 2
+    assert "Snatch (Barbell)" in data["e1rm_trend"]
+
+
+def test_import_missing_file_errors(capsys, tmp_path):
+    code, _, err = run(capsys, "import", "--file", str(tmp_path / "nope.csv"))
+    assert code == 1
+    assert "error" in err
+
+
+def test_import_undetectable_source_errors(capsys, tmp_path):
+    csv_file = tmp_path / "mystery.csv"
+    csv_file.write_text("Column A,Column B\n1,2\n")
+    code, _, err = run(capsys, "import", "--file", str(csv_file))
+    assert code == 1
+    assert "couldn't tell" in err
+
+
+def test_import_missing_required_columns_errors(capsys, tmp_path):
+    csv_file = tmp_path / "bad.csv"
+    csv_file.write_text('"exercise_title"\nx\n')
+    code, _, err = run(capsys, "import", "--file", str(csv_file), "--source", "hevy")
+    assert code == 1
+    assert "error" in err
+
+
 # --- top level ---
 
 def test_no_subcommand_errors(capsys):

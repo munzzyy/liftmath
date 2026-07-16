@@ -32,8 +32,17 @@ forever.
   got for their own out-of-range bodyweights. Unreachable for any real adult
   lifter, but the function had no floor of its own, so a bad unit conversion
   upstream could've silently returned a nonsense score.
+- New `liftmath import`: reads a Strong or Hevy CSV workout export (format
+  auto-detected, or pass `--source`) and reports best estimated 1RM per
+  exercise and total tonnage per week - the two things a single logged set
+  can't tell you on its own. Column layout is read by name, not a fixed
+  schema: Strong's own export has drifted across app versions and differs
+  between iOS (comma-delimited, no weight-unit column) and Android
+  (semicolon-delimited, with one); Hevy's is comma-delimited and always
+  records weight in kg. `--unit` covers both what a unit-less Strong export
+  is assumed to already be in, and what a Hevy export gets converted to.
 
-24 new Python tests, 15 new JS tests.
+55 new Python tests, 15 new JS tests.
 
 Releases before this file existed are documented on the
 [GitHub releases page](https://github.com/munzzyy/liftmath/releases).
