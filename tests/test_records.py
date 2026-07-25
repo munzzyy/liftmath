@@ -1,6 +1,7 @@
 import pytest
 
 from liftmath.records import (
+    compare_value,
     format_seconds,
     parse_mark,
     percent_of_record,
@@ -70,8 +71,11 @@ def test_parse_mark(text, expected):
     assert parse_mark(text) == pytest.approx(expected)
 
 
-@pytest.mark.parametrize("bad", ["", "a:b", "1:2:3:4", "-5", "4:-1"])
+@pytest.mark.parametrize("bad", ["", "a:b", "1:2:3:4", "-5", "4:-1", "nan", "inf", "-inf", "1:nan"])
 def test_parse_mark_rejects_junk(bad):
+    # nan/inf pass float() and the < 0 check, but must not slip through into
+    # format_seconds (which raised a raw OverflowError/ValueError deep in the
+    # CLI); parse_mark rejects them up front, matching the JS port.
     with pytest.raises(ValueError):
         parse_mark(bad)
 
@@ -220,6 +224,39 @@ def test_percent_of_record_is_direction_and_unit_aware():
     record = search_records(sport="grip", lift="rolling-thunder", sex="male")[0]
     with pytest.raises(ValueError):
         percent_of_record(0, record)
+
+
+# --- compare_value ---
+
+def test_compare_value_converts_weight_records_only():
+    # A kg (weight) record: the typed mark is a display-unit weight, so "100"
+    # in lb becomes kg but "100" in kg stays as-is.
+    dl = search_records(sport="powerlifting", lift="deadlift", sex="male",
+                        weight_class="100", equipment="raw")[0]
+    assert dl.unit == "kg"
+    assert compare_value(dl, "100", "lb") == pytest.approx(100 * 0.45359237)
+    assert compare_value(dl, "100", "kg") == pytest.approx(100.0)
+
+
+def test_compare_value_leaves_distance_marks_raw():
+    # A meters record must NOT run the mark through the lb->kg weight
+    # conversion - "7" is 7 meters whatever the display unit is. This is the
+    # bug the web records tab had (a keg-toss "7" got scaled as if pounds).
+    keg = search_records(sport="strongman", lift="keg-toss")[0]
+    assert keg.unit == "m"
+    assert compare_value(keg, "7", "lb") == pytest.approx(7.0)
+    assert compare_value(keg, "7", "kg") == pytest.approx(7.0)
+
+
+def test_compare_value_rejects_non_finite():
+    keg = search_records(sport="strongman", lift="keg-toss")[0]
+    dl = search_records(sport="powerlifting", lift="deadlift", sex="male",
+                        weight_class="100", equipment="raw")[0]
+    for bad in ("nan", "inf", "-inf"):
+        with pytest.raises(ValueError):
+            compare_value(keg, bad, "lb")  # distance record -> via parse_mark
+        with pytest.raises(ValueError):
+            compare_value(dl, bad, "lb")   # weight record -> float() branch
 
 
 # --- track & field ---

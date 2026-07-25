@@ -11,7 +11,7 @@ import { test } from "node:test";
 
 import { assertParity } from "./assert-parity.mjs";
 import {
-  formatSeconds, parseMark, percentOfRecord, searchRecords, weightClassFor,
+  compareValue, formatSeconds, parseMark, percentOfRecord, searchRecords, weightClassFor,
 } from "../../web/js/math/records.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -27,6 +27,8 @@ for (const [i, fixture] of fixtures.entries()) {
       actual = searchRecords(fixture.args);
     } else if (fixture.fn === "percentOfRecord") {
       actual = percentOfRecord(fixture.args.value, fixture.args.record);
+    } else if (fixture.fn === "compareValue") {
+      actual = compareValue(fixture.args.record, fixture.args.mark, fixture.args.displayUnit);
     } else if (fixture.fn === "parseMark") {
       actual = parseMark(fixture.args.text);
     } else if (fixture.fn === "formatSeconds") {

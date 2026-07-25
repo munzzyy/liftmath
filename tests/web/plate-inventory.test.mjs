@@ -92,6 +92,14 @@ test("loadPlatesFromInventory rejects a target below the bar", () => {
   assert.throws(() => loadPlatesFromInventory(20, { 45: 2 }, { unit: "lb" }), RangeError);
 });
 
+// A cleared bar-weight box reaches here as parseFloat("") = NaN. Without this
+// guard NaN flowed through as the bar weight and every downstream number came
+// out NaN (the web "My plates" card rendered "bar only / - lb" nonsense).
+// Mirrors plates.py's finite-bar ValueError.
+test("loadPlatesFromInventory rejects a non-finite bar weight", () => {
+  assert.throws(() => loadPlatesFromInventory(405, { 45: 4 }, { unit: "lb", bar: NaN }), RangeError);
+});
+
 // The search caps (mirroring plates.py's MAX_PLATES_PER_SIZE /
 // MAX_SEARCH_COMBINATIONS): an unbounded count used to freeze the tab
 // enumerating every combination - "45x100000000" spun until killed.

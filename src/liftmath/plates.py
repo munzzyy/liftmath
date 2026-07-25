@@ -65,6 +65,32 @@ class PlateLoad:
         return self.target - 2 * self.shortfall
 
 
+def _exact_combo(per_side: float, available: list[float]) -> list[tuple[float, int]] | None:
+    """Fewest-plate combination of `available` (unlimited supply, sorted desc)
+    that sums to `per_side` exactly, or None if there isn't one.
+
+    Backstops the greedy loader for non-canonical caller-supplied plate sets
+    where largest-first isn't optimal (see load_plates). Each denomination is
+    capped at floor(per_side / size), and the search is skipped (returns None,
+    leaving the greedy result in place) if it would exceed MAX_SEARCH_COMBINATIONS
+    - the same cap the finite-inventory solver uses.
+    """
+    caps = [int(per_side // p + 1e-9) for p in available]
+    combinations = 1
+    for c in caps:
+        combinations *= c + 1
+        if combinations > MAX_SEARCH_COMBINATIONS:
+            return None
+    best: tuple[int, ...] | None = None
+    for combo in itertools.product(*(range(c + 1) for c in caps)):
+        total = sum(n * p for n, p in zip(combo, available))
+        if abs(total - per_side) <= 1e-9 and (best is None or sum(combo) < sum(best)):
+            best = combo
+    if best is None:
+        return None
+    return [(p, n) for p, n in zip(available, best) if n > 0]
+
+
 def load_plates(
     target: float,
     *,
@@ -124,6 +150,18 @@ def load_plates(
         if n > 0:
             loaded.append((p, n))
             remaining -= n * p
+
+    # Greedy largest-first is exact for the canonical default/preset plate sets,
+    # but a caller-supplied set can be non-canonical, where greedy misses an
+    # exact solution it can't reach by never revisiting a choice - e.g.
+    # plates=(45, 30) for 165 on a 45 bar: greedy takes one 45 and reports
+    # "short 15/side" while two 30s hit it exactly. Only re-check caller plates
+    # (defaults are proven canonical), and only when greedy came up short.
+    if plates is not None and remaining > 1e-9:
+        exact = _exact_combo(per_side, available)
+        if exact is not None:
+            loaded = exact
+            remaining = 0.0
 
     return PlateLoad(
         target=target,

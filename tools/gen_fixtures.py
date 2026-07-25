@@ -123,6 +123,15 @@ def gen_plate_loading() -> list[dict]:
         "args": {"target": 137, "opts": {"unit": "lb", "plates": [45, 25]}},
         "expected": dump(plates.load_plates(137, unit="lb", plates=(45, 25))),
     })
+    # non-canonical caller plate set where greedy misses an exact solution:
+    # 165 on a 45 bar with only 45s and 30s - greedy grabs one 45 and reports
+    # "short 15/side", but two 30s hit 60/side exactly. Pins the exact-combo
+    # backstop in both engines.
+    cases.append({
+        "fn": "loadPlates",
+        "args": {"target": 165, "opts": {"unit": "lb", "bar": 45, "plates": [45, 30]}},
+        "expected": dump(plates.load_plates(165, unit="lb", bar=45, plates=(45, 30))),
+    })
     return cases
 
 
@@ -293,6 +302,28 @@ def gen_records() -> list[dict]:
             "fn": "percentOfRecord",
             "args": {"value": 12.4, "record": dump(sprint[0])},
             "expected": records.percent_of_record(12.4, sprint[0]),
+        })
+    # compare-mark unit split: a weight record ("kg") converts the typed mark
+    # from the display unit to kg; a distance/points/time record takes it raw
+    # and ignores the display unit. Pins the bug where the web app ran a
+    # meters/seconds compare mark through the lb->kg weight conversion.
+    dl = records.search_records(sport="powerlifting", lift="deadlift", sex="male",
+                                weight_class="100", equipment="raw")
+    keg = records.search_records(sport="strongman", lift="keg-toss")
+    compare_cases = []
+    if dl:
+        compare_cases += [(dl[0], "405", "lb"), (dl[0], "200", "kg")]
+    if keg:
+        # same "7" in lb and kg display must give the same 7 meters - the mark
+        # is a distance, not a weight, so the display unit is irrelevant.
+        compare_cases += [(keg[0], "7", "lb"), (keg[0], "7", "kg")]
+    if sprint:
+        compare_cases.append((sprint[0], "9.7", "lb"))
+    for rec, mark, display_unit in compare_cases:
+        cases.append({
+            "fn": "compareValue",
+            "args": {"record": dump(rec), "mark": mark, "displayUnit": display_unit},
+            "expected": records.compare_value(rec, mark, display_unit),
         })
     return cases
 

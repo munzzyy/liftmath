@@ -118,6 +118,12 @@ export function loadPlatesFromInventory(target, inventory, opts = {}) {
   }
 
   const barWeight = bar !== null ? bar : DEFAULT_BAR[unit];
+  if (!Number.isFinite(barWeight) || barWeight <= 0) {
+    throw new RangeError(`bar weight must be a finite number > 0, got ${barWeight}`);
+  }
+  if (!Number.isFinite(target)) {
+    throw new RangeError(`target must be a finite number, got ${target}`);
+  }
   if (target < barWeight) {
     throw new RangeError(`target ${target}${unit} is below the bar (${barWeight}${unit})`);
   }

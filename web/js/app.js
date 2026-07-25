@@ -7,8 +7,8 @@ import { computePlateStack } from "./math/plate-loading.js";
 import { parseInventorySpec, loadPlatesFromInventory } from "./math/plate-inventory.js";
 import { score } from "./math/strength-scores.js";
 import {
-  PL_CLASSES, formatSeconds, parseMark, percentOfRecord, recordsAsOf, searchRecords,
-  weightClassFor,
+  PL_CLASSES, compareValue, formatSeconds, parseMark, percentOfRecord, recordsAsOf,
+  searchRecords, weightClassFor,
 } from "./math/records.js";
 import { KG_PER_LB, convertWeight } from "./math/unit-convert.js";
 import { renderBarbellSvg, renderPlateLegend } from "./ui/svg-barbell.js";
@@ -79,8 +79,12 @@ applyTheme(currentTheme());
 
 let unit = "lb";
 
+// records-compare is deliberately NOT here: a compare mark is only a weight
+// for powerlifting records - for strongman/grip distance/points and track
+// times it's a raw number - so the unit toggle must not rescale it as lb<->kg.
+// It's resolved per record at render time via records.compareValue() instead.
 const COARSE_FIELDS = ["onerm-weight", "plates-target", "plates-inventory-bar", "score-total",
-  "convert-weight", "records-compare"];
+  "convert-weight"];
 const FINE_FIELDS = ["score-bodyweight", "records-bodyweight"];
 const COARSE_STEP = { lb: "5", kg: "2.5" };
 const FINE_STEP = { lb: "1", kg: "0.5" };
@@ -284,6 +288,14 @@ function renderPlates() {
   try {
     if (platesMode === "my-plates") {
       const bar = parseFloat($("plates-inventory-bar").value);
+      // An empty/half-typed bar box is transient editing, not an error - blank
+      // the result like the target guard above rather than rendering NaN cards.
+      if (!Number.isFinite(bar)) {
+        resultsEl.innerHTML = "";
+        barbellWrap.innerHTML = "";
+        legendEl.innerHTML = "";
+        return;
+      }
       const inventory = parseInventorySpec($("plates-inventory-spec").value);
       stack = loadPlatesFromInventory(target, inventory, { unit, bar });
     } else if (platesMode === "womens" || platesMode === "metric-no-45") {
@@ -514,8 +526,7 @@ function renderRecords() {
   $("records-pl-fields").hidden = !isPl;
   $("records-event-fields").hidden = isPl;
 
-  const compareRaw = parseFloat($("records-compare").value);
-  const compareKg = Number.isFinite(compareRaw) && compareRaw > 0 ? fromUnit(compareRaw, unit) : null;
+  const compareMark = $("records-compare").value.trim();
 
   let matches;
   try {
@@ -546,7 +557,22 @@ function renderRecords() {
     return;
   }
 
-  let html = matches.map((r) => recordCard(r, compareKg)).join("");
+  let html = matches.map((r) => {
+    // The compare mark is resolved into each record's OWN unit: a weight
+    // (kg) for powerlifting, a raw distance/points/time otherwise. Only pass
+    // it through when it's parseable and positive (matches percentOfRecord's
+    // domain); a half-typed or nonsensical mark just renders the card bare.
+    let cv = null;
+    if (compareMark) {
+      try {
+        const v = compareValue(r, compareMark, unit);
+        if (v > 0) cv = v;
+      } catch {
+        // unparseable mark - render without the comparison meter
+      }
+    }
+    return recordCard(r, cv);
+  }).join("");
   html += `<p class="hint">Snapshot of ${escapeHtml(recordsAsOf())}. Powerlifting: computed from the
     public-domain <a href="https://www.openpowerlifting.org" target="_blank" rel="noopener">OpenPowerlifting</a>
     database - these are the heaviest sanctioned lifts in the data, not any federation's official list.

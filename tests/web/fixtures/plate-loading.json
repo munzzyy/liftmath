@@ -357,5 +357,34 @@
       "unit": "lb"
     },
     "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "bar": 45,
+        "plates": [
+          45,
+          30
+        ],
+        "unit": "lb"
+      },
+      "target": 165
+    },
+    "expected": {
+      "achievable": 165.0,
+      "bar": 45,
+      "exact": true,
+      "perSide": 60.0,
+      "plates": [
+        [
+          30,
+          2
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 165,
+      "unit": "lb"
+    },
+    "fn": "loadPlates"
   }
 ]

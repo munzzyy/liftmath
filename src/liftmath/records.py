@@ -57,9 +57,11 @@ against kg records and raise ValueError otherwise.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 from liftmath._records_data import DATASET
+from liftmath.convert import lbs_to_kg
 
 SPORTS = ("powerlifting", "strongman", "grip", "track")
 POWERLIFTING_LIFTS = ("squat", "bench", "deadlift", "total")
@@ -167,6 +169,8 @@ def parse_mark(text: str) -> float:
     total = 0.0
     for part in parts:
         value = float(part)  # raises ValueError on junk, which is the right error
+        if not math.isfinite(value):
+            raise ValueError(f"can't parse mark {text!r}")
         if value < 0:
             raise ValueError("mark parts must be >= 0")
         total = total * 60.0 + value
@@ -341,3 +345,22 @@ def percent_of_record(value: float, record: Record) -> float:
     if record.direction == "lower":
         return record.value / value * 100.0
     return value / record.value * 100.0
+
+
+def compare_value(record: Record, mark: str, display_unit: str) -> float:
+    """A typed compare mark expressed in `record`'s own unit.
+
+    A weight record ("kg") reads `mark` as a `display_unit` weight and
+    converts it to kg; every other record - distance in m, time in s, points -
+    reads `mark` as a native mark via `parse_mark` and does NOT touch the
+    weight units. This is the split the CLI and the web app both need so a
+    "7" typed against a meters record stays 7 meters instead of being run
+    through the lb->kg weight conversion. Raises ValueError on unparseable or
+    non-finite input, so a caller can treat "no usable comparison" as one case.
+    """
+    if record.unit == "kg":
+        weight = float(mark)
+        if not math.isfinite(weight):
+            raise ValueError(f"can't parse weight {mark!r}")
+        return lbs_to_kg(weight) if display_unit == "lb" else weight
+    return parse_mark(mark)

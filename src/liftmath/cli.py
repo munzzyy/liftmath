@@ -29,8 +29,8 @@ from liftmath.imports import e1rm_trend, parse_hevy_csv, parse_strong_csv, weekl
 from liftmath.onerm import estimate_one_rm
 from liftmath.plates import PRESETS, _parse_inventory_spec, load_plates, load_plates_from_inventory
 from liftmath.records import (
+    compare_value,
     format_seconds,
-    parse_mark,
     percent_of_record,
     records_as_of,
     search_records,
@@ -172,16 +172,11 @@ def _record_value_text(r, display_unit: str) -> str:
 def _compare_line(r, compare_raw: str, display_unit: str) -> str | None:
     """The 'your X = Y% of this record' line, direction- and unit-aware."""
     try:
-        if r.unit == "kg":
-            weight = float(compare_raw)
-            value = _lbs_to_kg(weight) if display_unit == "lb" else weight
-            yours = f"{weight:g}{display_unit}"
-        else:
-            value = parse_mark(compare_raw)
-            yours = compare_raw
+        value = compare_value(r, compare_raw, display_unit)
         pct = percent_of_record(value, r)
     except ValueError:
         return None
+    yours = f"{float(compare_raw):g}{display_unit}" if r.unit == "kg" else compare_raw
     if r.direction == "lower":
         gap = value - r.value
         if gap <= 0:
@@ -199,11 +194,13 @@ def _compare_line(r, compare_raw: str, display_unit: str) -> str | None:
 
 
 def cmd_records(args: argparse.Namespace) -> int:
-    bodyweight_kg = None
-    if args.bodyweight is not None:
-        bodyweight_kg = _lbs_to_kg(args.bodyweight) if args.unit == "lb" else args.bodyweight
-
     try:
+        # Inside the try: the lb->kg conversion rejects negative bodyweight, and
+        # that should print "error: ..." like the kg path already does, not a
+        # raw traceback (same pattern as cmd_standards above).
+        bodyweight_kg = None
+        if args.bodyweight is not None:
+            bodyweight_kg = _lbs_to_kg(args.bodyweight) if args.unit == "lb" else args.bodyweight
         matches = search_records(sport=args.sport, lift=args.lift, sex=args.sex,
                                  weight_class=args.weight_class, bodyweight_kg=bodyweight_kg,
                                  equipment=args.equip, scope=args.scope,
@@ -293,6 +290,13 @@ def cmd_import(args: argparse.Namespace) -> int:
             text = f.read()
     except OSError as e:
         print(f"error: {e}", file=sys.stderr)
+        return 1
+    except UnicodeDecodeError:
+        # A Strong/Hevy export re-saved through Excel can land as cp1252 rather
+        # than UTF-8. Fail with the CLI's clean "error:" contract instead of a
+        # raw decode traceback, and tell the user how to fix it.
+        print(f"error: {args.file} isn't UTF-8 encoded - re-export from the app "
+              "or convert it to UTF-8", file=sys.stderr)
         return 1
 
     source = args.source or _detect_import_source(text)

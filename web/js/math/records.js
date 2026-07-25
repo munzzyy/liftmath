@@ -7,6 +7,7 @@
 
 import { DATASET } from "../records-data.js";
 import { pyRound } from "./py-round.js";
+import { lbsToKg } from "./unit-convert.js";
 
 export const SPORTS = ["powerlifting", "strongman", "grip", "track"];
 export const POWERLIFTING_LIFTS = ["squat", "bench", "deadlift", "total"];
@@ -201,4 +202,25 @@ export function percentOfRecord(value, record) {
   if (!(value > 0)) throw new Error("value must be > 0");
   if (record.direction === "lower") return (record.value / value) * 100.0;
   return (value / record.value) * 100.0;
+}
+
+/**
+ * A typed compare mark expressed in `record`'s own unit.
+ *
+ * A weight record ("kg") reads `mark` as a `displayUnit` weight and converts
+ * it to kg; every other record - distance in m, time in s, points - reads
+ * `mark` as a native mark via parseMark and does NOT touch the weight units.
+ * That split keeps a "7" typed against a meters record at 7 meters instead of
+ * running it through the lb->kg weight conversion. Throws on unparseable or
+ * non-finite input, so a caller can treat "no usable comparison" as one case.
+ */
+export function compareValue(record, mark, displayUnit) {
+  if (record.unit === "kg") {
+    const weight = Number(String(mark).trim());
+    if (!Number.isFinite(weight) || String(mark).trim() === "") {
+      throw new Error(`can't parse weight ${mark}`);
+    }
+    return displayUnit === "lb" ? lbsToKg(weight) : weight;
+  }
+  return parseMark(mark);
 }

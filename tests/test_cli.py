@@ -276,6 +276,38 @@ def test_records_conflicting_filters_error(capsys):
     assert "error" in err
 
 
+def test_records_meter_compare_is_not_weight_converted(capsys):
+    # A "7" against a meters record (keg toss) must read as 7 meters, not get
+    # run through the lb->kg weight conversion - lb and kg display give the
+    # same comparison. (The web tab had exactly this bug.)
+    code_lb, out_lb, _ = run(capsys, "records", "--sport", "strongman", "--lift",
+                             "keg-toss", "--compare", "7", "--unit", "lb")
+    code_kg, out_kg, _ = run(capsys, "records", "--sport", "strongman", "--lift",
+                             "keg-toss", "--compare", "7", "--unit", "kg")
+    assert code_lb == 0 and code_kg == 0
+    assert "your 7 = 90.1% of this record" in out_lb
+    assert "your 7 = 90.1% of this record" in out_kg
+
+
+def test_records_negative_bodyweight_errors_cleanly_in_lb(capsys):
+    # A negative bodyweight in lb used to traceback (the lb->kg conversion ran
+    # before the try block); it now prints a clean "error:" like the kg path.
+    code, _, err = run(capsys, "records", "--sport", "powerlifting", "--lift",
+                       "deadlift", "--sex", "male", "--bodyweight", "-220", "--equip", "raw")
+    assert code == 1
+    assert "error" in err
+
+
+def test_records_nan_compare_does_not_traceback(capsys):
+    # nan/inf compare marks used to crash deep in format_seconds (track) or
+    # print "nanlb = nan%" (weight records); now the compare line is just
+    # dropped and the records still list, exit 0.
+    code, out, _ = run(capsys, "records", "--sport", "track", "--event", "1500m",
+                       "--sex", "male", "--level", "world", "--compare", "nan")
+    assert code == 0
+    assert "% of record pace" not in out
+
+
 def test_records_too_many_matches_hint(capsys):
     code, out, _ = run(capsys, "records")
     assert code == 0
@@ -346,6 +378,21 @@ def test_import_missing_file_errors(capsys, tmp_path):
     code, _, err = run(capsys, "import", "--file", str(tmp_path / "nope.csv"))
     assert code == 1
     assert "error" in err
+
+
+def test_import_non_utf8_file_errors_cleanly(capsys, tmp_path):
+    # A Strong/Hevy export re-saved through Excel can come back as cp1252, not
+    # UTF-8. That used to raise a raw UnicodeDecodeError traceback; it now
+    # fails with the CLI's clean "error:" contract like every other bad input.
+    csv_file = tmp_path / "strong_cp1252.csv"
+    csv_file.write_bytes(
+        "Date,Workout Name,Exercise Name,Set Order,Weight,Reps\n"
+        "2024-01-01,A,Overhead Press (Élévation),1,69.1,5\n".encode("cp1252")
+    )
+    code, _, err = run(capsys, "import", "--file", str(csv_file))
+    assert code == 1
+    assert "error" in err
+    assert "UTF-8" in err
 
 
 def test_import_undetectable_source_errors(capsys, tmp_path):

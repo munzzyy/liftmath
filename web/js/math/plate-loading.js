@@ -24,6 +24,55 @@ export const PRESETS = {
   "metric-no-45": { bar: 20, plates: [20, 15, 10, 5, 2.5, 1.25] },
 };
 
+// Cap on the exact-combo backstop's search, mirroring plates.py's
+// MAX_SEARCH_COMBINATIONS - past this the re-check is skipped and the greedy
+// result stands (a non-canonical set that huge isn't a realistic barbell).
+const MAX_SEARCH_COMBINATIONS = 5_000_000;
+
+/**
+ * Fewest-plate combination of `available` (unlimited supply, sorted desc) that
+ * sums to `perSide` exactly, or null if there isn't one. Backstops the greedy
+ * loader for non-canonical caller-supplied plate sets. Mirrors plates.py's
+ * _exact_combo.
+ */
+function exactCombo(perSide, available) {
+  const caps = available.map((p) => Math.trunc(perSide / p + 1e-9));
+  let combinations = 1;
+  for (const c of caps) {
+    combinations *= c + 1;
+    if (combinations > MAX_SEARCH_COMBINATIONS) return null;
+  }
+  let best = null;
+  let bestCount = Infinity;
+  const combo = new Array(caps.length).fill(0);
+  // Odometer over every "how many of each size" combination, bounded by caps.
+  for (;;) {
+    let total = 0;
+    let count = 0;
+    for (let i = 0; i < caps.length; i++) {
+      total += combo[i] * available[i];
+      count += combo[i];
+    }
+    if (Math.abs(total - perSide) <= 1e-9 && count < bestCount) {
+      best = combo.slice();
+      bestCount = count;
+    }
+    let i = caps.length - 1;
+    while (i >= 0 && combo[i] === caps[i]) {
+      combo[i] = 0;
+      i--;
+    }
+    if (i < 0) break;
+    combo[i]++;
+  }
+  if (best === null) return null;
+  const result = [];
+  for (let i = 0; i < available.length; i++) {
+    if (best[i] > 0) result.push([available[i], best[i]]);
+  }
+  return result;
+}
+
 /**
  * Compute a greedy plate-loading solution for `target` weight on a barbell.
  *
@@ -71,12 +120,25 @@ export function loadPlates(target, opts = {}) {
   const available = [...(plates !== null ? plates : DEFAULT_PLATES[unit])].sort((a, b) => b - a);
 
   let remaining = perSide;
-  const loaded = [];
+  let loaded = [];
   for (const p of available) {
     const n = Math.trunc(remaining / p + 1e-9);
     if (n > 0) {
       loaded.push([p, n]);
       remaining -= n * p;
+    }
+  }
+
+  // Greedy largest-first is exact for the canonical default/preset plate sets,
+  // but a caller-supplied set can be non-canonical, where greedy misses an
+  // exact solution (e.g. plates=[45, 30] for 165 on a 45 bar: greedy takes one
+  // 45 and reports "short 15/side" while two 30s hit it exactly). Only re-check
+  // caller plates, and only when greedy came up short. Mirrors plates.py.
+  if (plates !== null && remaining > 1e-9) {
+    const exact = exactCombo(perSide, available);
+    if (exact !== null) {
+      loaded = exact;
+      remaining = 0.0;
     }
   }
 

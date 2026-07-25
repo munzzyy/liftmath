@@ -51,6 +51,25 @@ def test_unloadable_target_reports_closest_achievable():
     assert result.achievable == pytest.approx(95.0)
 
 
+def test_non_canonical_custom_plates_find_exact_greedy_would_miss():
+    # 165 on a 45 bar with only 45s and 30s: greedy grabs the 45 (best single
+    # plate <= 60/side) and reports "short 15/side", but two 30s hit 60 exactly.
+    # The exact-combo backstop has to catch what largest-first greedy can't.
+    result = load_plates(165, unit="lb", bar=45, plates=(45, 30))
+    assert result.per_side == pytest.approx(60.0)
+    assert result.exact is True
+    assert result.shortfall == pytest.approx(0.0)
+    assert result.plates == [(30, 2)]
+
+
+def test_custom_plates_stay_short_when_truly_unreachable():
+    # The backstop must not invent a solution that doesn't exist: 137 on a 45
+    # bar with 45s and 25s leaves 46/side, and no combo of 45/25 sums to 46.
+    result = load_plates(137, unit="lb", plates=(45, 25))
+    assert result.exact is False
+    assert result.shortfall == pytest.approx(1.0)
+
+
 def test_womens_preset_uses_15kg_bar():
     # per side = (67.5-15)/2 = 26.25 -> 1x20 + 1x5 + 1x1.25
     result = load_plates(67.5, unit="kg", preset="womens")
