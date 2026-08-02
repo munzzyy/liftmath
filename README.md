@@ -39,18 +39,14 @@ you import or a command you run.
 ## Install
 
 ```
-pipx install git+https://github.com/munzzyy/liftmath
+pipx install liftmath
 ```
 
 Or with pip, into whatever environment you want it in:
 
 ```
-pip install git+https://github.com/munzzyy/liftmath
+pip install liftmath
 ```
-
-The copy on PyPI is 2.3.0 and sits behind this repo: it has no `liftmath import`
-command and none of the input hardening below, so install from git until the next
-release lands there.
 
 Or from a clone, if you want to run the tests too:
 
