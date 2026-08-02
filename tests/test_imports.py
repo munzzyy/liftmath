@@ -109,6 +109,57 @@ def test_strong_blank_optional_cells_become_none_not_empty_string():
     assert sets[1].rpe is None
 
 
+def test_strong_one_unreadable_date_does_not_lose_the_other_rows():
+    # A date-only cell (no time) used to raise and abort the whole import, so
+    # three years of history were thrown away over one hand-edited row.
+    mixed = (
+        "Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,"
+        "Notes,Workout Notes,RPE\n"
+        '2026-06-01 18:00:00,"Push",1h,"Bench Press (Barbell)",1,185,5,0,0,,,\n'
+        '2026-06-03,"Push",1h,"Bench Press (Barbell)",1,190,5,0,0,,,\n'
+    )
+    errors = []
+    sets = parse_strong_csv(mixed, unit="lb", date_errors=errors)
+    assert len(sets) == 2
+    assert sets[0].date == "2026-06-01T18:00:00"
+    assert sets[1].date == ""
+    assert sets[1].weight == 190  # the rest of the row survived
+    assert errors == ["2026-06-03"]
+
+
+def test_strong_undated_rows_stay_out_of_the_day_and_week_views():
+    undated = (
+        "Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,"
+        "Notes,Workout Notes,RPE\n"
+        '03/06/2026,"Push",1h,"Bench Press (Barbell)",1,190,5,0,0,,,\n'
+    )
+    errors = []
+    sets = parse_strong_csv(undated, unit="lb", date_errors=errors)
+    assert len(sets) == 1
+    assert errors == ["03/06/2026"]
+    assert e1rm_trend(sets) == {}
+    assert weekly_tonnage(sets) == {}
+
+
+def test_strong_blank_date_is_not_reported_as_an_error():
+    blank = (
+        "Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,"
+        "Notes,Workout Notes,RPE\n"
+        ',"Push",1h,"Bench Press (Barbell)",1,190,5,0,0,,,\n'
+    )
+    errors = []
+    sets = parse_strong_csv(blank, unit="lb", date_errors=errors)
+    assert sets[0].date == ""
+    assert errors == []
+
+
+def test_strong_wrong_file_still_raises():
+    # Row tolerance is for rows. A file that isn't a Strong export at all is a
+    # real user error and still fails loudly.
+    with pytest.raises(ValueError):
+        parse_strong_csv("Datum;Gewicht\n2026-06-01;100\n", unit="lb")
+
+
 # --- Hevy -------------------------------------------------------------------
 
 
@@ -150,6 +201,19 @@ def test_hevy_missing_required_column_raises():
 def test_hevy_empty_text_raises():
     with pytest.raises(ValueError):
         parse_hevy_csv("")
+
+
+def test_hevy_unreadable_start_time_keeps_the_row():
+    odd = HEVY_CSV + (
+        '"Morning workout","2025-12-23T08:00:00","22 Dec 2025, 08:37","","Squat (Barbell)",,'
+        '"",0,"normal",100,5,,0,8\n'
+    )
+    errors = []
+    sets = parse_hevy_csv(odd, unit="kg", date_errors=errors)
+    assert len(sets) == 3
+    assert sets[2].date == ""
+    assert sets[2].exercise == "Squat (Barbell)"
+    assert errors == ["2025-12-23T08:00:00"]
 
 
 def test_hevy_bad_unit_raises():

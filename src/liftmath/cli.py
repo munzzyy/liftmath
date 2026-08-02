@@ -306,9 +306,10 @@ def cmd_import(args: argparse.Namespace) -> int:
               file=sys.stderr)
         return 1
 
+    date_errors: list[str] = []
     try:
-        sets = parse_strong_csv(text, unit=args.unit) if source == "strong" \
-            else parse_hevy_csv(text, unit=args.unit)
+        sets = parse_strong_csv(text, unit=args.unit, date_errors=date_errors) if source == "strong" \
+            else parse_hevy_csv(text, unit=args.unit, date_errors=date_errors)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -317,7 +318,8 @@ def cmd_import(args: argparse.Namespace) -> int:
     tonnage = weekly_tonnage(sets)
 
     if args.json:
-        print(to_json({"source": source, "sets": sets, "e1rm_trend": trend, "weekly_tonnage": tonnage}))
+        print(to_json({"source": source, "sets": sets, "unreadable_dates": len(date_errors),
+                       "e1rm_trend": trend, "weekly_tonnage": tonnage}))
         return 0
 
     dates = sorted(s.date[:10] for s in sets if s.date)
@@ -325,6 +327,10 @@ def cmd_import(args: argparse.Namespace) -> int:
     span = f" ({dates[0]} to {dates[-1]})" if dates else ""
     print(f"Imported {len(sets)} sets from a {source} export{span}.")
     print(f"  {len(exercises)} distinct exercises.")
+    if date_errors:
+        print(f"  [!] {len(date_errors)} row(s) have a date this can't read (first: "
+              f"{date_errors[0]!r}). Those sets are in the count above but left out of "
+              f"the per-day and per-week views below.")
 
     if trend:
         print("-" * 46)

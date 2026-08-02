@@ -138,7 +138,29 @@ def _parse_hevy_datetime(raw: str) -> str:
     return datetime.strptime(raw.strip(), _HEVY_DATE_FORMAT).isoformat()
 
 
-def parse_strong_csv(csv_text: str, *, unit: str) -> list[WorkoutSet]:
+def _row_date(raw: str, parser, date_errors: list[str] | None) -> str:
+    """One row's timestamp, or "" when it can't be read.
+
+    Same reasoning as `_num` above: a three-year export shouldn't be thrown
+    away over one hand-edited row, and both apps' date formats have drifted
+    across versions. The row still comes through with everything else it
+    carried; it just has no date, which `e1rm_trend` and `weekly_tonnage`
+    already skip. Callers that want to tell the user how many rows landed
+    here pass a list for `date_errors` and get the raw values appended to it.
+    """
+    raw = raw.strip()
+    if not raw:
+        return ""
+    try:
+        return parser(raw)
+    except ValueError:
+        if date_errors is not None:
+            date_errors.append(raw)
+        return ""
+
+
+def parse_strong_csv(csv_text: str, *, unit: str,
+                     date_errors: list[str] | None = None) -> list[WorkoutSet]:
     """Parse a Strong app CSV workout export into a list of `WorkoutSet`.
 
     Args:
@@ -148,6 +170,10 @@ def parse_strong_csv(csv_text: str, *, unit: str) -> list[WorkoutSet]:
             (Strong's most common export has neither). Rows that DO carry a
             per-row unit are converted into this unit instead of assumed to
             already be it.
+        date_errors: optional list. Every row whose Date this parser can't
+            read gets its raw date appended here, so a caller can report
+            "3 rows had an unreadable date" instead of the row vanishing
+            silently. Those rows are still returned, with `date=""`.
 
     Returns:
         One `WorkoutSet` per set (per CSV row), in file order.
@@ -157,7 +183,9 @@ def parse_strong_csv(csv_text: str, *, unit: str) -> list[WorkoutSet]:
             header is missing one of Strong's required columns (Date,
             Workout Name, Exercise Name, Set Order, Weight, Reps) - the
             surest sign this isn't actually a Strong export, or is a
-            localized (non-English) one this parser doesn't handle.
+            localized (non-English) one this parser doesn't handle. A bad
+            date in a single row is NOT one of these: it's a row-level
+            problem, not a "this is the wrong file" problem.
     """
     if unit not in ("lb", "kg"):
         raise ValueError(f"unit must be 'lb' or 'kg', got {unit!r}")
@@ -185,9 +213,8 @@ def parse_strong_csv(csv_text: str, *, unit: str) -> list[WorkoutSet]:
             elif row_unit in _STRONG_LB_UNIT_STRINGS and unit == "kg":
                 weight = lbs_to_kg(weight)
 
-        raw_date = row.get("Date") or ""
         sets.append(WorkoutSet(
-            date=_parse_strong_date(raw_date) if raw_date.strip() else "",
+            date=_row_date(row.get("Date") or "", _parse_strong_date, date_errors),
             workout_name=row.get("Workout Name") or "",
             exercise=row.get("Exercise Name") or "",
             set_order=_int(row.get("Set Order")),
@@ -206,7 +233,8 @@ def parse_strong_csv(csv_text: str, *, unit: str) -> list[WorkoutSet]:
     return sets
 
 
-def parse_hevy_csv(csv_text: str, *, unit: str = "kg") -> list[WorkoutSet]:
+def parse_hevy_csv(csv_text: str, *, unit: str = "kg",
+                   date_errors: list[str] | None = None) -> list[WorkoutSet]:
     """Parse a Hevy app CSV workout export into a list of `WorkoutSet`.
 
     Args:
@@ -214,6 +242,11 @@ def parse_hevy_csv(csv_text: str, *, unit: str = "kg") -> list[WorkoutSet]:
         unit: "lb" or "kg" to report weight in. Hevy's own export always
             writes weight in kilograms (`weight_kg`), so unlike Strong this
             is purely an output choice, not an assumption about the source.
+        date_errors: optional list, same contract as `parse_strong_csv` -
+            rows with an unreadable `start_time` land in it and come back
+            with `date=""` rather than failing the whole import. Hevy's
+            format ("22 Dec 2025, 08:00") is the narrower of the two, so
+            this matters more here.
 
     Returns:
         One `WorkoutSet` per set (per CSV row), in file order. `set_order`
@@ -244,11 +277,10 @@ def parse_hevy_csv(csv_text: str, *, unit: str = "kg") -> list[WorkoutSet]:
         weight_kg = _num(row.get("weight_kg"))
         weight = kg_to_lbs(weight_kg) if (weight_kg is not None and unit == "lb") else weight_kg
 
-        raw_start = row.get("start_time") or ""
         set_index = _int(row.get("set_index"))
         distance_km = _num(row.get("distance_km"))
         sets.append(WorkoutSet(
-            date=_parse_hevy_datetime(raw_start) if raw_start.strip() else "",
+            date=_row_date(row.get("start_time") or "", _parse_hevy_datetime, date_errors),
             workout_name=row.get("title") or "",
             exercise=row.get("exercise_title") or "",
             set_order=(set_index + 1) if set_index is not None else None,

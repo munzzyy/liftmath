@@ -399,6 +399,49 @@ def test_import_non_utf8_file_errors_cleanly(capsys, tmp_path):
     assert "UTF-8" in err
 
 
+MIXED_DATE_CSV = (
+    "Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,"
+    "Notes,Workout Notes,RPE\n"
+    '2026-06-01 18:00:00,"Push",1h,"Bench Press (Barbell)",1,185,5,0,0,,,\n'
+    '2026-06-03,"Push",1h,"Bench Press (Barbell)",1,190,5,0,0,,,\n'
+)
+
+
+def test_import_reports_unreadable_dates_and_keeps_the_good_rows(capsys, tmp_path):
+    # One date-only row used to abort the import and discard everything else.
+    csv_file = tmp_path / "mixed.csv"
+    csv_file.write_text(MIXED_DATE_CSV)
+    code, out, _ = run(capsys, "import", "--file", str(csv_file))
+    assert code == 0
+    assert "Imported 2 sets" in out
+    assert "1 row(s) have a date this can't read" in out
+    assert "2026-06-03" in out
+    assert "Bench Press (Barbell)" in out
+
+
+def test_import_all_dates_unreadable_still_exits_zero(capsys, tmp_path):
+    csv_file = tmp_path / "alldates.csv"
+    csv_file.write_text(
+        "Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,"
+        "Notes,Workout Notes,RPE\n"
+        '03/06/2026,"Push",1h,"Bench Press (Barbell)",1,190,5,0,0,,,\n'
+    )
+    code, out, err = run(capsys, "import", "--file", str(csv_file))
+    assert code == 0
+    assert "Traceback" not in err
+    assert "Total tonnage" not in out
+
+
+def test_import_json_counts_unreadable_dates(capsys, tmp_path):
+    csv_file = tmp_path / "mixed.csv"
+    csv_file.write_text(MIXED_DATE_CSV)
+    code, out, _ = run(capsys, "import", "--file", str(csv_file), "--json")
+    assert code == 0
+    data = json.loads(out)
+    assert data["unreadable_dates"] == 1
+    assert len(data["sets"]) == 2
+
+
 def test_import_undetectable_source_errors(capsys, tmp_path):
     csv_file = tmp_path / "mystery.csv"
     csv_file.write_text("Column A,Column B\n1,2\n")
