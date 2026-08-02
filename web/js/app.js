@@ -69,6 +69,53 @@ $("theme-toggle-btn").addEventListener("click", () => {
 applyTheme(currentTheme());
 
 // ---------------------------------------------------------------------------
+// Setup that survives a reload. Same deal as the theme override above: it all
+// stays in localStorage on the device, nothing leaves it. A kg lifter
+// shouldn't re-tap the unit toggle every session, and a home-gym lifter
+// shouldn't retype "45x4,25x1,10x2,5x2,2.5x1" on a phone keyboard between
+// sets. Reads and writes are wrapped because private mode throws on
+// localStorage - when it does, nothing persists and the app is otherwise
+// unaffected. Stored values are treated as untrusted: length-capped on write,
+// and every choice is checked against the real chip list before it's applied.
+// ---------------------------------------------------------------------------
+
+// Longest legitimate value here is a plate inventory spec; 200 is well past
+// any real rack and keeps a hand-edited entry from bloating a render.
+const MAX_STORED_CHARS = 200;
+
+const PERSISTED_FIELDS = ["plates-inventory-bar", "plates-inventory-spec", "score-bodyweight",
+  "records-bodyweight"];
+
+function fieldKey(id) {
+  return `liftmath:field:${id}`;
+}
+
+function prefKey(name) {
+  return `liftmath:pref:${name}`;
+}
+
+function readStored(key) {
+  try {
+    const value = localStorage.getItem(key);
+    return typeof value === "string" && value.length <= MAX_STORED_CHARS ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(key, value) {
+  try {
+    localStorage.setItem(key, String(value).slice(0, MAX_STORED_CHARS));
+  } catch {
+    // localStorage unavailable (private mode) - this setting just won't persist.
+  }
+}
+
+function saveFields() {
+  for (const id of PERSISTED_FIELDS) writeStored(fieldKey(id), $(id).value);
+}
+
+// ---------------------------------------------------------------------------
 // Unit toggle (lb/kg). Weight-bearing fields are converted in place on
 // toggle (via js/ui/units.js) so the same real-world weight stays
 // represented; the stepper granularity is re-applied to match (e.g. a 5lb
@@ -141,6 +188,10 @@ function setUnit(newUnit) {
     input.step = COARSE_FIELDS.includes(id) ? COARSE_STEP[fieldNewUnit] : FINE_STEP[fieldNewUnit];
     rewireStepper(id);
   }
+  // The stored field values are whatever's on screen, so they have to be
+  // re-saved in the new unit or a saved 183 lb comes back as 183 kg.
+  writeStored(prefKey("unit"), unit);
+  saveFields();
   renderAll();
 }
 
@@ -163,8 +214,13 @@ function selectTab(id) {
   }
 }
 
+function chooseTab(id) {
+  selectTab(id);
+  writeStored(prefKey("tab"), id);
+}
+
 for (const t of TABS) {
-  $(`tab-btn-${t}`).addEventListener("click", () => selectTab(t));
+  $(`tab-btn-${t}`).addEventListener("click", () => chooseTab(t));
 }
 
 $("tabs-list").addEventListener("keydown", (e) => {
@@ -172,7 +228,7 @@ $("tabs-list").addEventListener("keydown", (e) => {
   const idx = TABS.findIndex((t) => $(`tab-btn-${t}`).getAttribute("aria-selected") === "true");
   const dir = e.key === "ArrowLeft" ? -1 : 1;
   const next = TABS[(idx + dir + TABS.length) % TABS.length];
-  selectTab(next);
+  chooseTab(next);
   $(`tab-btn-${next}`).focus();
 });
 
@@ -180,16 +236,30 @@ $("tabs-list").addEventListener("keydown", (e) => {
 // Chip groups (single-select toggle rows)
 // ---------------------------------------------------------------------------
 
+/**
+ * Wire a row of chips as a single-select group.
+ *
+ * Returns a select(value) that does exactly what a tap does, and reports
+ * false for a value no chip carries - which is how a restored setting gets
+ * validated against the real chip list instead of being trusted.
+ */
 function wireChipGroup(groupId, dataKey, onSelect) {
   const group = $(groupId);
   const chips = Array.from(group.querySelectorAll(".chip"));
-  for (const btn of chips) {
-    btn.addEventListener("click", () => {
-      for (const b of chips) b.setAttribute("aria-pressed", "false");
-      btn.setAttribute("aria-pressed", "true");
-      onSelect(btn.dataset[dataKey]);
-    });
+
+  function select(value) {
+    const chosen = chips.find((b) => b.dataset[dataKey] === value);
+    if (!chosen) return false;
+    for (const b of chips) b.setAttribute("aria-pressed", "false");
+    chosen.setAttribute("aria-pressed", "true");
+    onSelect(value);
+    return true;
   }
+
+  for (const btn of chips) {
+    btn.addEventListener("click", () => select(btn.dataset[dataKey]));
+  }
+  return select;
 }
 
 // ---------------------------------------------------------------------------
@@ -248,7 +318,7 @@ function renderOneRm() {
 
 let platesMode = "standard"; // standard | womens | metric-no-45 | my-plates
 
-wireChipGroup("plates-preset-group", "preset", (value) => {
+const selectPlatesPreset = wireChipGroup("plates-preset-group", "preset", (value) => {
   // Switching to/from a kg-only preset changes what unit the target box
   // MEANS (a lifter in lb mode with 225 in the box tapping "Women's bar"
   // would otherwise get a plate stack for 225 kg) - convert the number so it
@@ -266,6 +336,7 @@ wireChipGroup("plates-preset-group", "preset", (value) => {
     rewireStepper("plates-target");
   }
   $("plates-inventory-fields").hidden = value !== "my-plates";
+  writeStored(prefKey("plates-preset"), value);
   renderPlates();
 });
 
@@ -342,8 +413,9 @@ function renderPlates() {
 // ---------------------------------------------------------------------------
 
 let scoreSex = "male";
-wireChipGroup("score-sex-group", "sex", (value) => {
+const selectScoreSex = wireChipGroup("score-sex-group", "sex", (value) => {
   scoreSex = value;
+  writeStored(prefKey("score-sex"), value);
   renderScore();
 });
 
@@ -586,8 +658,9 @@ wireChipGroup("records-sport-group", "sport", (value) => {
   renderRecords();
 });
 
-wireChipGroup("records-sex-group", "sex", (value) => {
+const selectRecordsSex = wireChipGroup("records-sex-group", "sex", (value) => {
   recordsSex = value;
+  writeStored(prefKey("records-sex"), value);
   fillRecordsClassSelect();
   if (recordsSport !== "powerlifting") fillRecordsEventSelect();
   renderRecords();
@@ -601,14 +674,17 @@ wireChipGroup("records-lift-group", "lift", (value) => {
 // Typing a bodyweight resolves the class for you (in whichever scheme the
 // select is currently on; traditional when it's on open); picking a class
 // by hand clears the bodyweight box so the two controls never disagree.
-$("records-bodyweight").addEventListener("input", () => {
+function syncRecordsClassToBodyweight() {
   const bw = parseFloat($("records-bodyweight").value);
-  if (Number.isFinite(bw) && bw > 0) {
-    const current = $("records-class").value;
-    const scheme = current.startsWith("ipf:") ? "ipf" : "traditional";
-    $("records-class").value =
-      `${scheme}:${weightClassFor(fromUnit(bw, unit), recordsSex, scheme)}`;
-  }
+  if (!Number.isFinite(bw) || bw <= 0) return;
+  const current = $("records-class").value;
+  const scheme = current.startsWith("ipf:") ? "ipf" : "traditional";
+  $("records-class").value =
+    `${scheme}:${weightClassFor(fromUnit(bw, unit), recordsSex, scheme)}`;
+}
+
+$("records-bodyweight").addEventListener("input", () => {
+  syncRecordsClassToBodyweight();
   renderRecords();
 });
 $("records-class").addEventListener("change", () => {
@@ -752,9 +828,54 @@ function renderAll() {
   "convert-weight",
 ].forEach(wireStepperFor);
 
+for (const id of PERSISTED_FIELDS) {
+  $(id).addEventListener("input", () => writeStored(fieldKey(id), $(id).value));
+}
+
+/**
+ * Put back last session's setup. Runs after the steppers are wired, because
+ * restoring the unit re-steps and re-wires the weight fields, and wiring them
+ * twice would double every -/+ tap.
+ */
+function restoreSetup() {
+  // Read it all up front. Switching the unit re-saves the fields in the new
+  // unit, so applying anything before reading would overwrite the very values
+  // being restored with the on-screen defaults.
+  const saved = {
+    unit: readStored(prefKey("unit")),
+    platesPreset: readStored(prefKey("plates-preset")),
+    scoreSex: readStored(prefKey("score-sex")),
+    recordsSex: readStored(prefKey("records-sex")),
+    tab: readStored(prefKey("tab")),
+    fields: PERSISTED_FIELDS.map((id) => [id, readStored(fieldKey(id))]),
+  };
+
+  if (saved.unit === "lb" || saved.unit === "kg") setUnit(saved.unit);
+
+  // Chips before fields: the preset can change what unit the plate target box
+  // means, and the sex chip refills the weight-class select.
+  selectPlatesPreset(saved.platesPreset);
+  selectScoreSex(saved.scoreSex);
+  selectRecordsSex(saved.recordsSex);
+
+  for (const [id, value] of saved.fields) {
+    if (value !== null) $(id).value = value;
+  }
+  // Setting .value fires no input event, so resolve the class by hand or the
+  // restored bodyweight and the class select would disagree.
+  syncRecordsClassToBodyweight();
+  // The restored values have to end up saved in the unit they're displayed in.
+  saveFields();
+
+  if (TABS.includes(saved.tab)) selectTab(saved.tab);
+}
+
+restoreSetup();
+
 // Honor manifest.json's shortcuts (?tab=onerm|plates|score), e.g. from a
-// home-screen long-press shortcut - falls back to the default 1RM tab for
-// anything else, including no query string at all.
+// home-screen long-press shortcut - an explicit link wins over the tab you
+// happened to leave open last time. Falls back to whatever restoreSetup left
+// selected for anything else, including no query string at all.
 const requestedTab = new URLSearchParams(location.search).get("tab");
 if (TABS.includes(requestedTab)) selectTab(requestedTab);
 

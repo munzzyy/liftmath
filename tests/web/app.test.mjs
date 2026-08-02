@@ -11,7 +11,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { loadApp } from "./dom.mjs";
+import { loadApp, makeStorage } from "./dom.mjs";
 
 /** The big number in a result panel, e.g. "259.17 lb". */
 function hero(html) {
@@ -106,4 +106,95 @@ test("a bad value in a field blanks its results instead of rendering NaN", async
   const app = await loadApp();
   app.type("onerm-weight", "");
   assert.equal(app.text("onerm-results"), "");
+});
+// ---------------------------------------------------------------------------
+// Setup that survives a reload
+// ---------------------------------------------------------------------------
+
+test("unit, inventory, sex and tab come back on the next load", async () => {
+  const first = await loadApp();
+  first.$("unit-kg").click();
+  first.chip("plates-preset-group", "preset", "my-plates").click();
+  first.type("plates-inventory-spec", "20x2,10x2,5x1");
+  first.chip("score-sex-group", "sex", "female").click();
+  first.$("tab-btn-plates").click();
+
+  const second = await loadApp({ storage: makeStorage(Object.fromEntries(first.storage.data)) });
+
+  assert.equal(second.$("unit-kg").getAttribute("aria-pressed"), "true");
+  assert.equal(second.$("plates-inventory-spec").value, "20x2,10x2,5x1");
+  assert.equal(second.$("plates-inventory-fields").hidden, false);
+  assert.equal(
+    second.chip("score-sex-group", "sex", "female").getAttribute("aria-pressed"), "true",
+  );
+  assert.equal(second.$("tool-plates").hidden, false);
+});
+
+test("a bodyweight saved in kg comes back as kg, not as the same number in lb", async () => {
+  const first = await loadApp();
+  first.type("score-bodyweight", 183);
+  first.$("unit-kg").click();
+  const displayedKg = first.$("score-bodyweight").value;
+  assert.equal(displayedKg, "83");
+
+  const second = await loadApp({ storage: makeStorage(Object.fromEntries(first.storage.data)) });
+  assert.equal(second.$("score-bodyweight").value, "83");
+  assert.equal(second.$("unit-kg").getAttribute("aria-pressed"), "true");
+});
+
+test("a restored records bodyweight still resolves its weight class", async () => {
+  const first = await loadApp();
+  first.type("records-bodyweight", 220);
+  const resolvedClass = first.$("records-class").value;
+  assert.notEqual(resolvedClass, "open");
+
+  const second = await loadApp({ storage: makeStorage(Object.fromEntries(first.storage.data)) });
+  assert.equal(second.$("records-bodyweight").value, "220");
+  assert.equal(second.$("records-class").value, resolvedClass);
+});
+
+test("an explicit ?tab= beats the tab you left open", async () => {
+  const first = await loadApp();
+  first.$("tab-btn-records").click();
+
+  const second = await loadApp({
+    storage: makeStorage(Object.fromEntries(first.storage.data)),
+    search: "?tab=convert",
+  });
+  assert.equal(second.$("tool-convert").hidden, false);
+  assert.equal(second.$("tool-records").hidden, true);
+});
+
+test("junk in localStorage is ignored, not applied", async () => {
+  const app = await loadApp({
+    storage: makeStorage({
+      "liftmath:pref:unit": "stones",
+      "liftmath:pref:plates-preset": "<img src=x onerror=alert(1)>",
+      "liftmath:pref:score-sex": "../../etc/passwd",
+      "liftmath:pref:tab": "constructor",
+      "liftmath:field:plates-inventory-spec": "x".repeat(5000),
+    }),
+  });
+
+  assert.equal(app.$("unit-lb").getAttribute("aria-pressed"), "true");
+  assert.equal(
+    app.chip("plates-preset-group", "preset", "standard").getAttribute("aria-pressed"), "true",
+  );
+  assert.equal(app.$("plates-inventory-fields").hidden, true);
+  assert.equal(
+    app.chip("score-sex-group", "sex", "male").getAttribute("aria-pressed"), "true",
+  );
+  assert.equal(app.$("tool-onerm").hidden, false);
+  // Over the length cap, so it never came back at all.
+  assert.equal(app.$("plates-inventory-spec").value, "45x4,25x1,10x2,5x2,2.5x1");
+});
+
+test("a browser that refuses localStorage still runs", async () => {
+  const app = await loadApp({ storage: makeStorage({}, "throwing") });
+  assert.match(app.text("onerm-results"), /Estimated 1RM/);
+
+  app.$("unit-kg").click();
+  assert.equal(app.$("onerm-weight").value, "102");
+  app.$("tab-btn-plates").click();
+  assert.equal(app.$("tool-plates").hidden, false);
 });
