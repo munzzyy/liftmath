@@ -10,10 +10,31 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # pyproject claims "Operating System :: OS Independent", so the matrix has
+    # to say so too. Windows is the one that actually caught something: its
+    # console code page is cp1252, which can't encode the diacritics in the
+    # bundled record set. Linux runs every supported Python; Windows and macOS
+    # run the oldest and newest, which is where version-specific breakage lives.
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        include:
+          - os: windows-latest
+            python-version: "3.10"
+          - os: windows-latest
+            python-version: "3.14"
+          - os: macos-latest
+            python-version: "3.10"
+          - os: macos-latest
+            python-version: "3.14"
+    defaults:
+      run:
+        # GitHub ships bash on the Windows runners too, so the smoke step below
+        # stays one script instead of a PowerShell fork.
+        shell: bash
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -46,12 +67,17 @@ jobs:
           liftmath convert --weight 225 --unit lb
           liftmath records --sport powerlifting --lift deadlift --sex male --bodyweight 220 --equip raw --compare 500
           liftmath records --sport track --event 100m --sex male --level world --compare 12.4
+          # Polish athlete names live in this one. On a cp1252 Windows console
+          # it used to die mid-table with a UnicodeEncodeError, so keep it here.
+          liftmath records --sport powerlifting --lift bench --sex female --class 60
           liftmath 1rm --weight 225 --reps 5 --json
           liftmath --json plates --target 245
           liftmath --json records --sport strongman --sex female
-          printf 'Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE\n2026-06-01 18:00:00,"Push Day",1h,"Bench Press (Barbell)",1,185,5,0,0,,,\n' > /tmp/smoke_strong.csv
-          liftmath import --file /tmp/smoke_strong.csv
-          liftmath --json import --file /tmp/smoke_strong.csv
+          # Written into the workspace, not /tmp: under Git bash on the Windows
+          # runner, /tmp and the Windows Python's idea of /tmp are two places.
+          printf 'Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE\n2026-06-01 18:00:00,"Push Day",1h,"Bench Press (Barbell)",1,185,5,0,0,,,\n' > smoke_strong.csv
+          liftmath import --file smoke_strong.csv
+          liftmath --json import --file smoke_strong.csv
 
   version-sync:
     runs-on: ubuntu-latest

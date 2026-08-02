@@ -534,7 +534,8 @@ def test_ctrl_c_exits_130_instead_of_raising(monkeypatch):
     assert main(["records", "--all"]) == 130
 
 
-@pytest.mark.skipif(shutil.which("head") is None, reason="needs head(1)")
+@pytest.mark.skipif(sys.platform == "win32" or shutil.which("head") is None,
+                    reason="needs a POSIX shell's head(1) and SIGPIPE semantics")
 def test_records_all_piped_into_head_prints_no_traceback():
     # `liftmath records --all | head -3` used to dump a BrokenPipeError
     # traceback plus an "Exception ignored while flushing sys.stdout" line.
