@@ -102,7 +102,9 @@ export function loadPlates(target, opts = {}) {
       );
     }
     if (unit !== "kg") {
-      throw new RangeError(`preset ${JSON.stringify(preset)} is a kg-only setup, pass unit='kg'`);
+      // Same wording as the Python mirror: no flag or keyword name in it, so
+      // it reads the same in the CLI, the library, and the app.
+      throw new RangeError(`preset ${JSON.stringify(preset)} is a kg-only setup; the unit must be kg`);
     }
     const presetDef = PRESETS[preset];
     bar = bar !== null ? bar : presetDef.bar;

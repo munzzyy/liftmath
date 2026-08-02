@@ -21,8 +21,34 @@ pytest -v
 ruff check .
 ```
 
-Both run in CI across Python 3.10-3.14, so green locally on one version
-doesn't guarantee green everywhere, but it catches almost everything.
+Both run in CI across Python 3.10-3.14 on Linux, plus the oldest and newest
+on Windows and macOS. Green locally doesn't guarantee green everywhere, but
+it catches almost everything.
+
+## The web app is a second engine
+
+This is the part that surprises people, so read it before you touch any math.
+
+`src/liftmath/*.py` and `web/js/math/*.js` are 1:1 mirrors. Python is the
+reference; the JS is a hand-written port of it, and CI pins them together by
+generating fixtures from Python and running the JS against them. A fix to a
+formula, a clamp, a cap, or an error message in one engine has to land in the
+other in the same commit, or the build goes red.
+
+The full local loop:
+
+```
+node --test "tests/web/*.test.mjs"   # JS math vs the generated fixtures (Node 22+, no npm)
+python tools/gen_fixtures.py         # regenerate fixtures, then commit the diff
+python tools/check_dom_ids.py        # every $("id") in app.js exists in index.html
+python tools/gen_icons.py            # only if you changed web/icons
+```
+
+**Anything in web/'s precache list needs a `CACHE_NAME` bump.** The list is
+`PRECACHE_URLS` at the top of `web/sw.js`: index.html, the stylesheet, every
+file under `js/`, manifest.json, and the icons. Change one of those without
+bumping `CACHE_NAME` in the same commit and CI fails you, which is the good
+case: the bad case is an installed PWA serving the old code forever.
 
 ## What kind of contributions are useful here
 

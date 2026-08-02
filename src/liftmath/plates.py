@@ -122,7 +122,10 @@ def load_plates(
         if preset not in PRESETS:
             raise ValueError(f"unknown preset {preset!r}, choose from {sorted(PRESETS)}")
         if unit != "kg":
-            raise ValueError(f"preset {preset!r} is a kg-only setup, pass unit='kg'")
+            # Worded without naming a flag or a keyword: the same string is
+            # what `liftmath plates --preset womens` prints, and "pass
+            # unit='kg'" is not something a CLI user typed or can type.
+            raise ValueError(f"preset {preset!r} is a kg-only setup; the unit must be kg")
         preset_bar, preset_plates = PRESETS[preset]
         bar = bar if bar is not None else preset_bar
         plates = plates if plates is not None else preset_plates

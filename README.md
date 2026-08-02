@@ -39,10 +39,20 @@ you import or a command you run.
 ## Install
 
 ```
-pip install liftmath
+pipx install git+https://github.com/munzzyy/liftmath
 ```
 
-Or from source:
+Or with pip, into whatever environment you want it in:
+
+```
+pip install git+https://github.com/munzzyy/liftmath
+```
+
+The copy on PyPI is 2.3.0 and sits behind this repo: it has no `liftmath import`
+command and none of the input hardening below, so install from git until the next
+release lands there.
+
+Or from a clone, if you want to run the tests too:
 
 ```
 git clone https://github.com/munzzyy/liftmath
@@ -101,8 +111,8 @@ Load 405lb on a 45lb bar (from your inventory):
       nearest achievable below: 385lb
 ```
 
-There are also `--bar`, `--plates` (custom denominations), and `--preset` (`womens`, `metric-no-45`)
-flags. Run `liftmath plates --help`.
+There are also `--bar`, `--plates` (custom denominations), and `--preset` (`womens`,
+`metric-no-45`, both kg-only, so pass `--unit kg` with them) flags. Run `liftmath plates --help`.
 
 ### Strength score
 
@@ -115,11 +125,17 @@ Relative-strength scores - 1200lb total @ 200lb bodyweight (male):
   Each score below lets you compare lifters across bodyweights on one scale - Wilks
   and DOTS are two different curve-fit formulas for it; IPF GL is the federation's own.
 ----------------------------------------
-  Wilks (2020)      415.78
-  Wilks (original)  346.09
-  DOTS              350.55
-  IPF GL points      72.08
+  Wilks (2020)       415.78
+  Wilks (original)   346.09
+  DOTS               350.55
+  IPF GL points       72.08
 ----------------------------------------
+IPF GL uses classic (raw) powerlifting coefficients only. All four formulas are fit
+to different samples and disagree slightly, especially at the extremes of the
+bodyweight range - treat them as independent opinions, not a single ground truth.
+Wilks-2020 is the IPF's current standard; original Wilks is kept for historical
+comparison. [evidence tier] established as competition scoring CONVENTIONS (real
+federation formulas fit to real competition samples), not evidence in the RCT sense.
 ```
 
 All four are fit to different samples and disagree slightly, especially at the extremes of the
@@ -135,14 +151,22 @@ anywhere, so those records are hand-curated, each entry carrying its own citatio
 
 ```
 $ liftmath records --sport powerlifting --lift deadlift --sex male --bodyweight 220 --equip raw --compare 500
-World records matching your filters (snapshot of 2026-07-11):
-  ...
-  [powerlifting] Deadlift 100 M raw (all-time)
-      433.5kg (956lb)    Krzysztof Wierzbicki  (Siberian Championships, 2020-03-08)
+Records matching your filters (snapshot of 2026-07-11):
+  Powerlifting rows are computed from the OpenPowerlifting database - all-time =
+  any sanctioned federation, tested = drug-tested meets only. Strongman, grip, and
+  track & field are curated with per-entry citations (--json carries the sources).
+------------------------------------------------------------------------------------
+  [powerlifting] Deadlift 100 [traditional] M raw (all-time)
+      433.5kg (956lb)    Krzysztof Wierzbicki, Poland  (Siberian Championships, 2020-03-08)
+      @ 97.9kg bw
       your 500lb = 52.3% of this record (456lb to go)
-  [powerlifting] Deadlift 100 M raw (tested)
-      400.5kg (883lb)    Hunter Olsen  (Age Division Nationals, 2026-05-19)
+  [powerlifting] Deadlift 100 [traditional] M raw (tested)
+      400.5kg (883lb)    Hunter Olsen, USA  (Age Division Nationals, 2026-05-19)
+      @ 96.9kg bw
       your 500lb = 56.6% of this record (383lb to go)
+------------------------------------------------------------------------------------
+Records move; a bundled snapshot can trail the current record. Official federation
+lists (e.g. the IPF's) are curated separately and differ from all-time-in-the-data.
 ```
 
 Pass `--class` directly (`82.5`, `140+`, `open`) or `--bodyweight` and it resolves the class
@@ -160,8 +184,8 @@ flag reads times the way they're written:
 
 ```
 $ liftmath records --sport track --event 1500m --sex male --level world --compare 4:30
-  [track] 1500m world M (official)
-      3:26.00            Hicham El Guerrouj, Morocco  (Rome, 1998-07-14)
+  [track] 1500 meters world M (official)
+      3:26.00            Hicham El Guerrouj, Morocco  (Rome, Italy, 1998-07-14)
       your 4:30 = 76.3% of record pace (1:04.00 off)
 ```
 
@@ -312,7 +336,15 @@ ruff check .
 ```
 
 Every formula is pinned against hand-checked reference values in `tests/`. The web app's JavaScript
-math is parity-tested against the Python reference so the two never drift.
+math is parity-tested against the Python reference so the two never drift, and those tests run on
+Node 22+ with no npm packages at all:
+
+```
+python tools/gen_fixtures.py        # regenerate fixtures from the Python reference
+node --test "tests/web/*.test.mjs"  # assert the JS math matches them
+```
+
+If you change any math, both engines need the change. CONTRIBUTING.md has the full rundown.
 
 ## Contributing
 

@@ -8,7 +8,7 @@
 // No CDN, no external requests exist to cache (there aren't any) - every URL
 // below is same-origin, matching the zero-dependency constraint.
 
-const CACHE_NAME = "liftmath-v2.3.4";
+const CACHE_NAME = "liftmath-v2.3.5";
 
 const PRECACHE_URLS = [
   "./",
