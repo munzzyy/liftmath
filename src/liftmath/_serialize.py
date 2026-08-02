@@ -1,9 +1,10 @@
 """Shared dataclass -> dict/JSON helper for the public result types.
 
 Every public function in liftmath returns a plain @dataclass (OneRmEstimate,
-MacroTargets, PlateLoad, LoadChart, ...). This module turns any of them into a
-plain dict (or a JSON string) suitable for logging, an API response, or the
-CLI's --json flag, without callers having to hand-roll dataclasses.asdict()
+PlateLoad, InventoryPlateLoad, StrengthScore, Record, WeightConversion,
+WorkoutSet). This module turns any of them into a plain dict (or a JSON
+string) suitable for logging, an API response, or the CLI's --json flag,
+without callers having to hand-roll dataclasses.asdict()
 and remember to include the read-only @property values (like PlateLoad.exact
 or OneRmEstimate.is_exact) that asdict() alone would drop.
 """

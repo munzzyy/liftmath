@@ -49,7 +49,12 @@ jobs:
         run: pip install -e .
 
       - name: Install test and lint tools
-        run: pip install pytest ruff
+        # Bounded on purpose. Ruff adds and tightens rules in minor releases,
+        # so a floating install can red an unrelated PR with no repo change,
+        # which reads to a drive-by contributor as "my patch broke it". These
+        # are the versions the tree is verified green against (ruff 0.16.1,
+        # pytest 9.1.1); widen them deliberately, not by accident.
+        run: pip install "pytest>=7,<10" "ruff==0.16.*"
 
       - name: Lint
         run: ruff check .
