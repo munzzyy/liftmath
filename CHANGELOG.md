@@ -2,9 +2,29 @@
 
 ## Unreleased
 
+## 2.4.0 - 2026-08-02
+
 Hardening pass: garbage input now gets a clean `error: ...` message instead of a
 traceback, and the finite-inventory solver can no longer be asked to enumerate
 forever.
+
+- `records` crashed with a UnicodeEncodeError on a Windows console. Two dozen
+  fields in the bundled data carry diacritics (Polish lifter and meet names,
+  the women's hammer-throw notes) that a cp1252 console can't encode, so the
+  table died partway through on an ordinary query. The CLI now writes UTF-8
+  and replaces anything the terminal can't draw.
+- Piping CLI output into `head` or `less`, or hitting Ctrl-C mid-render, dumped
+  a BrokenPipeError or KeyboardInterrupt traceback. Both exit quietly now.
+- `import`: one row with a date the parser doesn't recognize used to throw away
+  the whole file. Those rows come through without a date, stay out of the
+  per-day and per-week views, and get counted in a summary line.
+- CI runs on Windows and macOS, not only Linux, which is what the
+  `OS Independent` classifier has been claiming all along.
+- Web app: the footer links back to the source, the license, and the issue
+  tracker, and a JS-blocked visitor gets an explanation instead of an empty
+  page.
+- Web app: the unit toggle, plate setup, bodyweight, sex and open tab survive a
+  reload. Still device-only, still no network calls.
 
 - `1rm`: `--weight nan` crashed with an IndexError, and `--weight inf` printed
   an "inf" consensus. Both are rejected now.
@@ -42,7 +62,7 @@ forever.
   records weight in kg. `--unit` covers both what a unit-less Strong export
   is assumed to already be in, and what a Hevy export gets converted to.
 
-55 new Python tests, 15 new JS tests.
+69 new Python tests, 30 new JS tests.
 
 Releases before this file existed are documented on the
 [GitHub releases page](https://github.com/munzzyy/liftmath/releases).

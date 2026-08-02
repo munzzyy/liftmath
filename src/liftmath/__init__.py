@@ -63,7 +63,7 @@ from liftmath.standards import (
     wilks_score,
 )
 
-__version__ = "2.3.0"
+__version__ = "2.4.0"
 
 __all__ = [
     "estimate_one_rm",
