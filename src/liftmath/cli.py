@@ -443,9 +443,33 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _force_utf8_output() -> None:
+    """Print UTF-8 no matter what code page the console is on.
+
+    The bundled record set has Polish and other diacritic athlete names in it
+    (an l-stroke in 'Malgorzata Kopiec', and about two dozen more). On Windows
+    a redirected stdout uses the locale code page, usually cp1252, which can't
+    encode those characters, so `liftmath records` died with a
+    UnicodeEncodeError halfway through printing. Re-encoding as UTF-8 with
+    errors='replace' means the worst case is a replacement character in one
+    name, not a traceback and a half-written table.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (ValueError, OSError):
+            # Already detached, or a stream that won't take a new encoding -
+            # leave it as it was rather than failing before the command runs.
+            pass
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    _force_utf8_output()
     return args.func(args)
 
 

@@ -1,4 +1,6 @@
+import io
 import json
+import sys
 
 import pytest
 
@@ -409,6 +411,60 @@ def test_import_missing_required_columns_errors(capsys, tmp_path):
     code, _, err = run(capsys, "import", "--file", str(csv_file), "--source", "hevy")
     assert code == 1
     assert "error" in err
+
+
+# --- console encoding ---
+
+def _cp1252_stdout(monkeypatch):
+    """Swap sys.stdout for a cp1252 stream, the way a Windows console behaves."""
+    raw = io.BytesIO()
+    monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(raw, encoding="cp1252", newline=""))
+    return raw
+
+
+def test_records_dataset_still_has_a_non_cp1252_name():
+    # The guard below is only meaningful while the dataset actually contains a
+    # name cp1252 can't encode. If a regen ever drops all of them, this fails
+    # loudly instead of leaving a test that passes without testing anything.
+    from liftmath import _records_data
+
+    def offenders(value):
+        if isinstance(value, str):
+            try:
+                value.encode("cp1252")
+            except UnicodeEncodeError:
+                return 1
+            return 0
+        if isinstance(value, dict):
+            return sum(offenders(v) for v in value.values())
+        if isinstance(value, (list, tuple)):
+            return sum(offenders(v) for v in value)
+        return 0
+
+    total = sum(offenders(getattr(_records_data, name))
+                for name in dir(_records_data) if not name.startswith("__"))
+    assert total > 0
+
+
+def test_records_on_a_cp1252_console_does_not_crash(monkeypatch):
+    # This exact query used to die with a UnicodeEncodeError partway through
+    # printing, on any Windows console using a Western code page.
+    raw = _cp1252_stdout(monkeypatch)
+    code = main(["records", "--sport", "powerlifting", "--lift", "bench",
+                 "--sex", "female", "--class", "60"])
+    sys.stdout.flush()
+    assert code == 0
+    assert b"Records matching your filters" in raw.getvalue()
+
+
+def test_every_non_cp1252_record_still_prints(monkeypatch):
+    # Wider net than the single query above: --all renders every bundled
+    # record, so any name the console can't encode would show up here.
+    raw = _cp1252_stdout(monkeypatch)
+    code = main(["records", "--all"])
+    sys.stdout.flush()
+    assert code == 0
+    assert len(raw.getvalue()) > 10_000
 
 
 # --- top level ---
