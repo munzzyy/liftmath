@@ -512,6 +512,14 @@ table.result-table td.num {
   text-align: center;
 }
 
+.app-footer p {
+  margin: 0 0 0.35rem;
+}
+
+.footer-links a {
+  color: var(--color-accent);
+}
+
 /* ---------- world records ---------- */
 
 .record-scope {

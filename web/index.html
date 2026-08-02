@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>liftmath - 1RM, plates, strength score</title>
 <meta name="description" content="Gym calculators: 1RM consensus, plate loading with a barbell diagram, Wilks/DOTS/IPF GL strength scores, and records for powerlifting, strongman, grip, and track &amp; field (world, college, high school). Free, works offline, no account, no ads." />
-<meta property="og:title" content="liftmath — 1RM, plates, strength score" />
+<meta property="og:title" content="liftmath - 1RM, plates, strength score" />
 <meta property="og:description" content="Gym calculators: 1RM consensus, plate loading, Wilks/DOTS/IPF GL strength scores, and records. Free, works offline, no account, no ads." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://munzzyy.github.io/liftmath/" />
@@ -53,6 +53,13 @@
 </nav>
 
 <main id="main-content">
+
+  <noscript>
+    <p class="notice notice-warn" id="noscript-notice">The calculators do their math in JavaScript on your
+      own device, so this page needs JavaScript turned on. If you'd rather keep it off, the same math ships
+      as a command-line tool at
+      <a href="https://github.com/munzzyy/liftmath" rel="noopener">github.com/munzzyy/liftmath</a>.</p>
+  </noscript>
 
   <!-- ============ 1RM consensus ============ -->
   <section class="tool-panel" id="tool-onerm" role="tabpanel" aria-labelledby="tab-btn-onerm" tabindex="0">
@@ -297,6 +304,11 @@
 
 <footer class="app-footer">
   <p>Runs entirely on this device. No account, no tracking, no network calls.</p>
+  <p class="footer-links">
+    <a href="https://github.com/munzzyy/liftmath" target="_blank" rel="noopener">Source</a> ·
+    <a href="https://github.com/munzzyy/liftmath/blob/main/LICENSE" target="_blank" rel="noopener">Prosperity Public License 3.0.0</a> ·
+    <a href="https://github.com/munzzyy/liftmath/issues" target="_blank" rel="noopener">Report a bug</a>
+  </p>
 </footer>
 
 <script type="module" src="js/app.js"></script>
