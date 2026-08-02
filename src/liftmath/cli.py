@@ -19,6 +19,7 @@ the subcommand) for machine-readable JSON instead of the formatted text, e.g.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 
 from liftmath import __version__
@@ -466,11 +467,46 @@ def _force_utf8_output() -> None:
             pass
 
 
+def _discard_rest_of_stdout() -> None:
+    """Point stdout at the void after the reader on the other end hung up.
+
+    Closing stdout on its own isn't enough: the interpreter flushes it again
+    while shutting down and prints "Exception ignored while flushing
+    sys.stdout" on top of the error we already handled. Re-pointing the file
+    descriptor at os.devnull gives that last flush somewhere harmless to go.
+    Under pytest's capture there is no real descriptor, so every step here is
+    allowed to be a no-op.
+    """
+    try:
+        fd = sys.stdout.fileno()
+    except (OSError, ValueError, AttributeError):
+        fd = None
+    try:
+        sys.stdout.close()
+    except (BrokenPipeError, OSError, ValueError):
+        pass
+    if fd is None:
+        return
+    try:
+        os.dup2(os.open(os.devnull, os.O_WRONLY), fd)
+    except OSError:
+        pass
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     _force_utf8_output()
-    return args.func(args)
+    try:
+        return args.func(args)
+    except BrokenPipeError:
+        # `liftmath records --all | head -3` is the obvious way to use --all,
+        # and head closing the pipe is not an error worth a traceback. 141 is
+        # the usual shell convention for "killed by SIGPIPE".
+        _discard_rest_of_stdout()
+        return 141
+    except KeyboardInterrupt:
+        return 130
 
 
 if __name__ == "__main__":

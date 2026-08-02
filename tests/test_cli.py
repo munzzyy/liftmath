@@ -1,5 +1,7 @@
 import io
 import json
+import shutil
+import subprocess
 import sys
 
 import pytest
@@ -465,6 +467,43 @@ def test_every_non_cp1252_record_still_prints(monkeypatch):
     sys.stdout.flush()
     assert code == 0
     assert len(raw.getvalue()) > 10_000
+
+
+# --- interrupted output ---
+
+def test_broken_pipe_exits_141_instead_of_raising(monkeypatch):
+    # Stand-in for the reader hanging up mid-render. sys.stdout is swapped for
+    # a throwaway stream because the handler closes it.
+    monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(io.BytesIO(), encoding="utf-8"))
+
+    def hang_up(_args):
+        raise BrokenPipeError(32, "Broken pipe")
+
+    monkeypatch.setattr("liftmath.cli.cmd_records", hang_up)
+    assert main(["records", "--all"]) == 141
+
+
+def test_ctrl_c_exits_130_instead_of_raising(monkeypatch):
+    def interrupt(_args):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr("liftmath.cli.cmd_records", interrupt)
+    assert main(["records", "--all"]) == 130
+
+
+@pytest.mark.skipif(shutil.which("head") is None, reason="needs head(1)")
+def test_records_all_piped_into_head_prints_no_traceback():
+    # `liftmath records --all | head -3` used to dump a BrokenPipeError
+    # traceback plus an "Exception ignored while flushing sys.stdout" line.
+    dump = subprocess.Popen([sys.executable, "-m", "liftmath", "records", "--all"],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    head = subprocess.Popen([shutil.which("head"), "-3"], stdin=dump.stdout,
+                            stdout=subprocess.DEVNULL)
+    dump.stdout.close()
+    head.wait()
+    err = dump.communicate()[1]
+    assert b"Traceback" not in err
+    assert b"Exception ignored" not in err
 
 
 # --- top level ---
