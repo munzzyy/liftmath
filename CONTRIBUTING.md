@@ -44,6 +44,12 @@ python tools/check_dom_ids.py        # every $("id") in app.js exists in index.h
 python tools/gen_icons.py            # only if you changed web/icons
 ```
 
+`tests/web/app.test.mjs` is the odd one out: instead of testing math it loads
+`web/index.html` and `web/js/app.js` against the small DOM in
+`tests/web/dom.mjs` and checks what the page actually renders. That's where a
+wiring change belongs, and the DOM stub only models what app.js uses, so if
+you reach for a browser API it doesn't have yet you'll need to add it there.
+
 **Anything in web/'s precache list needs a `CACHE_NAME` bump.** The list is
 `PRECACHE_URLS` at the top of `web/sw.js`: index.html, the stylesheet, every
 file under `js/`, manifest.json, and the icons. Change one of those without
