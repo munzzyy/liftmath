@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- `import`: `--file` now takes more than one path, so a lifter who switched
+  between Strong and Hevy can merge both histories into one e1RM trend and
+  weekly tonnage view instead of running the command twice and comparing two
+  outputs by eye. `--source`, when given, applies to every file; otherwise
+  each file's format is auto-detected from its own header row. The JSON
+  output's `source` field is now `sources`, a list in file order.
+- `e1rm_trend`/`weekly_tonnage` now raise `ValueError` on a `sets` list that
+  mixes kg and lb, instead of silently adding them together. Every single
+  `parse_strong_csv`/`parse_hevy_csv` call already returns one consistent
+  unit; this only matters if you're merging lists by hand and forgot to
+  parse them with the same `--unit`.
+
 ## 2.4.0 - 2026-08-02
 
 Hardening pass: garbage input now gets a clean `error: ...` message instead of a

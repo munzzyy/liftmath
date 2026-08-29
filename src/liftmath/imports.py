@@ -299,6 +299,25 @@ def parse_hevy_csv(csv_text: str, *, unit: str = "kg",
     return sets
 
 
+def _check_single_unit(sets: list[WorkoutSet], fn_name: str) -> None:
+    """Refuse a mixed-unit `sets` list rather than silently mixing kg and lb.
+
+    Both parse functions stamp every `WorkoutSet` they return with the single
+    `unit` the caller asked for, so one parse call is always consistent. The
+    risk is a caller (a library user, or `import`'s own multi-file merge)
+    concatenating lists parsed with different `unit` args - weight x reps
+    would then add kilograms to pounds with no error, wrong by the ~2.2x
+    factor between them. Callers should normalize everything to one unit
+    (pass a matching `unit` to every parse call) before combining lists.
+    """
+    units = {s.unit for s in sets}
+    if len(units) > 1:
+        raise ValueError(
+            f"{fn_name}: sets are in mixed units ({', '.join(sorted(units))}) - "
+            "parse every source with the same `unit` before combining them"
+        )
+
+
 def e1rm_trend(sets: list[WorkoutSet]) -> dict[str, dict[str, float]]:
     """Best estimated 1RM per exercise per calendar day, from parsed sets.
 
@@ -311,10 +330,17 @@ def e1rm_trend(sets: list[WorkoutSet]) -> dict[str, dict[str, float]]:
     than raising - a mixed-content export (strength + cardio + bodyweight)
     is normal input, not an error condition.
 
+    Raises:
+        ValueError: if `sets` mixes more than one `unit` - see
+            `_check_single_unit`. Every set from one `parse_strong_csv`/
+            `parse_hevy_csv` call already shares a unit; this only fires on
+            a badly merged list.
+
     Returns:
         {exercise: {day ("YYYY-MM-DD"): best_e1rm}}, each inner dict sorted
         by day.
     """
+    _check_single_unit(sets, "e1rm_trend")
     trend: dict[str, dict[str, float]] = {}
     for s in sets:
         if not s.date or not s.weight or s.weight <= 0 or not s.reps or s.reps < 1:
@@ -339,7 +365,12 @@ def weekly_tonnage(sets: list[WorkoutSet]) -> dict[str, float]:
     key. Sets missing weight or reps contribute nothing, same rationale as
     `e1rm_trend`; warmup sets ARE included (see module docstring) - filter
     `sets` by `set_type` first if you want them excluded.
+
+    Raises:
+        ValueError: if `sets` mixes more than one `unit` - see
+            `_check_single_unit`.
     """
+    _check_single_unit(sets, "weekly_tonnage")
     tonnage: dict[str, float] = {}
     for s in sets:
         if not s.date or not s.weight or s.weight <= 0 or not s.reps or s.reps < 1:

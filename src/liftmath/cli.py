@@ -26,7 +26,7 @@ from liftmath import __version__
 from liftmath._serialize import to_json
 from liftmath.convert import KG_PER_LB, convert_weight
 from liftmath.convert import lbs_to_kg as _lbs_to_kg
-from liftmath.imports import e1rm_trend, parse_hevy_csv, parse_strong_csv, weekly_tonnage
+from liftmath.imports import WorkoutSet, e1rm_trend, parse_hevy_csv, parse_strong_csv, weekly_tonnage
 from liftmath.onerm import estimate_one_rm
 from liftmath.plates import PRESETS, _parse_inventory_spec, load_plates, load_plates_from_inventory
 from liftmath.records import (
@@ -285,47 +285,72 @@ def _detect_import_source(csv_text: str) -> str | None:
     return None
 
 
-def cmd_import(args: argparse.Namespace) -> int:
+def _read_import_file(path: str, *, source_override: str | None, unit: str,
+                       date_errors: list[str]) -> tuple[str, list[WorkoutSet]] | None:
+    """Read and parse one import file. Prints an `error: ...` line and returns
+    None on any failure, so `cmd_import` can just propagate an exit code of 1.
+    """
     try:
-        with open(args.file, encoding="utf-8-sig") as f:
+        with open(path, encoding="utf-8-sig") as f:
             text = f.read()
     except OSError as e:
         print(f"error: {e}", file=sys.stderr)
-        return 1
+        return None
     except UnicodeDecodeError:
         # A Strong/Hevy export re-saved through Excel can land as cp1252 rather
         # than UTF-8. Fail with the CLI's clean "error:" contract instead of a
         # raw decode traceback, and tell the user how to fix it.
-        print(f"error: {args.file} isn't UTF-8 encoded - re-export from the app "
+        print(f"error: {path} isn't UTF-8 encoded - re-export from the app "
               "or convert it to UTF-8", file=sys.stderr)
-        return 1
+        return None
 
-    source = args.source or _detect_import_source(text)
+    source = source_override or _detect_import_source(text)
     if source is None:
-        print("error: couldn't tell if this is a Strong or Hevy export - pass --source strong|hevy",
-              file=sys.stderr)
-        return 1
+        print(f"error: couldn't tell if {path} is a Strong or Hevy export - "
+              "pass --source strong|hevy", file=sys.stderr)
+        return None
 
-    date_errors: list[str] = []
     try:
-        sets = parse_strong_csv(text, unit=args.unit, date_errors=date_errors) if source == "strong" \
-            else parse_hevy_csv(text, unit=args.unit, date_errors=date_errors)
+        sets = parse_strong_csv(text, unit=unit, date_errors=date_errors) if source == "strong" \
+            else parse_hevy_csv(text, unit=unit, date_errors=date_errors)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
-        return 1
+        return None
+    return source, sets
+
+
+def cmd_import(args: argparse.Namespace) -> int:
+    date_errors: list[str] = []
+    sources: list[str] = []
+    sets: list[WorkoutSet] = []
+    for path in args.file:
+        result = _read_import_file(path, source_override=args.source, unit=args.unit,
+                                    date_errors=date_errors)
+        if result is None:
+            return 1
+        source, file_sets = result
+        # Every file is parsed with the same --unit, so weight is already
+        # normalized before the lists are concatenated - weekly_tonnage and
+        # e1rm_trend would otherwise refuse a merge that mixed kg and lb.
+        sources.append(source)
+        sets.extend(file_sets)
 
     trend = e1rm_trend(sets)
     tonnage = weekly_tonnage(sets)
 
     if args.json:
-        print(to_json({"source": source, "sets": sets, "unreadable_dates": len(date_errors),
+        print(to_json({"sources": sources, "sets": sets, "unreadable_dates": len(date_errors),
                        "e1rm_trend": trend, "weekly_tonnage": tonnage}))
         return 0
 
     dates = sorted(s.date[:10] for s in sets if s.date)
     exercises = sorted({s.exercise for s in sets if s.exercise})
     span = f" ({dates[0]} to {dates[-1]})" if dates else ""
-    print(f"Imported {len(sets)} sets from a {source} export{span}.")
+    if len(sources) == 1:
+        print(f"Imported {len(sets)} sets from a {sources[0]} export{span}.")
+    else:
+        print(f"Imported {len(sets)} sets from {len(sources)} files "
+              f"({', '.join(sources)}){span}.")
     print(f"  {len(exercises)} distinct exercises.")
     if date_errors:
         print(f"  [!] {len(date_errors)} row(s) have a date this can't read (first: "
@@ -438,9 +463,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("import", help="import workout history from a Strong or Hevy CSV export",
                        parents=[json_parent])
-    s.add_argument("--file", required=True, metavar="PATH", help="path to the exported CSV file")
+    s.add_argument("--file", required=True, nargs="+", metavar="PATH",
+                   help="path to the exported CSV file - pass more than one (e.g. a Strong "
+                        "export and a Hevy export) to merge them into one combined trend "
+                        "and tonnage view")
     s.add_argument("--source", choices=["strong", "hevy"],
-                   help="export format; auto-detected from the header row if omitted")
+                   help="export format for every --file given; auto-detected per file from "
+                        "its own header row if omitted")
     s.add_argument("--unit", default="lb", choices=["lb", "kg"],
                    help="unit to report weights in - also the assumed unit for a Strong "
                         "export's own Weight column, which doesn't record one (Hevy always "

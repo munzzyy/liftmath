@@ -264,3 +264,33 @@ def test_weekly_tonnage_ignores_bodyweight_only_sets():
     )
     sets = parse_strong_csv(bodyweight, unit="lb")
     assert weekly_tonnage(sets) == {}
+
+
+def test_e1rm_trend_merges_strong_and_hevy_sets():
+    # A lifter who switched apps shouldn't have to pick one history - merging
+    # sets from both sources into one call is the whole point of `source`.
+    merged = parse_strong_csv(STRONG_IOS, unit="kg") + parse_hevy_csv(HEVY_CSV, unit="kg")
+    trend = e1rm_trend(merged)
+    assert set(trend) >= {"Snatch (Barbell)", "Pull Up (Assisted)"}
+
+
+def test_weekly_tonnage_merges_strong_and_hevy_sets():
+    merged = parse_strong_csv(STRONG_IOS, unit="kg") + parse_hevy_csv(HEVY_CSV, unit="kg")
+    strong_only = weekly_tonnage(parse_strong_csv(STRONG_IOS, unit="kg"))
+    hevy_only = weekly_tonnage(parse_hevy_csv(HEVY_CSV, unit="kg"))
+    merged_tonnage = weekly_tonnage(merged)
+    # Different ISO weeks (2020 vs 2025), so the merge should just carry both
+    # forward untouched rather than colliding or dropping either one.
+    assert merged_tonnage == {**strong_only, **hevy_only}
+
+
+def test_e1rm_trend_rejects_mixed_units():
+    mixed = parse_strong_csv(STRONG_IOS, unit="lb") + parse_hevy_csv(HEVY_CSV, unit="kg")
+    with pytest.raises(ValueError, match="mixed units"):
+        e1rm_trend(mixed)
+
+
+def test_weekly_tonnage_rejects_mixed_units():
+    mixed = parse_strong_csv(STRONG_IOS, unit="lb") + parse_hevy_csv(HEVY_CSV, unit="kg")
+    with pytest.raises(ValueError, match="mixed units"):
+        weekly_tonnage(mixed)

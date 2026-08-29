@@ -373,9 +373,44 @@ def test_import_json(capsys, tmp_path):
     code, out, _ = run(capsys, "import", "--file", str(csv_file), "--json")
     assert code == 0
     data = json.loads(out)
-    assert data["source"] == "strong"
+    assert data["sources"] == ["strong"]
     assert len(data["sets"]) == 2
     assert "Snatch (Barbell)" in data["e1rm_trend"]
+
+
+def test_import_multiple_files_merges_into_one_view(capsys, tmp_path):
+    strong_file = tmp_path / "strong.csv"
+    strong_file.write_text(STRONG_CSV)
+    hevy_file = tmp_path / "hevy.csv"
+    hevy_file.write_text(HEVY_CSV)
+    code, out, _ = run(capsys, "import", "--file", str(strong_file), str(hevy_file), "--unit", "kg")
+    assert code == 0
+    assert "Imported 3 sets from 2 files (strong, hevy)" in out
+    assert "Snatch (Barbell)" in out
+    assert "Pull Up (Assisted)" in out
+
+
+def test_import_multiple_files_json_reports_both_sources_and_summed_counts(capsys, tmp_path):
+    strong_file = tmp_path / "strong.csv"
+    strong_file.write_text(STRONG_CSV)
+    hevy_file = tmp_path / "hevy.csv"
+    hevy_file.write_text(HEVY_CSV)
+    code, out, _ = run(capsys, "import", "--file", str(strong_file), str(hevy_file),
+                       "--unit", "kg", "--json")
+    assert code == 0
+    data = json.loads(out)
+    assert data["sources"] == ["strong", "hevy"]
+    assert len(data["sets"]) == 3
+    assert "Snatch (Barbell)" in data["e1rm_trend"]
+    assert "Pull Up (Assisted)" in data["e1rm_trend"]
+
+
+def test_import_multiple_files_second_file_missing_errors(capsys, tmp_path):
+    strong_file = tmp_path / "strong.csv"
+    strong_file.write_text(STRONG_CSV)
+    code, _, err = run(capsys, "import", "--file", str(strong_file), str(tmp_path / "nope.csv"))
+    assert code == 1
+    assert "error" in err
 
 
 def test_import_missing_file_errors(capsys, tmp_path):
@@ -417,6 +452,23 @@ def test_import_reports_unreadable_dates_and_keeps_the_good_rows(capsys, tmp_pat
     assert "1 row(s) have a date this can't read" in out
     assert "2026-06-03" in out
     assert "Bench Press (Barbell)" in out
+
+
+def test_import_multiple_files_sum_unreadable_dates_across_files(capsys, tmp_path):
+    mixed_file = tmp_path / "mixed.csv"
+    mixed_file.write_text(MIXED_DATE_CSV)
+    hevy_bad_date = tmp_path / "hevy_bad_date.csv"
+    hevy_bad_date.write_text(
+        '"title","start_time","end_time","description","exercise_title","superset_id",'
+        '"exercise_notes","set_index","set_type","weight_kg","reps","distance_km",'
+        '"duration_seconds","rpe"\n'
+        '"Morning workout","not a date","22 Dec 2025, 08:37","","Pull Up (Assisted)",,'
+        '"",0,"normal",21,10,,0,8.5\n'
+    )
+    code, out, _ = run(capsys, "import", "--file", str(mixed_file), str(hevy_bad_date), "--unit", "kg")
+    assert code == 0
+    # One unreadable date in each file - 1 + 1 = 2, not just the last file's count.
+    assert "2 row(s) have a date this can't read" in out
 
 
 def test_import_all_dates_unreadable_still_exits_zero(capsys, tmp_path):

@@ -226,6 +226,24 @@ if you'd rather be explicit. Strong's own export has no weight-unit column in it
 (iOS) form - `--unit` is both what that's assumed to already be in, and what a Hevy export (always
 kg internally) gets converted to for display.
 
+Switched apps partway through your training history? Pass `--file` more than once and they merge
+into one trend and tonnage view instead of two separate ones:
+
+```
+$ liftmath import --file strong_export.csv hevy_export.csv
+Imported 340 sets from 2 files (strong, hevy) (2023-02-11 to 2026-06-30).
+  14 distinct exercises.
+----------------------------------------------
+  Best estimated 1RM per exercise, most recent session:
+  Bench Press (Barbell)          228.4lb  (2026-06-08)
+  ...
+----------------------------------------------
+  Total tonnage (weight x reps) per week:
+  2026-W23         2620lb
+  2026-W24         2700lb
+  ...
+```
+
 ## As a library
 
 Every command is a thin wrapper around a plain function that returns a dataclass, so you can use the
