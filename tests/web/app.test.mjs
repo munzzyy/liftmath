@@ -35,6 +35,34 @@ test("typing a new weight re-renders the 1RM result", async () => {
   assert.equal(hero(app.text("onerm-results")), "362.84 lb");
 });
 
+test("picking RPE reveals the effort input and adjusts the 1RM for it", async () => {
+  const app = await loadApp();
+  assert.equal(app.$("onerm-effort-value").hidden, true);
+  app.select("onerm-effort-mode", "rpe");
+  assert.equal(app.$("onerm-effort-value").hidden, false);
+  app.type("onerm-effort-value", 9);
+  const html = app.text("onerm-results");
+  // 5 reps at RPE 9 (1 RIR) -> 6 effective reps, same consensus as a plain 6-rep set.
+  assert.equal(hero(html), "266.51 lb");
+  assert.match(html, /6 effective reps/);
+});
+
+test("switching back to reps only hides the effort input and drops the adjustment", async () => {
+  const app = await loadApp();
+  app.select("onerm-effort-mode", "rpe");
+  app.type("onerm-effort-value", 9);
+  app.select("onerm-effort-mode", "none");
+  assert.equal(app.$("onerm-effort-value").hidden, true);
+  assert.equal(hero(app.text("onerm-results")), "259.17 lb");
+});
+
+test("an out-of-range RPE shows an error instead of a stale result", async () => {
+  const app = await loadApp();
+  app.select("onerm-effort-mode", "rpe");
+  app.type("onerm-effort-value", 3);
+  assert.match(app.text("onerm-results"), /notice-warn/);
+});
+
 test("a stepper tap steps the field and re-renders every panel", async () => {
   const app = await loadApp();
   app.$("onerm-weight-inc").click();

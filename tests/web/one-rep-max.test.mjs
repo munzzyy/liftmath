@@ -19,8 +19,8 @@ const FNS = { estimateOneRm };
 for (const [i, fixture] of fixtures.entries()) {
   test(`one-rep-max #${i}: ${fixture.fn}(${JSON.stringify(fixture.args)})`, () => {
     const fn = FNS[fixture.fn];
-    const { weight, reps, unit } = fixture.args;
-    const actual = fn(weight, reps, unit);
+    const { weight, reps, unit, rpe, rir } = fixture.args;
+    const actual = fn(weight, reps, unit, { rpe, rir });
     assertParity(actual, fixture.expected);
   });
 }

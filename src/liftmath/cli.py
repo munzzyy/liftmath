@@ -41,7 +41,7 @@ from liftmath.standards import score as strength_score
 
 def cmd_1rm(args: argparse.Namespace) -> int:
     try:
-        est = estimate_one_rm(args.weight, args.reps, unit=args.unit)
+        est = estimate_one_rm(args.weight, args.reps, unit=args.unit, rpe=args.rpe, rir=args.rir)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -50,11 +50,15 @@ def cmd_1rm(args: argparse.Namespace) -> int:
         print(to_json(est))
         return 0
 
+    effort = ""
+    if est.rir is not None:
+        effort = f" at RPE {est.rpe:g} ({est.rir:g} RIR, effective {est.effective_reps:g} reps)"
+
     if est.is_exact:
         print(f"That set IS a 1RM: {args.weight:g}{args.unit}.")
         return 0
 
-    print(f"Estimated 1RM from {args.weight:g}{args.unit} x {args.reps} reps")
+    print(f"Estimated 1RM from {args.weight:g}{args.unit} x {args.reps} reps{effort}")
     print("  No single formula is most accurate across every rep range, so this runs six and")
     print("  takes the CONSENSUS (median) instead of picking one. Sorted by value, not accuracy.")
     print("-" * 46)
@@ -400,6 +404,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--weight", type=float, required=True)
     s.add_argument("--reps", type=int, required=True)
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    effort = s.add_mutually_exclusive_group()
+    effort.add_argument("--rpe", type=float,
+                        help="rating of perceived exertion the set was taken to (6-10, "
+                             "0.5 steps) - converted to reps in reserve and added to --reps")
+    effort.add_argument("--rir", type=float,
+                        help="reps in reserve the set was stopped at (>= 0), as an "
+                             "alternative to --rpe")
     s.set_defaults(func=cmd_1rm)
 
     s = sub.add_parser("plates", help="plate-loading math", parents=[json_parent])

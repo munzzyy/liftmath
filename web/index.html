@@ -83,6 +83,20 @@
         <button class="stepper-btn" id="onerm-reps-inc" aria-label="Increase reps">+</button>
       </div>
     </div>
+    <div class="field">
+      <label for="onerm-effort-mode" id="onerm-effort-mode-label">Set effort (optional)</label>
+      <div class="stepper-row">
+        <select id="onerm-effort-mode">
+          <option value="none">Reps only</option>
+          <option value="rpe">RPE</option>
+          <option value="rir">RIR</option>
+        </select>
+        <input type="number" id="onerm-effort-value" inputmode="decimal" step="0.5" min="6" max="10"
+               value="9" hidden aria-labelledby="onerm-effort-mode-label" />
+      </div>
+      <p class="hint" id="onerm-effort-hint" hidden>RPE/RIR estimate the reps you had left; the math treats
+        those as extra reps performed. Source: Zourdos et al. 2016.</p>
+    </div>
 
     <div class="results" id="onerm-results" aria-live="polite">
       <!-- filled by app.js -->

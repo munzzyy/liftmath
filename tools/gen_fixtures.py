@@ -86,6 +86,22 @@ def gen_one_rep_max() -> list[dict]:
             "args": {"weight": weight, "reps": reps, "unit": "kg"},
             "expected": dump(onerm.estimate_one_rm(weight, reps, unit="kg")),
         })
+    # RPE/RIR: a mid-range RPE, RPE 10 (no RIR), a fractional RPE, RIR given
+    # directly, and a 1-rep set at both RPE 10 (exact) and RPE 9 (not exact).
+    for weight, reps, kwargs in [
+        (225, 5, {"rpe": 9}),
+        (225, 5, {"rpe": 10}),
+        (225, 5, {"rpe": 7.5}),
+        (225, 3, {"rir": 2}),
+        (315, 1, {"rpe": 10}),
+        (315, 1, {"rpe": 9}),
+        (100, 15, {"rir": 0}),
+    ]:
+        cases.append({
+            "fn": "estimateOneRm",
+            "args": {"weight": weight, "reps": reps, "unit": "lb", **kwargs},
+            "expected": dump(onerm.estimate_one_rm(weight, reps, unit="lb", **kwargs)),
+        })
     return cases
 
 

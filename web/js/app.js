@@ -266,6 +266,46 @@ function wireChipGroup(groupId, dataKey, onSelect) {
 // 1RM
 // ---------------------------------------------------------------------------
 
+function onermEffortMode() {
+  return $("onerm-effort-mode").value;
+}
+
+function updateOnermEffortInput() {
+  const mode = onermEffortMode();
+  const input = $("onerm-effort-value");
+  const hint = $("onerm-effort-hint");
+  if (mode === "none") {
+    input.hidden = true;
+    hint.hidden = true;
+    return;
+  }
+  input.hidden = false;
+  hint.hidden = false;
+  if (mode === "rpe") {
+    input.min = "6";
+    input.max = "10";
+    input.step = "0.5";
+    if (parseFloat(input.value) < 6 || parseFloat(input.value) > 10 || !input.value) {
+      input.value = "9";
+    }
+  } else {
+    input.min = "0";
+    input.removeAttribute("max");
+    input.step = "0.5";
+    if (parseFloat(input.value) < 0 || !input.value) {
+      input.value = "1";
+    }
+  }
+}
+
+function onermEffort() {
+  const mode = onermEffortMode();
+  if (mode === "none") return {};
+  const value = parseFloat($("onerm-effort-value").value);
+  if (!Number.isFinite(value)) return {};
+  return mode === "rpe" ? { rpe: value } : { rir: value };
+}
+
 function renderOneRm() {
   const resultsEl = $("onerm-results");
   const weight = parseFloat($("onerm-weight").value);
@@ -278,7 +318,7 @@ function renderOneRm() {
 
   let est;
   try {
-    est = estimateOneRm(weight, reps, unit);
+    est = estimateOneRm(weight, reps, unit, onermEffort());
   } catch (err) {
     resultsEl.innerHTML = `<p class="notice notice-warn">${escapeHtml(err.message)}</p>`;
     return;
@@ -289,6 +329,10 @@ function renderOneRm() {
     <p class="result-value">${fmt(est.consensus)} ${unit}</p>
     <p class="result-sub">Range ${fmt(est.low)}-${fmt(est.high)} ${unit}</p>
   </div>`;
+
+  if (est.rir != null && !est.isExact) {
+    html += `<p class="hint">RPE ${fmt(est.rpe)} = ${fmt(est.rir)} RIR, so this treats the set as ${fmt(est.effectiveReps)} effective reps.</p>`;
+  }
 
   if (est.isExact) {
     html += `<p class="hint">1 rep is the 1RM itself - no estimation needed.</p>`;
@@ -310,7 +354,11 @@ function renderOneRm() {
   resultsEl.innerHTML = html;
 }
 
-["onerm-weight", "onerm-reps"].forEach((id) => $(id).addEventListener("input", renderOneRm));
+["onerm-weight", "onerm-reps", "onerm-effort-value"].forEach((id) => $(id).addEventListener("input", renderOneRm));
+$("onerm-effort-mode").addEventListener("change", () => {
+  updateOnermEffortInput();
+  renderOneRm();
+});
 
 // ---------------------------------------------------------------------------
 // Plates

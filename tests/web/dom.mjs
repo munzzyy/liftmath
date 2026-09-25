@@ -474,6 +474,12 @@ export async function loadApp({ storage = makeStorage(), search = "", prefersLig
       el.value = String(value);
       el.dispatchEvent(new Event("input", { bubbles: true }));
     },
+    /** Pick a <select> option the way a user does: set the value, fire "change". */
+    select(id, value) {
+      const el = $(id);
+      el.value = String(value);
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    },
     text(id) {
       return $(id).innerHTML;
     },

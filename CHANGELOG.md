@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `1rm`/`estimate_one_rm`: optional `--rpe` (6-10, half steps) or `--rir` on a set that
+  wasn't taken to failure. RIR = 10 - RPE (Zourdos et al. 2016); the reps in reserve get
+  added to the reps performed before the formulas run. Web 1RM tab gets the same input.
 - `import`: `--file` now takes more than one path, so a lifter who switched
   between Strong and Hevy can merge both histories into one e1RM trend and
   weekly tonnage view instead of running the command twice and comparing two

@@ -85,6 +85,14 @@ Estimated 1RM from 225lb x 5 reps
   CONSENSUS  259.2lb   (median; range 253.1-267.8)
 ```
 
+If the set wasn't taken to failure, add `--rpe` (6-10, half steps) or `--rir`. RIR = 10 - RPE, and
+the reps in reserve get added to the reps performed before the formulas run, since a set stopped
+short of failure otherwise underestimates the true 1RM:
+
+```
+$ liftmath 1rm --weight 225 --reps 5 --rpe 9
+```
+
 ### Plates
 
 Which plates to load per side for a target barbell weight, largest first.
@@ -298,7 +306,8 @@ See the module docstrings in `src/liftmath/` for the details: `onerm.py`, `plate
 The 1RM formulas are Epley (1985), Brzycki (1993), Lombardi (1989), O'Conner et al. (1989),
 Lander (1985), and Mayhew et al. (1992). Which of these actually degrades worse at high rep counts
 is genuinely contested in the secondary literature, and `onerm.py`'s docstring documents that
-openly rather than asserting an uncited fix.
+openly rather than asserting an uncited fix. RPE/RIR (--rpe/--rir) uses the reps-in-reserve scale
+from Zourdos et al. (2016), J Strength Cond Res 30(1), 267-275.
 
 The plate solver is a plain greedy largest-first pass for the unlimited case; the finite-inventory
 solver does an exhaustive bounded search instead, because greedy isn't optimal once you can run out

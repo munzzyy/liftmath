@@ -14,6 +14,11 @@ Sources:
     Mayhew, J.L. et al. (1992). Muscular endurance repetitions to predict bench press
         strength in men of different training levels. Journal of Sports Medicine and
         Physical Fitness, 32(3), 295-298.
+    Zourdos, M.C. et al. (2016). Novel resistance training-specific rating of perceived
+        exertion scale measuring repetitions in reserve. Journal of Strength and
+        Conditioning Research, 30(1), 267-275. (RPE/RIR relationship used below: a set
+        left at RPE 10 has 0 reps in reserve, RPE 9.5 has 0.5, RPE 9 has 1, etc, i.e.
+        RIR = 10 - RPE. Effective reps for the formulas = reps performed + RIR.)
 
 Open question, flagged rather than silently asserted (checked, not fixed):
     which formulas actually degrade worse at high rep counts is genuinely
@@ -82,6 +87,14 @@ FORMULAS = {
 HIGH_REP_THRESHOLD = 12
 _CURVILINEAR = {"Brzycki", "Lander", "Mayhew"}
 
+MIN_RPE = 6.0
+MAX_RPE = 10.0
+
+
+def rpe_to_rir(rpe: float) -> float:
+    """Reps in reserve implied by an RPE (Zourdos et al. 2016 scale): RIR = 10 - RPE."""
+    return MAX_RPE - rpe
+
 
 @dataclass
 class OneRmEstimate:
@@ -104,14 +117,20 @@ class OneRmEstimate:
     high: float = 0.0
     high_rep_warning: bool = False
     soft_estimate_warning: bool = False
+    rpe: float | None = None
+    rir: float | None = None
+    effective_reps: float = 0.0
 
     @property
     def is_exact(self) -> bool:
-        """True when reps == 1, i.e. the lifted weight IS the 1RM (no estimation needed)."""
-        return self.reps == 1
+        """True when effective_reps == 1, i.e. the set was taken to true failure on
+        the first rep (no RIR left), so the lifted weight IS the 1RM.
+        """
+        return self.effective_reps == 1
 
 
-def estimate_one_rm(weight: float, reps: int, unit: str = "lb") -> OneRmEstimate:
+def estimate_one_rm(weight: float, reps: int, unit: str = "lb", *,
+                     rpe: float | None = None, rir: float | None = None) -> OneRmEstimate:
     """Estimate a one-rep max from a weight x reps set.
 
     Runs all applicable formulas and returns their median as the consensus
@@ -122,9 +141,16 @@ def estimate_one_rm(weight: float, reps: int, unit: str = "lb") -> OneRmEstimate
         weight: weight lifted for the set.
         reps: reps performed. Must be >= 1.
         unit: display unit only ("lb" or "kg"); the math is unit-agnostic.
+        rpe: optional rating of perceived exertion (6-10 in 0.5 steps) the set was
+            taken to. Converted to RIR (Zourdos et al. 2016: RIR = 10 - RPE) and added
+            to reps before running the formulas, since a set stopped short of failure
+            underestimates the true 1RM otherwise. Mutually exclusive with rir.
+        rir: optional reps in reserve the set was stopped at (>= 0). Mutually
+            exclusive with rpe.
 
     Raises:
-        ValueError: if reps < 1, or weight isn't a finite number > 0.
+        ValueError: if reps < 1, weight isn't a finite number > 0, both rpe and rir
+            are given, rpe is outside 6-10 or not a half-step, or rir is negative.
     """
     if reps < 1:
         raise ValueError("reps must be >= 1")
@@ -132,8 +158,20 @@ def estimate_one_rm(weight: float, reps: int, unit: str = "lb") -> OneRmEstimate
         raise ValueError("weight must be a finite number")
     if weight <= 0:
         raise ValueError("weight must be > 0")
+    if rpe is not None and rir is not None:
+        raise ValueError("pass rpe or rir, not both")
+    if rpe is not None:
+        if not (MIN_RPE <= rpe <= MAX_RPE) or round(rpe * 2) != rpe * 2:
+            raise ValueError(f"rpe must be between {MIN_RPE:g} and {MAX_RPE:g} in 0.5 steps")
+        rir = rpe_to_rir(rpe)
+    elif rir is not None:
+        if not math.isfinite(rir) or rir < 0:
+            raise ValueError("rir must be >= 0")
+        rpe = MAX_RPE - rir
 
-    if reps == 1:
+    effective_reps = reps + (rir or 0.0)
+
+    if effective_reps == 1:
         return OneRmEstimate(
             weight=weight,
             reps=reps,
@@ -142,16 +180,19 @@ def estimate_one_rm(weight: float, reps: int, unit: str = "lb") -> OneRmEstimate
             consensus=weight,
             low=weight,
             high=weight,
+            rpe=rpe,
+            rir=rir,
+            effective_reps=effective_reps,
         )
 
-    high_rep = reps > HIGH_REP_THRESHOLD
+    high_rep = effective_reps > HIGH_REP_THRESHOLD
     drop = _CURVILINEAR if high_rep else set()
 
     per_formula: dict[str, float] = {}
     for name, fn in FORMULAS.items():
         if name in drop:
             continue
-        value = fn(weight, reps)
+        value = fn(weight, effective_reps)
         if value == value and value > 0:  # exclude NaN
             per_formula[name] = value
 
@@ -168,5 +209,8 @@ def estimate_one_rm(weight: float, reps: int, unit: str = "lb") -> OneRmEstimate
         low=min(values),
         high=max(values),
         high_rep_warning=high_rep,
-        soft_estimate_warning=(not high_rep) and reps > 8,
+        soft_estimate_warning=(not high_rep) and effective_reps > 8,
+        rpe=rpe,
+        rir=rir,
+        effective_reps=effective_reps,
     )

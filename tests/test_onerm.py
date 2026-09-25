@@ -89,3 +89,62 @@ def test_infinite_weight_raises():
         estimate_one_rm(float("inf"), 5)
     with pytest.raises(ValueError):
         estimate_one_rm(float("-inf"), 5)
+
+
+def test_rpe_converts_to_rir_and_effective_reps():
+    # RPE 9 -> RIR 1 (Zourdos scale) -> 5 reps performed + 1 RIR = 6 effective reps.
+    est = estimate_one_rm(225, 5, unit="lb", rpe=9)
+    assert est.rir == pytest.approx(1.0)
+    assert est.effective_reps == pytest.approx(6.0)
+    assert est.reps == 5
+    plain = estimate_one_rm(225, 6, unit="lb")
+    assert est.consensus == pytest.approx(plain.consensus, abs=0.01)
+
+
+def test_rir_sets_effective_reps_directly():
+    est = estimate_one_rm(225, 3, unit="lb", rir=2)
+    assert est.rpe == pytest.approx(8.0)
+    assert est.effective_reps == pytest.approx(5.0)
+
+
+def test_rpe_10_matches_plain_reps():
+    est = estimate_one_rm(225, 5, unit="lb", rpe=10)
+    plain = estimate_one_rm(225, 5, unit="lb")
+    assert est.consensus == pytest.approx(plain.consensus, abs=0.01)
+    assert est.rir == 0
+
+
+def test_rpe_one_rep_at_true_failure_is_exact():
+    est = estimate_one_rm(315, 1, rpe=10)
+    assert est.is_exact
+    assert est.consensus == 315
+
+
+def test_rpe_one_rep_with_rir_left_is_not_exact():
+    # 1 rep at RPE 9 means 1 RIR was left, so it's NOT actually a 1RM: the
+    # lifter could have done 2 reps at true failure.
+    est = estimate_one_rm(315, 1, rpe=9)
+    assert not est.is_exact
+    assert est.effective_reps == pytest.approx(2.0)
+
+
+def test_rpe_and_rir_together_raises():
+    with pytest.raises(ValueError):
+        estimate_one_rm(225, 5, rpe=8, rir=2)
+
+
+def test_rpe_out_of_range_raises():
+    with pytest.raises(ValueError):
+        estimate_one_rm(225, 5, rpe=5.5)
+    with pytest.raises(ValueError):
+        estimate_one_rm(225, 5, rpe=10.5)
+
+
+def test_rpe_not_a_half_step_raises():
+    with pytest.raises(ValueError):
+        estimate_one_rm(225, 5, rpe=8.3)
+
+
+def test_negative_rir_raises():
+    with pytest.raises(ValueError):
+        estimate_one_rm(225, 5, rir=-1)

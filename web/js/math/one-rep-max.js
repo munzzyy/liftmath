@@ -4,6 +4,9 @@
 // performed) and returns an estimated 1RM. Accuracy is best at low reps
 // (<=~8-10); every equation drifts at higher rep counts, so estimates above
 // 12 reps drop the curvilinear formulas and should be treated as soft.
+//
+// RPE/RIR: Zourdos et al. (2016), J Strength Cond Res 30(1), 267-275.
+// RIR = 10 - RPE; effective reps = reps performed + RIR.
 
 function epley(w, r) {
   return w * (1 + r / 30.0);
@@ -43,6 +46,14 @@ export const FORMULAS = {
 export const HIGH_REP_THRESHOLD = 12;
 const CURVILINEAR = new Set(["Brzycki", "Lander", "Mayhew"]);
 
+export const MIN_RPE = 6.0;
+export const MAX_RPE = 10.0;
+
+/** Reps in reserve implied by an RPE (Zourdos et al. 2016 scale): RIR = 10 - RPE. */
+export function rpeToRir(rpe) {
+  return MAX_RPE - rpe;
+}
+
 /**
  * Estimate a one-rep max from a weight x reps set.
  *
@@ -53,17 +64,40 @@ const CURVILINEAR = new Set(["Brzycki", "Lander", "Mayhew"]);
  * @param {number} weight - weight lifted for the set.
  * @param {number} reps - reps performed. Must be >= 1.
  * @param {string} [unit="lb"] - display unit only ("lb" or "kg"); the math is unit-agnostic.
+ * @param {{rpe?:number, rir?:number}} [effort] - optional RPE (6-10, 0.5 steps) or RIR
+ *   (>=0) the set was taken to; mutually exclusive. Added to reps as effective reps
+ *   before running the formulas.
  * @returns {{weight:number, reps:number, unit:string, perFormula:Object<string,number>,
  *   consensus:number, low:number, high:number, highRepWarning:boolean,
- *   softEstimateWarning:boolean, isExact:boolean}}
- * @throws {RangeError} if reps < 1.
+ *   softEstimateWarning:boolean, isExact:boolean, rpe:?number, rir:?number,
+ *   effectiveReps:number}}
+ * @throws {RangeError} if reps < 1, both rpe and rir are given, rpe is out of range
+ *   or not a half-step, or rir is negative.
  */
-export function estimateOneRm(weight, reps, unit = "lb") {
+export function estimateOneRm(weight, reps, unit = "lb", { rpe, rir } = {}) {
   if (reps < 1) {
     throw new RangeError("reps must be >= 1");
   }
+  if (rpe != null && rir != null) {
+    throw new RangeError("pass rpe or rir, not both");
+  }
+  if (rpe != null) {
+    if (rpe < MIN_RPE || rpe > MAX_RPE || Math.round(rpe * 2) !== rpe * 2) {
+      throw new RangeError(`rpe must be between ${MIN_RPE} and ${MAX_RPE} in 0.5 steps`);
+    }
+    rir = rpeToRir(rpe);
+  } else if (rir != null) {
+    if (!Number.isFinite(rir) || rir < 0) {
+      throw new RangeError("rir must be >= 0");
+    }
+    rpe = MAX_RPE - rir;
+  }
+  rpe = rpe ?? null;
+  rir = rir ?? null;
 
-  if (reps === 1) {
+  const effectiveReps = reps + (rir || 0);
+
+  if (effectiveReps === 1) {
     return {
       weight,
       reps,
@@ -75,15 +109,18 @@ export function estimateOneRm(weight, reps, unit = "lb") {
       highRepWarning: false,
       softEstimateWarning: false,
       isExact: true,
+      rpe,
+      rir,
+      effectiveReps,
     };
   }
 
-  const highRep = reps > HIGH_REP_THRESHOLD;
+  const highRep = effectiveReps > HIGH_REP_THRESHOLD;
 
   const perFormula = {};
   for (const [name, fn] of Object.entries(FORMULAS)) {
     if (highRep && CURVILINEAR.has(name)) continue;
-    const value = fn(weight, reps);
+    const value = fn(weight, effectiveReps);
     if (value === value && value > 0) {
       // exclude NaN (NaN !== NaN)
       perFormula[name] = value;
@@ -104,7 +141,10 @@ export function estimateOneRm(weight, reps, unit = "lb") {
     low: Math.min(...values),
     high: Math.max(...values),
     highRepWarning: highRep,
-    softEstimateWarning: !highRep && reps > 8,
+    softEstimateWarning: !highRep && effectiveReps > 8,
     isExact: false,
+    rpe,
+    rir,
+    effectiveReps,
   };
 }
