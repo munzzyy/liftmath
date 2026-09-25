@@ -2,9 +2,6 @@
 
 ## Unreleased
 
-- Relicensed from the Prosperity Public License 3.0.0 to GPL-3.0-or-later, starting with
-  2.5.0. Releases up to 2.4.0 stay under Prosperity.
-
 - `1rm --table` (`percentage_table`): a 100%-to-50% percentage breakdown of the consensus,
   load rounded to what the plate setup can actually load, reps estimated via Epley's
   inversion. Web 1RM tab shows the same table; tapping a row sends the load to Plates.
