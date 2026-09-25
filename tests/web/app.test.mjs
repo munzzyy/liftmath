@@ -392,6 +392,22 @@ test("the timer sheet opens and closes", async () => {
   assert.equal(app.$("timer-sheet").hidden, true);
 });
 
+test("Back closes an open timer sheet instead of leaving the page", async () => {
+  const app = await loadApp();
+  app.$("timer-toggle-btn").click();
+  assert.equal(app.history.length, 2);
+  app.history.back();
+  assert.equal(app.$("timer-sheet").hidden, true);
+});
+
+test("closing the timer sheet with its button pops the entry it pushed", async () => {
+  const app = await loadApp();
+  app.$("timer-toggle-btn").click();
+  app.$("timer-close-btn").click();
+  assert.equal(app.$("timer-sheet").hidden, true);
+  assert.equal(app.history.state, null);
+});
+
 test("picking a preset starts a running countdown at that duration", async () => {
   const app = await loadApp();
   app.chip("timer-preset-group", "seconds", "120").click();

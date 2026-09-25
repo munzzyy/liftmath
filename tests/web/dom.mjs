@@ -441,9 +441,12 @@ export async function loadApp({
 } = {}) {
   const document = new FakeDocument(readFileSync(INDEX_HTML, "utf8"));
   const mediaListeners = [];
+  const windowListeners = {};
   let systemPrefersLight = prefersLight;
   const window = {
-    addEventListener() {},
+    addEventListener(type, fn) {
+      (windowListeners[type] ||= []).push(fn);
+    },
     NativeApp: nativeApp,
     matchMedia: () => ({
       get matches() {
@@ -461,9 +464,27 @@ export async function loadApp({
     origin: "https://example.test",
     pathname: "/liftmath/",
   };
+  const entries = [{ state: null }];
+  let entryIndex = 0;
   const history = {
-    replaceState(_state, _title, url) {
+    get state() {
+      return entries[entryIndex].state;
+    },
+    get length() {
+      return entries.length;
+    },
+    pushState(state) {
+      entries.splice(entryIndex + 1, Infinity, { state });
+      entryIndex += 1;
+    },
+    replaceState(state, _title, url) {
+      entries[entryIndex].state = state;
       location.hash = url.startsWith("#") ? url : "";
+    },
+    back() {
+      if (entryIndex === 0) return;
+      entryIndex -= 1;
+      for (const fn of windowListeners.popstate || []) fn({ state: entries[entryIndex].state });
     },
   };
   const clipboardWrites = [];
@@ -498,6 +519,7 @@ export async function loadApp({
     document,
     storage,
     location,
+    history,
     clipboardWrites,
     $,
     /** The chip carrying data-<key>="<value>" inside a chip group. */

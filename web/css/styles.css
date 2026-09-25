@@ -646,6 +646,27 @@ table.result-table td.num {
   font-variant-numeric: tabular-nums;
 }
 
+#timer-preset-group {
+  justify-content: center;
+}
+
+#timer-picker .field {
+  margin-top: 1.25rem;
+  text-align: left;
+}
+
+#timer-custom-start-btn {
+  flex: 0 0 auto;
+  min-height: 48px;
+  padding: 0 1.25rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 0.6rem;
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+
 #timer-stop-btn {
   min-height: 44px;
   padding: 0 1.5rem;

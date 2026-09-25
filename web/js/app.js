@@ -277,7 +277,7 @@ function updateHashForActiveTab() {
   const tool = toolForTab(tab);
   if (!tool) return;
   const hash = buildHash(tool, paramsForTab(tab));
-  if (location.hash !== hash) history.replaceState(null, "", hash);
+  if (location.hash !== hash) history.replaceState(history.state, "", hash);
 }
 
 /** Apply a parsed deep link's params onto the matching tab's fields. Missing
@@ -1168,12 +1168,28 @@ function stopTimer(finished) {
   showTimerPicker();
 }
 
-$("timer-toggle-btn").addEventListener("click", () => {
+// The open sheet owns a history entry, so Back (Android's or the browser's) closes it instead of leaving the app.
+function openTimerSheet() {
+  if (!$("timer-sheet").hidden) return;
   $("timer-sheet").hidden = false;
-});
-$("timer-close-btn").addEventListener("click", () => {
+  history.pushState({ timerSheet: true }, "");
+}
+
+function closeTimerSheet() {
+  if ($("timer-sheet").hidden) return;
+  $("timer-sheet").hidden = true;
+  if (history.state && history.state.timerSheet) history.back();
+}
+
+window.addEventListener("popstate", () => {
   $("timer-sheet").hidden = true;
 });
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeTimerSheet();
+});
+
+$("timer-toggle-btn").addEventListener("click", openTimerSheet);
+$("timer-close-btn").addEventListener("click", closeTimerSheet);
 $("timer-preset-group").querySelectorAll(".chip").forEach((btn) => {
   btn.addEventListener("click", () => startTimer(Number(btn.dataset.seconds)));
 });
