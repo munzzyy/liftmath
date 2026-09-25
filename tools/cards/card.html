@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>liftmath card</title>
+<style>
+  html, body { margin: 0; width: 100vw; height: 100vh; overflow: hidden; }
+  body {
+    background: radial-gradient(120% 140% at 85% 20%, #1b1f27 0%, #101216 60%);
+    color: #eef1f6;
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+    display: flex; align-items: center;
+    position: relative;
+  }
+  .text { padding-left: 7.5vw; max-width: 50vw; position: relative; z-index: 1; }
+  h1 { font-size: 15vh; font-weight: 800; letter-spacing: -0.03em; margin: 0; line-height: 1; }
+  h1 span { color: #e8703a; }
+  .rule { width: 7vw; height: 1.1vh; background: #e8703a; border-radius: 1vh; margin: 3.2vh 0 3.2vh; }
+  p { font-size: 4.6vh; line-height: 1.35; margin: 0; color: #c9ced8; }
+  .foot { margin-top: 4vh; font-size: 3.4vh; color: #8b93a3; letter-spacing: 0.02em; }
+  svg { position: absolute; right: -10vw; top: 50%; transform: translateY(-50%); height: 58vh; opacity: 0.9; }
+</style>
+</head>
+<body>
+  <div class="text">
+    <h1>lift<span>math</span></h1>
+    <div class="rule"></div>
+    <p>1RM, plates, warm-ups, strength scores, records and a rest timer.</p>
+    <div class="foot">Free and offline. No ads, no account.</div>
+  </div>
+  <svg viewBox="0 0 300 200" aria-hidden="true">
+    <rect x="0" y="94" width="300" height="12" rx="4" fill="#3a3f4a"/>
+    <rect x="70" y="30" width="26" height="140" rx="5" fill="#c43c30"/>
+    <rect x="100" y="30" width="26" height="140" rx="5" fill="#c43c30"/>
+    <rect x="130" y="48" width="20" height="104" rx="5" fill="#2f6fb5"/>
+    <rect x="154" y="64" width="16" height="72" rx="4" fill="#d9a82e"/>
+    <rect x="174" y="84" width="10" height="32" rx="3" fill="#8b93a3"/>
+  </svg>
+</body>
+</html>

@@ -52,6 +52,14 @@ clipboard copy otherwise.
 Pure Python standard library. No dependencies, no network calls, no accounts. Use it as a library
 you import or a command you run.
 
+## Android
+
+The same app runs on Android from [`android/`](android): the web app bundled into a small WebView
+wrapper with no internet permission, so it works with the phone in airplane mode. Share opens the
+system share sheet and the rest timer keeps the screen on. Signed APKs are on the
+[releases page](https://github.com/munzzyy/liftmath/releases), and it has been submitted to F-Droid.
+To build it yourself, run `./gradlew assembleDebug` inside `android/`.
+
 ## Install
 
 ```

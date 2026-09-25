@@ -1,1 +1,1 @@
-First Android release, wrapping the existing liftmath web app. Works fully offline.
+First Android release. New in 2.5.0: RPE and reps in reserve on the 1RM, a percentage chart you can tap to load, a warm-up ramp on Plates, a rest timer that keeps the screen on, where your DOTS ranks among OpenPowerlifting lifters, records refreshed to September 2026, and Share links for any calculation. Works fully offline with no internet permission.
