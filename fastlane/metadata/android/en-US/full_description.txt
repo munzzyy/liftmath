@@ -1,0 +1,15 @@
+liftmath is a set of gym calculators: 1RM, plate loading, strength scores, and world records.
+
+One-rep max. Enter a weight and rep count, and it runs six rep-max formulas at once, then shows their median as a consensus estimate.
+
+Plate loading works out which plates go on the bar and draws the barbell. Standard bar, women's bar, or your own plate inventory, it handles all three.
+
+Strength scores: Wilks, DOTS, IPF GL.
+
+World records covers powerlifting, strongman, and grip. Track and field too, at world, college, and high school level.
+
+A plain lb/kg converter is in there as well.
+
+The app has no internet permission, so it never makes a network request. There's no account and no ads, and it doesn't track you. A saved plate setup or theme choice stays in local storage on your phone, nowhere else.
+
+liftmath is free and open source software.
