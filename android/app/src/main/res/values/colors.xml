@@ -3,4 +3,6 @@
     <!-- Mirrors the web app's light theme (css/styles.css, prefers-color-scheme: light). -->
     <color name="liftmath_bg">#f4f5f7</color>
     <color name="ic_launcher_background">#101216</color>
+    <color name="bg_light">#f4f5f7</color>
+    <color name="bg_dark">#101216</color>
 </resources>
