@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Relicensed from the Prosperity Public License 3.0.0 to GPL-3.0-or-later, starting with
+  2.5.0. Releases up to 2.4.0 stay under Prosperity.
+
 - `1rm`/`estimate_one_rm`: optional `--rpe` (6-10, half steps) or `--rir` on a set that
   wasn't taken to failure. RIR = 10 - RPE (Zourdos et al. 2016); the reps in reserve get
   added to the reps performed before the formulas run. Web 1RM tab gets the same input.
