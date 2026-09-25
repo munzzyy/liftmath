@@ -4,6 +4,7 @@
 
 import { estimateOneRm, percentageTable, HIGH_REP_THRESHOLD } from "./math/one-rep-max.js";
 import { computePlateStack } from "./math/plate-loading.js";
+import { warmupRamp } from "./math/warmup.js";
 import { parseInventorySpec, loadPlatesFromInventory } from "./math/plate-inventory.js";
 import { score } from "./math/strength-scores.js";
 import {
@@ -436,6 +437,7 @@ function renderPlates() {
     resultsEl.innerHTML = "";
     barbellWrap.innerHTML = "";
     legendEl.innerHTML = "";
+    $("plates-warmup-results").hidden = true;
     return;
   }
 
@@ -451,6 +453,7 @@ function renderPlates() {
         resultsEl.innerHTML = "";
         barbellWrap.innerHTML = "";
         legendEl.innerHTML = "";
+        $("plates-warmup-results").hidden = true;
         return;
       }
       const inventory = parseInventorySpec($("plates-inventory-spec").value);
@@ -464,6 +467,7 @@ function renderPlates() {
     resultsEl.innerHTML = `<p class="notice notice-warn">${escapeHtml(err.message)}</p>`;
     barbellWrap.innerHTML = "";
     legendEl.innerHTML = "";
+    $("plates-warmup-results").hidden = true;
     return;
   }
 
@@ -488,7 +492,53 @@ function renderPlates() {
   resultsEl.innerHTML = html;
   barbellWrap.innerHTML = renderBarbellSvg(stack);
   legendEl.innerHTML = renderPlateLegend(stack);
+
+  renderWarmup(target, displayUnit);
 }
+
+let warmupShown = false;
+
+function renderWarmup(target, displayUnit) {
+  const warmupEl = $("plates-warmup-results");
+  if (!warmupShown) {
+    warmupEl.hidden = true;
+    warmupEl.innerHTML = "";
+    return;
+  }
+
+  // The finite my-plates inventory isn't supported by warmupRamp (same
+  // unlimited-supply assumption as the percentage table on the 1RM tab) -
+  // fall back to the default plate set for the ramp in that mode.
+  const opts = platesMode === "womens" || platesMode === "metric-no-45"
+    ? { unit: "kg", preset: platesMode }
+    : { unit };
+
+  let ramp;
+  try {
+    ramp = warmupRamp(target, opts);
+  } catch (err) {
+    warmupEl.hidden = false;
+    warmupEl.innerHTML = `<p class="notice notice-warn">${escapeHtml(err.message)}</p>`;
+    return;
+  }
+
+  let html = `<table class="result-table"><thead><tr><th>Weight</th><th>Reps</th><th>Per side</th></tr></thead><tbody>`;
+  for (const row of ramp) {
+    const perSide = row.plates.length
+      ? row.plates.map(([w, n]) => `${fmt(w)} &times; ${n}`).join(", ")
+      : "bar only";
+    html += `<tr><td class="num">${fmt(row.weight)} ${displayUnit}</td><td class="num">${row.reps}</td><td>${perSide}</td></tr>`;
+  }
+  html += `</tbody></table>`;
+  warmupEl.hidden = false;
+  warmupEl.innerHTML = html;
+}
+
+$("plates-warmup-toggle").addEventListener("click", () => {
+  warmupShown = !warmupShown;
+  $("plates-warmup-toggle").setAttribute("aria-pressed", String(warmupShown));
+  renderPlates();
+});
 
 ["plates-target", "plates-inventory-bar", "plates-inventory-spec"].forEach((id) =>
   $(id).addEventListener("input", renderPlates)

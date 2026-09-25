@@ -5,6 +5,7 @@ from liftmath.plates import (
     _parse_inventory_spec,
     load_plates,
     load_plates_from_inventory,
+    warmup_ramp,
 )
 
 
@@ -312,3 +313,38 @@ def test_inventory_rejects_non_finite_target_or_bar():
         load_plates_from_inventory(225, {45: 4}, unit="lb", bar=float("nan"))
     with pytest.raises(ValueError):
         load_plates_from_inventory(225, {45: 4}, unit="lb", bar=-45)
+
+
+def test_warmup_ramp_starts_at_empty_bar():
+    ramp = warmup_ramp(225, unit="lb")
+    assert ramp[0].weight == 45
+    assert ramp[0].reps == 10
+    assert ramp[0].plates == []
+
+
+def test_warmup_ramp_percentages_and_reps():
+    ramp = warmup_ramp(300, unit="lb")
+    # 40%/60%/80% of 300 = 120/180/240, each exact on the default lb plate set.
+    assert [r.weight for r in ramp] == [45, 120, 180, 240]
+    assert [r.reps for r in ramp] == [10, 5, 3, 1]
+    assert all(r.exact for r in ramp)
+
+
+def test_warmup_ramp_collapses_duplicate_rounded_steps():
+    # A light enough target rounds several percentages to the same loadable
+    # weight - those collapse into one row instead of repeating it.
+    ramp = warmup_ramp(50, unit="lb")
+    weights = [r.weight for r in ramp]
+    assert len(weights) == len(set(weights))
+
+
+def test_warmup_ramp_rejects_non_positive_target():
+    with pytest.raises(ValueError):
+        warmup_ramp(0, unit="lb")
+    with pytest.raises(ValueError):
+        warmup_ramp(-10, unit="lb")
+
+
+def test_warmup_ramp_respects_preset():
+    ramp = warmup_ramp(100, unit="kg", preset="womens")
+    assert ramp[0].weight == 15

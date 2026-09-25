@@ -9,7 +9,7 @@
 // RIR = 10 - RPE; effective reps = reps performed + RIR.
 
 import { pyRound } from "./py-round.js";
-import { loadPlates, DEFAULT_BAR, PRESETS } from "./plate-loading.js";
+import { loadPlates, resolveBarWeight } from "./plate-loading.js";
 
 function epley(w, r) {
   return w * (1 + r / 30.0);
@@ -154,19 +154,6 @@ export function estimateOneRm(weight, reps, unit = "lb", { rpe, rir } = {}) {
 
 // 100, 95, 90, ... 50
 export const PERCENT_STEPS = Array.from({ length: 11 }, (_, i) => 100 - i * 5);
-
-function resolveBarWeight(unit, bar, preset) {
-  if (preset != null) {
-    if (!(preset in PRESETS)) {
-      throw new RangeError(`unknown preset ${JSON.stringify(preset)}`);
-    }
-    if (unit !== "kg") {
-      throw new RangeError(`preset ${JSON.stringify(preset)} is a kg-only setup; the unit must be kg`);
-    }
-    return bar ?? PRESETS[preset].bar;
-  }
-  return bar ?? DEFAULT_BAR[unit];
-}
 
 /**
  * Estimated reps at `load` given a 1RM, by inverting Epley's formula

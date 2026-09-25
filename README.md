@@ -123,6 +123,24 @@ Load 405lb on a 45lb bar (from your inventory):
 There are also `--bar`, `--plates` (custom denominations), and `--preset` (`womens`,
 `metric-no-45`, both kg-only, so pass `--unit kg` with them) flags. Run `liftmath plates --help`.
 
+### Warm-up
+
+A ramp from the empty bar up to a working weight - bar x10, then 40/60/80% of the target for
+5/3/1 reps, each rounded to what your plates can load (steps that round to the same weight
+collapse into one row):
+
+```
+$ liftmath warmup --target 225
+Warm-up ramp to 225lb:
+   45.0lb x 10  empty bar
+   90.0lb x 5   2x10, 1x2.5
+  135.0lb x 3   1x45
+  180.0lb x 1   1x45, 2x10, 1x2.5
+```
+
+The web Plates tab has the same ramp behind a "Warm-up ramp" toggle. `--inventory`'s finite
+plate counts aren't supported here yet (same unlimited-supply assumption as `--plates`).
+
 ### Strength score
 
 Relative-strength scores from a total, bodyweight, and sex, so a lighter lifter and a heavier one

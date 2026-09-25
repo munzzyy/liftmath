@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `warmup` (`warmup_ramp`): a warm-up ramp from the empty bar to a working weight (bar x10,
+  40/60/80% for 5/3/1 reps), rounded to loadable weights and deduped. Web Plates tab has the
+  same ramp behind a "Warm-up ramp" toggle. Finite `--inventory` isn't supported here.
 - `1rm --table` (`percentage_table`): a 100%-to-50% percentage breakdown of the consensus,
   load rounded to what the plate setup can actually load, reps estimated via Epley's
   inversion. Web 1RM tab shows the same table; tapping a row sends the load to Plates.

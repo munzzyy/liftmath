@@ -42,8 +42,10 @@ from liftmath.onerm import OneRmEstimate, PercentRow, estimate_one_rm, percentag
 from liftmath.plates import (
     InventoryPlateLoad,
     PlateLoad,
+    WarmupSet,
     load_plates,
     load_plates_from_inventory,
+    warmup_ramp,
 )
 from liftmath.records import (
     Record,
@@ -74,6 +76,8 @@ __all__ = [
     "PlateLoad",
     "load_plates_from_inventory",
     "InventoryPlateLoad",
+    "warmup_ramp",
+    "WarmupSet",
     "score",
     "StrengthScore",
     "search_records",

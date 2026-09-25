@@ -1,0 +1,284 @@
+[
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "expected": [
+      {
+        "exact": true,
+        "plates": [],
+        "reps": 10,
+        "weight": 45
+      },
+      {
+        "exact": true,
+        "plates": [
+          [
+            10,
+            2
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 5,
+        "weight": 90.0
+      },
+      {
+        "exact": true,
+        "plates": [
+          [
+            45,
+            1
+          ]
+        ],
+        "reps": 3,
+        "weight": 135.0
+      },
+      {
+        "exact": true,
+        "plates": [
+          [
+            45,
+            1
+          ],
+          [
+            10,
+            2
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 1,
+        "weight": 180.0
+      }
+    ],
+    "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 300
+    },
+    "expected": [
+      {
+        "exact": true,
+        "plates": [],
+        "reps": 10,
+        "weight": 45
+      },
+      {
+        "exact": true,
+        "plates": [
+          [
+            35,
+            1
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 5,
+        "weight": 120.0
+      },
+      {
+        "exact": true,
+        "plates": [
+          [
+            45,
+            1
+          ],
+          [
+            10,
+            2
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 3,
+        "weight": 180.0
+      },
+      {
+        "exact": true,
+        "plates": [
+          [
+            45,
+            2
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 1,
+        "weight": 240.0
+      }
+    ],
+    "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 50
+    },
+    "expected": [
+      {
+        "exact": true,
+        "plates": [],
+        "reps": 10,
+        "weight": 45
+      }
+    ],
+    "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "target": 140
+    },
+    "expected": [
+      {
+        "exact": true,
+        "plates": [],
+        "reps": 10,
+        "weight": 20
+      },
+      {
+        "exact": false,
+        "plates": [
+          [
+            15,
+            1
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 5,
+        "weight": 55.0
+      },
+      {
+        "exact": false,
+        "plates": [
+          [
+            25,
+            1
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            1.25,
+            1
+          ]
+        ],
+        "reps": 3,
+        "weight": 82.5
+      },
+      {
+        "exact": false,
+        "plates": [
+          [
+            25,
+            1
+          ],
+          [
+            20,
+            1
+          ]
+        ],
+        "reps": 1,
+        "weight": 110.0
+      }
+    ],
+    "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
+        "preset": "womens",
+        "unit": "kg"
+      },
+      "target": 100
+    },
+    "expected": [
+      {
+        "exact": true,
+        "plates": [],
+        "reps": 10,
+        "weight": 15
+      },
+      {
+        "exact": true,
+        "plates": [
+          [
+            10,
+            1
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 5,
+        "weight": 40.0
+      },
+      {
+        "exact": true,
+        "plates": [
+          [
+            20,
+            1
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 3,
+        "weight": 60.0
+      },
+      {
+        "exact": true,
+        "plates": [
+          [
+            20,
+            1
+          ],
+          [
+            10,
+            1
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 1,
+        "weight": 80.0
+      }
+    ],
+    "fn": "warmupRamp"
+  }
+]

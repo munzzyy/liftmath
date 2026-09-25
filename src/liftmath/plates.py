@@ -360,3 +360,84 @@ def load_plates_from_inventory(
         nearest_below=(bar_weight + 2 * best_total) if shortfall > 1e-6 else None,
         nearest_above=(bar_weight + 2 * best_over) if best_over is not None else None,
     )
+
+
+# (fraction of the working weight, reps) for each ramp step after the empty
+# bar. A common warm-up progression in mainstream strength programming (e.g.
+# Wendler's 5/3/1 warm-up sets, Rippetoe's Starting Strength ramp) - a
+# convention, not a formula with its own citation.
+WARMUP_STEPS: tuple[tuple[float, int], ...] = ((0.40, 5), (0.60, 3), (0.80, 1))
+WARMUP_BAR_REPS = 10
+
+
+@dataclass
+class WarmupSet:
+    """One row of a warm-up ramp: the rounded weight, reps, and its own
+    plate-loading breakdown (same shape `load_plates` would give that weight).
+    """
+
+    weight: float
+    reps: int
+    exact: bool
+    plates: list[tuple[float, int]] = field(default_factory=list)
+
+
+def warmup_ramp(
+    target: float,
+    *,
+    unit: str = "lb",
+    bar: float | None = None,
+    plates: tuple[float, ...] | None = None,
+    preset: str | None = None,
+) -> list[WarmupSet]:
+    """A warm-up ramp from the empty bar up to (not including) `target`.
+
+    Empty bar for 10 reps, then 40%/60%/80% of `target` for 5/3/1 reps, each
+    percentage rounded to what the plate setup can actually load (same
+    unlimited-supply assumption as `load_plates` - a finite `--inventory`
+    isn't supported here). Consecutive steps that round to the same weight
+    are collapsed into one row, since a lifter doesn't warm up twice at an
+    identical weight.
+
+    Args:
+        target: the working weight the ramp builds up to.
+        unit: "lb" or "kg".
+        bar, plates, preset: same meaning as `load_plates`'s own arguments.
+
+    Raises:
+        ValueError: anything `load_plates` itself would raise for this
+            unit/bar/plates/preset combination or a non-finite/non-positive target.
+    """
+    if not math.isfinite(target) or target <= 0:
+        raise ValueError("target must be a finite number > 0")
+
+    bar_weight = resolve_bar_weight(unit, bar, preset)
+    rows: list[WarmupSet] = [WarmupSet(weight=bar_weight, reps=WARMUP_BAR_REPS, exact=True, plates=[])]
+
+    for fraction, reps in WARMUP_STEPS:
+        step_target = target * fraction
+        if step_target <= bar_weight:
+            weight, exact, step_plates = bar_weight, True, []
+        else:
+            pl = load_plates(step_target, unit=unit, bar=bar, plates=plates, preset=preset)
+            weight, exact, step_plates = pl.achievable, pl.exact, pl.plates
+        if abs(weight - rows[-1].weight) <= 1e-9:
+            continue
+        rows.append(WarmupSet(weight=weight, reps=reps, exact=exact, plates=step_plates))
+
+    return rows
+
+
+def resolve_bar_weight(unit: str, bar: float | None, preset: str | None) -> float:
+    """Same bar-weight resolution `load_plates` does internally, exposed so
+    callers that need the bar weight up front (warmup_ramp, onerm.percentage_table)
+    don't have to duplicate it or run a full plate-loading solve to get it.
+    """
+    if preset is not None:
+        if preset not in PRESETS:
+            raise ValueError(f"unknown preset {preset!r}, choose from {sorted(PRESETS)}")
+        if unit != "kg":
+            raise ValueError(f"preset {preset!r} is a kg-only setup; the unit must be kg")
+        preset_bar, _ = PRESETS[preset]
+        return bar if bar is not None else preset_bar
+    return bar if bar is not None else DEFAULT_BAR[unit]

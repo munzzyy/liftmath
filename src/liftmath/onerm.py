@@ -48,7 +48,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
-from liftmath.plates import DEFAULT_BAR, PRESETS, load_plates
+from liftmath.plates import load_plates, resolve_bar_weight
 
 
 def _epley(w: float, r: float) -> float:
@@ -235,19 +235,6 @@ class PercentRow:
     reps_capped: bool
 
 
-def _resolve_bar_weight(unit: str, bar: float | None, preset: str | None) -> float:
-    """The bar weight `load_plates` would use for this unit/bar/preset combo,
-    without running its full plate-loading solve - percentage_table needs it
-    up front to decide whether a percentage falls below the empty bar.
-    """
-    if preset is not None:
-        if preset not in PRESETS:
-            raise ValueError(f"unknown preset {preset!r}, choose from {sorted(PRESETS)}")
-        if unit != "kg":
-            raise ValueError(f"preset {preset!r} is a kg-only setup; the unit must be kg")
-        preset_bar, _ = PRESETS[preset]
-        return bar if bar is not None else preset_bar
-    return bar if bar is not None else DEFAULT_BAR[unit]
 
 
 def _epley_reps_at(one_rm: float, load: float) -> tuple[int, bool]:
@@ -294,7 +281,7 @@ def percentage_table(consensus: float, unit: str = "lb", *, bar: float | None = 
     if not math.isfinite(consensus) or consensus <= 0:
         raise ValueError("consensus must be a finite number > 0")
 
-    bar_weight = _resolve_bar_weight(unit, bar, preset)
+    bar_weight = resolve_bar_weight(unit, bar, preset)
     rows = []
     for percent in PERCENT_STEPS:
         raw_target = consensus * percent / 100.0

@@ -168,6 +168,26 @@ def gen_plate_loading() -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
+# warmup.js <- liftmath.plates (warmup_ramp)
+# ---------------------------------------------------------------------------
+
+def gen_warmup() -> list[dict]:
+    cases = []
+    for target, unit in [(225, "lb"), (300, "lb"), (50, "lb"), (140, "kg")]:
+        cases.append({
+            "fn": "warmupRamp",
+            "args": {"target": target, "opts": {"unit": unit}},
+            "expected": [dump(row) for row in plates.warmup_ramp(target, unit=unit)],
+        })
+    cases.append({
+        "fn": "warmupRamp",
+        "args": {"target": 100, "opts": {"unit": "kg", "preset": "womens"}},
+        "expected": [dump(row) for row in plates.warmup_ramp(100, unit="kg", preset="womens")],
+    })
+    return cases
+
+
+# ---------------------------------------------------------------------------
 # plate-inventory.js <- liftmath.plates (load_plates_from_inventory)
 # ---------------------------------------------------------------------------
 
@@ -367,6 +387,7 @@ def gen_one_rep_max_and_percentage_table() -> list[dict]:
 GENERATORS = {
     "one-rep-max": gen_one_rep_max_and_percentage_table,
     "plate-loading": gen_plate_loading,
+    "warmup": gen_warmup,
     "plate-inventory": gen_plate_inventory,
     "strength-scores": gen_strength_scores,
     "unit-convert": gen_unit_convert,

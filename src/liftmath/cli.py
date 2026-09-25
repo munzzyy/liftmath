@@ -4,6 +4,7 @@ Subcommands:
     1rm         Estimate 1RM from a weight x reps set (multi-formula consensus + range)
     plates      Plate-loading math for a target barbell weight (add --inventory for a
                 finite per-side plate count instead of an unlimited supply)
+    warmup      Warm-up ramp (empty bar to 80%) up to a working weight
     standards   Relative-strength scoring: Wilks (original + 2020), DOTS, IPF GL points
     records     Search bundled records (powerlifting / strongman / grip / track & field)
                 by lift or event, sex, weight class or bodyweight, equipment, and level
@@ -28,7 +29,13 @@ from liftmath.convert import KG_PER_LB, convert_weight
 from liftmath.convert import lbs_to_kg as _lbs_to_kg
 from liftmath.imports import WorkoutSet, e1rm_trend, parse_hevy_csv, parse_strong_csv, weekly_tonnage
 from liftmath.onerm import estimate_one_rm, percentage_table
-from liftmath.plates import PRESETS, _parse_inventory_spec, load_plates, load_plates_from_inventory
+from liftmath.plates import (
+    PRESETS,
+    _parse_inventory_spec,
+    load_plates,
+    load_plates_from_inventory,
+    warmup_ramp,
+)
 from liftmath.records import (
     compare_value,
     format_seconds,
@@ -141,6 +148,26 @@ def cmd_plates(args: argparse.Namespace) -> int:
     if not result.exact:
         print(f"  [!] can't make it exactly with these plates - short {result.shortfall:g}{args.unit}/side. "
               f"Closest below: {result.achievable:g}{args.unit}.")
+    return 0
+
+
+def cmd_warmup(args: argparse.Namespace) -> int:
+    try:
+        ramp = warmup_ramp(args.target, unit=args.unit, bar=args.bar, plates=args.plates,
+                           preset=args.preset)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(to_json(ramp))
+        return 0
+
+    print(f"Warm-up ramp to {args.target:g}{args.unit}:")
+    for row in ramp:
+        detail = ", ".join(f"{n}x{p:g}" for p, n in row.plates) if row.plates else "empty bar"
+        note = "" if row.exact else "  (closest achievable)"
+        print(f"  {row.weight:7.1f}{args.unit} x {row.reps:<2d}  {detail}{note}")
     return 0
 
 
@@ -446,6 +473,16 @@ def build_parser() -> argparse.ArgumentParser:
                         "(e.g. '45x4,25x1,10x2,5x2,2.5x1') - overrides --plates/--preset and "
                         "respects exact counts instead of assuming unlimited supply")
     s.set_defaults(func=cmd_plates)
+
+    s = sub.add_parser("warmup", help="warm-up ramp from the empty bar to a working weight",
+                       parents=[json_parent])
+    s.add_argument("--target", type=float, required=True, help="the working weight to ramp up to")
+    s.add_argument("--bar", type=float, help="bar weight (default 20kg / 45lb)")
+    s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.add_argument("--plates", type=float, nargs="*", help="available plate denominations (per side)")
+    s.add_argument("--preset", choices=sorted(PRESETS),
+                   help="named non-standard setup (kg-only), same as `plates --preset`")
+    s.set_defaults(func=cmd_warmup)
 
     s = sub.add_parser("standards", help="relative-strength scoring: Wilks/DOTS/IPF GL",
                        parents=[json_parent])

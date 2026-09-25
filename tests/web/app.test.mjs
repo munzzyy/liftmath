@@ -87,6 +87,23 @@ test("a stepper tap steps the field and re-renders every panel", async () => {
   assert.equal(hero(app.text("onerm-results")), "264.93 lb");
 });
 
+test("the warm-up ramp is hidden until toggled on", async () => {
+  const app = await loadApp();
+  assert.equal(app.$("plates-warmup-results").hidden, true);
+  app.$("plates-warmup-toggle").click();
+  assert.equal(app.$("plates-warmup-results").hidden, false);
+  const html = app.text("plates-warmup-results");
+  assert.match(html, /bar only/);
+  assert.match(html, /45 &times; 1/); // 80% of 225 = 180, 1x45/side on top of the bar
+});
+
+test("toggling the warm-up ramp off hides it again", async () => {
+  const app = await loadApp();
+  app.$("plates-warmup-toggle").click();
+  app.$("plates-warmup-toggle").click();
+  assert.equal(app.$("plates-warmup-results").hidden, true);
+});
+
 test("plate loading renders a per-side stack for 315", async () => {
   const app = await loadApp();
   app.type("plates-target", 315);

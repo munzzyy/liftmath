@@ -170,6 +170,25 @@ export function loadPlates(target, opts = {}) {
  * the getters, so callers get a plain-data structure suitable for direct
  * JSON serialization / structured cloning.
  */
+/**
+ * Same bar-weight resolution loadPlates does internally, exposed so callers
+ * that need the bar weight up front (warmup ramp, onerm's percentage table)
+ * don't have to duplicate it or run a full plate-loading solve to get it.
+ * Mirrors plates.py's resolve_bar_weight.
+ */
+export function resolveBarWeight(unit, bar, preset) {
+  if (preset != null) {
+    if (!(preset in PRESETS)) {
+      throw new RangeError(`unknown preset ${JSON.stringify(preset)}`);
+    }
+    if (unit !== "kg") {
+      throw new RangeError(`preset ${JSON.stringify(preset)} is a kg-only setup; the unit must be kg`);
+    }
+    return bar ?? PRESETS[preset].bar;
+  }
+  return bar ?? DEFAULT_BAR[unit];
+}
+
 export function computePlateStack(target, opts = {}) {
   const result = loadPlates(target, opts);
   return {
