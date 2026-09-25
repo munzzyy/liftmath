@@ -57,6 +57,9 @@ class Element {
     this._value = null;
     this._hidden = null;
     this._dataset = null;
+    // Enough of CSSStyleDeclaration for setProperty() (the timer ring's
+    // --pct custom property) - nothing here reads inline style back out.
+    this.style = { setProperty: () => {} };
   }
 
   // ---- attributes -------------------------------------------------------
@@ -430,9 +433,18 @@ let loadCount = 0;
  */
 export async function loadApp({ storage = makeStorage(), search = "", prefersLight = false } = {}) {
   const document = new FakeDocument(readFileSync(INDEX_HTML, "utf8"));
+  const mediaListeners = [];
+  let systemPrefersLight = prefersLight;
   const window = {
     addEventListener() {},
-    matchMedia: () => ({ matches: prefersLight }),
+    matchMedia: () => ({
+      get matches() {
+        return systemPrefersLight;
+      },
+      addEventListener(type, fn) {
+        if (type === "change") mediaListeners.push(fn);
+      },
+    }),
   };
 
   const globals = {
@@ -482,6 +494,12 @@ export async function loadApp({ storage = makeStorage(), search = "", prefersLig
     },
     text(id) {
       return $(id).innerHTML;
+    },
+    /** Simulate the OS flipping its light/dark setting - flips what
+     * matchMedia reports and fires its "change" listeners. */
+    setSystemPrefersLight(value) {
+      systemPrefersLight = value;
+      for (const fn of mediaListeners) fn();
     },
   };
 }

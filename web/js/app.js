@@ -15,6 +15,8 @@ import { KG_PER_LB, convertWeight } from "./math/unit-convert.js";
 import { renderBarbellSvg, renderPlateLegend } from "./ui/svg-barbell.js";
 import { wireStepper, minFromInput } from "./ui/steppers.js";
 import { fromUnit, toUnit, convertDisplayValue, plateTargetUnit } from "./ui/units.js";
+import { notifyNative } from "./native-bridge.js";
+import { remainingMs, formatCountdown, ringFraction, STORAGE_KEY as TIMER_KEY } from "./timer.js";
 
 function $(id) {
   return document.getElementById(id);
@@ -44,30 +46,58 @@ function fmt(n) {
 const THEME_KEY = "liftmath:theme";
 const THEME_CHROME = { dark: "#101216", light: "#f4f5f7" };
 
-function currentTheme() {
-  const stored = document.documentElement.getAttribute("data-theme");
-  if (stored === "light" || stored === "dark") return stored;
+function storedThemeOverride() {
+  try {
+    const stored = localStorage.getItem(THEME_KEY);
+    return stored === "light" || stored === "dark" ? stored : null;
+  } catch {
+    return null; // localStorage unavailable (private mode) - no override.
+  }
+}
+
+function systemTheme() {
   return matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
 }
 
-function applyTheme(id) {
+function currentTheme() {
+  return storedThemeOverride() ?? systemTheme();
+}
+
+/** Paint the given theme without touching the stored override - used both
+ * for an explicit user choice (after saving it) and for following a live
+ * system-theme change while no override is stored. */
+function paintTheme(id) {
   document.documentElement.setAttribute("data-theme", id);
-  try {
-    localStorage.setItem(THEME_KEY, id);
-  } catch {
-    // localStorage unavailable (private mode) - theme just won't persist.
-  }
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute("content", THEME_CHROME[id]);
   const btn = $("theme-toggle-btn");
   btn.textContent = id === "light" ? "Light" : "Dark";
   btn.setAttribute("aria-pressed", String(id === "light"));
+  notifyNative({ type: "theme", theme: id });
+}
+
+/** An explicit user choice (the toggle button): persists the override, then paints it.
+ * Startup and a live system-theme change use paintTheme() directly instead, so they
+ * don't pin an override the user never asked for. */
+function applyTheme(id) {
+  try {
+    localStorage.setItem(THEME_KEY, id);
+  } catch {
+    // localStorage unavailable (private mode) - theme just won't persist.
+  }
+  paintTheme(id);
 }
 
 $("theme-toggle-btn").addEventListener("click", () => {
   applyTheme(currentTheme() === "light" ? "dark" : "light");
 });
-applyTheme(currentTheme());
+paintTheme(currentTheme());
+
+// While no override is stored, follow the system theme live instead of
+// freezing whatever it was on first load.
+matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => {
+  if (storedThemeOverride() === null) paintTheme(systemTheme());
+});
 
 // ---------------------------------------------------------------------------
 // Setup that survives a reload. Same deal as the theme override above: it all
@@ -946,6 +976,134 @@ function renderConvert() {
 $("convert-weight").addEventListener("input", renderConvert);
 
 // ---------------------------------------------------------------------------
+// Rest timer: driven by a stored end timestamp (see timer.js), not by
+// counting ticks, so a backgrounded tab can't drift it. keepAwake goes out
+// over the native bridge for the Android wrapper (no Wake Lock API in a
+// WebView) alongside the real Wake Lock API for a browser/PWA.
+// ---------------------------------------------------------------------------
+
+let timerInterval = null;
+let wakeLock = null;
+
+async function requestKeepAwake() {
+  notifyNative({ type: "keepAwake", on: true });
+  if (!("wakeLock" in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+  } catch {
+    // Wake Lock can refuse (backgrounded tab, battery saver, no permission) -
+    // the timer still runs correctly, the screen just might sleep.
+    wakeLock = null;
+  }
+}
+
+async function releaseKeepAwake() {
+  notifyNative({ type: "keepAwake", on: false });
+  if (wakeLock) {
+    try {
+      await wakeLock.release();
+    } catch {
+      // Already released (e.g. the tab was backgrounded) - nothing to do.
+    }
+    wakeLock = null;
+  }
+}
+
+function beep() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.4);
+  } catch {
+    // No WebAudio (very old/locked-down browser) - vibrate is the fallback signal.
+  }
+}
+
+function showTimerPicker() {
+  $("timer-picker").hidden = false;
+  $("timer-running").hidden = true;
+}
+
+function showTimerRunning() {
+  $("timer-picker").hidden = true;
+  $("timer-running").hidden = false;
+}
+
+function tickTimer(endTs, totalMs) {
+  const remaining = remainingMs(endTs);
+  $("timer-display").textContent = formatCountdown(remaining);
+  $("timer-ring").style.setProperty("--pct", String(ringFraction(remaining, totalMs) * 100));
+  if (remaining <= 0) {
+    stopTimer(true);
+  }
+}
+
+function startTimer(seconds) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return;
+  const endTs = Date.now() + seconds * 1000;
+  writeStored(TIMER_KEY, String(endTs));
+  runTimer(endTs, seconds * 1000);
+}
+
+function runTimer(endTs, totalMs) {
+  showTimerRunning();
+  requestKeepAwake();
+  tickTimer(endTs, totalMs);
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => tickTimer(endTs, totalMs), 250);
+}
+
+function stopTimer(finished) {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  releaseKeepAwake();
+  writeStored(TIMER_KEY, "");
+  if (finished) {
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    beep();
+  }
+  showTimerPicker();
+}
+
+$("timer-toggle-btn").addEventListener("click", () => {
+  $("timer-sheet").hidden = false;
+});
+$("timer-close-btn").addEventListener("click", () => {
+  $("timer-sheet").hidden = true;
+});
+$("timer-preset-group").querySelectorAll(".chip").forEach((btn) => {
+  btn.addEventListener("click", () => startTimer(Number(btn.dataset.seconds)));
+});
+$("timer-custom-start-btn").addEventListener("click", () => {
+  startTimer(parseFloat($("timer-custom-seconds").value));
+});
+$("timer-stop-btn").addEventListener("click", () => stopTimer(false));
+
+/** Resume a timer left running across a reload or a tab switch, or clear a
+ * stale/expired one. */
+function restoreTimer() {
+  const stored = readStored(TIMER_KEY);
+  const endTs = stored ? Number(stored) : NaN;
+  if (!Number.isFinite(endTs) || remainingMs(endTs) <= 0) {
+    writeStored(TIMER_KEY, "");
+    return;
+  }
+  // The original duration isn't stored, only the end time - the ring falls
+  // back to treating "whatever's left on resume" as the full ring rather
+  // than losing the elapsed portion, which is a reasonable approximation
+  // since the ring is a glanceable indicator, not a precise record.
+  runTimer(endTs, remainingMs(endTs));
+}
+
+// ---------------------------------------------------------------------------
 // Init
 // ---------------------------------------------------------------------------
 
@@ -1007,6 +1165,7 @@ function restoreSetup() {
 }
 
 restoreSetup();
+restoreTimer();
 
 // Honor manifest.json's shortcuts (?tab=onerm|plates|score), e.g. from a
 // home-screen long-press shortcut - an explicit link wins over the tab you

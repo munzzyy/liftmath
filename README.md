@@ -33,6 +33,10 @@ The fastest way in is the web app: nothing to install, works on your phone at th
 and the barbell loads itself as you type: **https://munzzyy.github.io/liftmath/**. Everything below
 is the same math for people who'd rather script it.
 
+The web app also has a rest timer (the header button): 60/90/120/180/300s presets or a custom
+value, a countdown ring, a vibrate + beep at zero, and it survives switching tabs or reloading -
+it's driven by a stored end time, not a running count, so backgrounding the tab can't drift it.
+
 Pure Python standard library. No dependencies, no network calls, no accounts. Use it as a library
 you import or a command you run.
 

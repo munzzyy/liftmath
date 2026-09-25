@@ -113,6 +113,30 @@ test("plate loading renders a per-side stack for 315", async () => {
   assert.match(app.text("plates-barbell-wrap"), /<svg/);
 });
 
+test("first load never pins a theme override into localStorage", async () => {
+  const app = await loadApp({ prefersLight: false });
+  assert.equal(app.storage.data.has("liftmath:theme"), false);
+});
+
+test("with no stored override, a live system-theme change is followed", async () => {
+  const app = await loadApp({ prefersLight: false });
+  assert.equal(app.document.documentElement.getAttribute("data-theme"), "dark");
+  app.setSystemPrefersLight(true);
+  assert.equal(app.document.documentElement.getAttribute("data-theme"), "light");
+  // Still never persisted - it's following the system, not an override.
+  assert.equal(app.storage.data.has("liftmath:theme"), false);
+});
+
+test("an explicit toggle click does persist, and then wins over the system", async () => {
+  const app = await loadApp({ prefersLight: false });
+  app.$("theme-toggle-btn").click();
+  assert.equal(app.document.documentElement.getAttribute("data-theme"), "light");
+  assert.equal(app.storage.data.get("liftmath:theme"), "light");
+  // A later system flip no longer matters - the explicit choice sticks.
+  app.setSystemPrefersLight(false);
+  assert.equal(app.document.documentElement.getAttribute("data-theme"), "light");
+});
+
 test("switching to kg converts the weight fields instead of relabelling them", async () => {
   const app = await loadApp();
   app.$("unit-kg").click();
@@ -225,6 +249,56 @@ test("an explicit ?tab= beats the tab you left open", async () => {
   });
   assert.equal(second.$("tool-convert").hidden, false);
   assert.equal(second.$("tool-records").hidden, true);
+});
+
+test("the timer sheet opens and closes", async () => {
+  const app = await loadApp();
+  assert.equal(app.$("timer-sheet").hidden, true);
+  app.$("timer-toggle-btn").click();
+  assert.equal(app.$("timer-sheet").hidden, false);
+  app.$("timer-close-btn").click();
+  assert.equal(app.$("timer-sheet").hidden, true);
+});
+
+test("picking a preset starts a running countdown at that duration", async () => {
+  const app = await loadApp();
+  app.chip("timer-preset-group", "seconds", "120").click();
+  assert.equal(app.$("timer-picker").hidden, true);
+  assert.equal(app.$("timer-running").hidden, false);
+  assert.equal(app.$("timer-display").textContent, "2:00");
+  app.$("timer-stop-btn").click(); // clean up the running interval
+});
+
+test("a custom duration starts the same way", async () => {
+  const app = await loadApp();
+  app.type("timer-custom-seconds", 45);
+  app.$("timer-custom-start-btn").click();
+  assert.equal(app.$("timer-display").textContent, "0:45");
+  app.$("timer-stop-btn").click();
+});
+
+test("stopping the timer returns to the picker and clears the stored end time", async () => {
+  const app = await loadApp();
+  app.chip("timer-preset-group", "seconds", "60").click();
+  app.$("timer-stop-btn").click();
+  assert.equal(app.$("timer-picker").hidden, false);
+  assert.equal(app.$("timer-running").hidden, true);
+  assert.equal(app.storage.data.get("liftmath:timer:end"), "");
+});
+
+test("a timer running when the page reloads resumes into the countdown view", async () => {
+  const storage = makeStorage({ "liftmath:timer:end": String(Date.now() + 30000) });
+  const app = await loadApp({ storage });
+  assert.equal(app.$("timer-running").hidden, false);
+  assert.equal(app.$("timer-picker").hidden, true);
+  app.$("timer-stop-btn").click();
+});
+
+test("a stale (already-expired) stored end time is cleared on load, not resumed", async () => {
+  const storage = makeStorage({ "liftmath:timer:end": String(Date.now() - 5000) });
+  const app = await loadApp({ storage });
+  assert.equal(app.$("timer-picker").hidden, false);
+  assert.equal(storage.data.get("liftmath:timer:end"), "");
 });
 
 test("junk in localStorage is ignored, not applied", async () => {

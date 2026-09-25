@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Web: a rest timer behind a header button - 60/90/120/180/300s presets or a custom value, a
+  countdown ring, vibrate + a WebAudio beep at zero, and a Screen Wake Lock while running where
+  the browser supports it. Driven by a stored end timestamp so backgrounding the tab can't drift
+  it, and it resumes correctly across a reload.
+- Web: fixed a bug where the first load ever pinned the current system light/dark setting into
+  storage, so the app stopped following the OS theme after that. Now it only persists an override
+  on an explicit toggle tap, and follows a live system-theme change while no override is stored.
+- Web: added a native-bridge hook (`postMessage` to `window.NativeApp`, a no-op everywhere else)
+  for the Android wrapper - theme changes, share, and keep-awake state all go out over it.
 - `warmup` (`warmup_ramp`): a warm-up ramp from the empty bar to a working weight (bar x10,
   40/60/80% for 5/3/1 reps), rounded to loadable weights and deduped. Web Plates tab has the
   same ramp behind a "Warm-up ramp" toggle. Finite `--inventory` isn't supported here.

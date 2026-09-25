@@ -39,9 +39,41 @@
       <button type="button" id="unit-lb" aria-pressed="true">lb</button>
       <button type="button" id="unit-kg" aria-pressed="false">kg</button>
     </div>
+    <button type="button" class="icon-btn" id="timer-toggle-btn" aria-pressed="false">Timer</button>
     <button type="button" class="icon-btn" id="theme-toggle-btn" aria-pressed="false">Dark</button>
   </div>
 </header>
+
+<div class="timer-sheet" id="timer-sheet" hidden>
+  <div class="timer-sheet-inner">
+    <button type="button" class="icon-btn" id="timer-close-btn" aria-label="Close timer">&times;</button>
+
+    <div id="timer-picker">
+      <p class="timer-label">Rest timer</p>
+      <div class="chip-row" role="group" aria-label="Preset duration" id="timer-preset-group">
+        <button type="button" class="chip" data-seconds="60">1:00</button>
+        <button type="button" class="chip" data-seconds="90">1:30</button>
+        <button type="button" class="chip" data-seconds="120">2:00</button>
+        <button type="button" class="chip" data-seconds="180">3:00</button>
+        <button type="button" class="chip" data-seconds="300">5:00</button>
+      </div>
+      <div class="field">
+        <label for="timer-custom-seconds" id="timer-custom-label">Custom (seconds)</label>
+        <div class="stepper-row">
+          <input type="number" id="timer-custom-seconds" inputmode="numeric" min="1" step="5" value="90" />
+          <button type="button" id="timer-custom-start-btn">Start</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="timer-running" hidden>
+      <div class="timer-ring" id="timer-ring">
+        <span id="timer-display">0:00</span>
+      </div>
+      <button type="button" id="timer-stop-btn">Stop</button>
+    </div>
+  </div>
+</div>
 
 <nav class="tabs" role="tablist" aria-label="Calculators" id="tabs-list">
   <button class="tab" role="tab" id="tab-btn-onerm" aria-controls="tool-onerm" aria-selected="true" tabindex="0">1RM</button>
