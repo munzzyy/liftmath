@@ -1,6 +1,7 @@
 import pytest
 
 from liftmath.standards import (
+    dots_percentile,
     dots_score,
     ipf_gl_points,
     score,
@@ -200,3 +201,54 @@ def test_non_finite_total_or_bodyweight_raises():
 def test_score_bundles_wilks_original_too():
     s = score(500, 100, "male")
     assert s.wilks_original == pytest.approx(304.295, abs=0.01)
+
+
+def test_dots_percentile_increases_with_dots():
+    low = dots_percentile(200, "male", raw=True)
+    high = dots_percentile(450, "male", raw=True)
+    assert high.percentile > low.percentile
+    assert low.percentile >= 0
+    assert high.percentile <= 99
+
+
+def test_dots_percentile_is_bounded_0_to_99():
+    tiny = dots_percentile(0.01, "male", raw=True)
+    huge = dots_percentile(1e9, "male", raw=True)
+    assert tiny.percentile == 0
+    assert huge.percentile == 99
+
+
+def test_dots_percentile_raw_vs_equipped_are_independent_groups():
+    raw = dots_percentile(400, "male", raw=True)
+    equipped = dots_percentile(400, "male", raw=False)
+    assert raw.sample_size != equipped.sample_size
+
+
+def test_dots_percentile_sexes_are_independent_groups():
+    male = dots_percentile(300, "male", raw=True)
+    female = dots_percentile(300, "female", raw=True)
+    assert male.sample_size != female.sample_size
+
+
+def test_dots_percentile_carries_the_dataset_as_of_date():
+    result = dots_percentile(300, "male", raw=True)
+    assert result.as_of  # non-empty; exact value tracks the bundled snapshot
+
+
+def test_dots_percentile_rejects_bad_sex():
+    with pytest.raises(ValueError):
+        dots_percentile(300, "other", raw=True)
+
+
+def test_dots_percentile_rejects_non_positive_dots():
+    with pytest.raises(ValueError):
+        dots_percentile(0, "male", raw=True)
+    with pytest.raises(ValueError):
+        dots_percentile(-10, "male", raw=True)
+
+
+def test_dots_percentile_rejects_non_finite_dots():
+    with pytest.raises(ValueError):
+        dots_percentile(float("nan"), "male", raw=True)
+    with pytest.raises(ValueError):
+        dots_percentile(float("inf"), "male", raw=True)

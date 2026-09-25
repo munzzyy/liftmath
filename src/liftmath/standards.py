@@ -86,8 +86,11 @@ Sources:
 
 from __future__ import annotations
 
+import bisect
 import math
 from dataclasses import dataclass
+
+from liftmath._records_data import DATASET
 
 # Wilks, original (1994). a,b,c,d,e,f per sex; coefficient = 500 / (a+bx+cx^2+dx^3+ex^4+fx^5)
 _WILKS_ORIGINAL = {
@@ -251,4 +254,57 @@ def score(total_kg: float, bodyweight_kg: float, sex: str) -> StrengthScore:
         wilks_original=wilks_original_score(total_kg, bodyweight_kg, sex),
         dots=dots_score(total_kg, bodyweight_kg, sex),
         ipf_gl=ipf_gl_points(total_kg, bodyweight_kg, sex),
+    )
+
+
+_SEX_LETTER = {"male": "M", "female": "F"}
+
+
+@dataclass
+class DotsPercentile:
+    """Where a DOTS score stands against best-DOTS-per-lifter in OpenPowerlifting,
+    split by sex and raw/equipped (see tools/build_records.py's
+    compute_dots_percentiles for the source data and row filters).
+    """
+
+    dots: float
+    sex: str
+    raw: bool
+    percentile: int
+    sample_size: int
+    as_of: str
+
+
+def dots_percentile(dots: float, sex: str, *, raw: bool = True) -> DotsPercentile:
+    """How a DOTS score compares to best-DOTS-per-lifter in OpenPowerlifting.
+
+    `percentile` is how many percent of the group total at or below `dots` -
+    0 means below the bundled data's 1st percentile, 99 means at or above its
+    99th (the underlying table only stores 99 breakpoints, not the full
+    distribution, so this can't distinguish "51st" from "exactly at the
+    median" - see the table's own docstring for why).
+
+    Args:
+        dots: a DOTS score, e.g. from `dots_score`.
+        sex: "male" or "female".
+        raw: True for raw lifters, False for equipped (wraps/single-ply/multi-ply).
+
+    Raises:
+        ValueError: if sex isn't "male"/"female", or dots isn't a finite number > 0.
+    """
+    if sex not in _SEXES:
+        raise ValueError(f"sex must be one of {_SEXES}, got {sex!r}")
+    if not math.isfinite(dots) or dots <= 0:
+        raise ValueError("dots must be a finite number > 0")
+
+    group = DATASET["dots_percentiles"][_SEX_LETTER[sex]]["raw" if raw else "equipped"]
+    breakpoints = group["breakpoints"]
+    percentile = bisect.bisect_right(breakpoints, dots)
+    return DotsPercentile(
+        dots=dots,
+        sex=sex,
+        raw=raw,
+        percentile=min(percentile, 99),
+        sample_size=group["n"],
+        as_of=DATASET["as_of"],
     )

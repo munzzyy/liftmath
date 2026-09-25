@@ -9,6 +9,7 @@
 // sourcing/citations.
 
 import { pyRound } from "./py-round.js";
+import { DATASET } from "../records-data.js";
 
 // Wilks, original (1994). a,b,c,d,e,f per sex; coefficient = 500 / (a+bx+cx^2+dx^3+ex^4+fx^5)
 const WILKS_ORIGINAL = {
@@ -145,5 +146,49 @@ export function score(totalKg, bodyweightKg, sex) {
     wilksOriginal: wilksOriginalScore(totalKg, bodyweightKg, sex),
     dots: dotsScore(totalKg, bodyweightKg, sex),
     ipfGl: ipfGlPoints(totalKg, bodyweightKg, sex),
+  };
+}
+
+const SEX_LETTER = { male: "M", female: "F" };
+
+/** Count of `breakpoints` entries <= value (bisect.bisect_right's meaning
+ * for a sorted-ascending array). Linear is fine at 99 elements. */
+function countAtOrBelow(breakpoints, value) {
+  let count = 0;
+  for (const b of breakpoints) {
+    if (b <= value) count++;
+    else break;
+  }
+  return count;
+}
+
+/**
+ * How a DOTS score compares to best-DOTS-per-lifter in OpenPowerlifting.
+ * Mirrors standards.py's dots_percentile - see its docstring for the
+ * breakpoint-table caveats and tools/build_records.py for the source data.
+ *
+ * @param {number} dots - a DOTS score, e.g. from dotsScore().
+ * @param {string} sex - "male" or "female".
+ * @param {boolean} [raw=true] - true for raw lifters, false for equipped.
+ * @returns {{dots:number, sex:string, raw:boolean, percentile:number,
+ *   sampleSize:number, asOf:string}}
+ * @throws {RangeError} if sex isn't "male"/"female" or dots isn't > 0.
+ */
+export function dotsPercentile(dots, sex, raw = true) {
+  if (sex !== "male" && sex !== "female") {
+    throw new RangeError(`sex must be "male" or "female", got ${JSON.stringify(sex)}`);
+  }
+  if (!(dots > 0) || !Number.isFinite(dots)) {
+    throw new RangeError("dots must be a finite number > 0");
+  }
+  const group = DATASET.dots_percentiles[SEX_LETTER[sex]][raw ? "raw" : "equipped"];
+  const percentile = Math.min(countAtOrBelow(group.breakpoints, dots), 99);
+  return {
+    dots,
+    sex,
+    raw,
+    percentile,
+    sampleSize: group.n,
+    asOf: DATASET.as_of,
   };
 }

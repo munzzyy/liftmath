@@ -202,5 +202,117 @@
       "wilksOriginal": 667.711433143599
     },
     "fn": "score"
+  },
+  {
+    "args": {
+      "dots": 200,
+      "raw": true,
+      "sex": "male"
+    },
+    "expected": {
+      "asOf": "2026-09-19",
+      "dots": 200,
+      "percentile": 2,
+      "raw": true,
+      "sampleSize": 276025,
+      "sex": "male"
+    },
+    "fn": "dotsPercentile"
+  },
+  {
+    "args": {
+      "dots": 400,
+      "raw": true,
+      "sex": "male"
+    },
+    "expected": {
+      "asOf": "2026-09-19",
+      "dots": 400,
+      "percentile": 77,
+      "raw": true,
+      "sampleSize": 276025,
+      "sex": "male"
+    },
+    "fn": "dotsPercentile"
+  },
+  {
+    "args": {
+      "dots": 450,
+      "raw": false,
+      "sex": "male"
+    },
+    "expected": {
+      "asOf": "2026-09-19",
+      "dots": 450,
+      "percentile": 87,
+      "raw": false,
+      "sampleSize": 297016,
+      "sex": "male"
+    },
+    "fn": "dotsPercentile"
+  },
+  {
+    "args": {
+      "dots": 250,
+      "raw": true,
+      "sex": "female"
+    },
+    "expected": {
+      "asOf": "2026-09-19",
+      "dots": 250,
+      "percentile": 19,
+      "raw": true,
+      "sampleSize": 130919,
+      "sex": "female"
+    },
+    "fn": "dotsPercentile"
+  },
+  {
+    "args": {
+      "dots": 350,
+      "raw": false,
+      "sex": "female"
+    },
+    "expected": {
+      "asOf": "2026-09-19",
+      "dots": 350,
+      "percentile": 70,
+      "raw": false,
+      "sampleSize": 94012,
+      "sex": "female"
+    },
+    "fn": "dotsPercentile"
+  },
+  {
+    "args": {
+      "dots": 0.01,
+      "raw": true,
+      "sex": "male"
+    },
+    "expected": {
+      "asOf": "2026-09-19",
+      "dots": 0.01,
+      "percentile": 0,
+      "raw": true,
+      "sampleSize": 276025,
+      "sex": "male"
+    },
+    "fn": "dotsPercentile"
+  },
+  {
+    "args": {
+      "dots": 1000000.0,
+      "raw": true,
+      "sex": "female"
+    },
+    "expected": {
+      "asOf": "2026-09-19",
+      "dots": 1000000.0,
+      "percentile": 99,
+      "raw": true,
+      "sampleSize": 130919,
+      "sex": "female"
+    },
+    "fn": "dotsPercentile"
   }
 ]

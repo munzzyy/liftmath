@@ -7,7 +7,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { assertParity } from "./assert-parity.mjs";
-import { score } from "../../web/js/math/strength-scores.js";
+import { score, dotsPercentile } from "../../web/js/math/strength-scores.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const fixtures = JSON.parse(
@@ -16,10 +16,16 @@ const fixtures = JSON.parse(
 
 for (const [i, fixture] of fixtures.entries()) {
   test(`strength-scores #${i}: ${fixture.fn}(${JSON.stringify(fixture.args)})`, () => {
-    if (fixture.fn !== "score") {
-      throw new Error(`unknown fixture fn ${fixture.fn}`);
+    if (fixture.fn === "score") {
+      const actual = score(fixture.args.totalKg, fixture.args.bodyweightKg, fixture.args.sex);
+      assertParity(actual, fixture.expected);
+      return;
     }
-    const actual = score(fixture.args.totalKg, fixture.args.bodyweightKg, fixture.args.sex);
-    assertParity(actual, fixture.expected);
+    if (fixture.fn === "dotsPercentile") {
+      const { dots, sex, raw } = fixture.args;
+      assertParity(dotsPercentile(dots, sex, raw), fixture.expected);
+      return;
+    }
+    throw new Error(`unknown fixture fn ${fixture.fn}`);
   });
 }

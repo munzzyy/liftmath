@@ -142,6 +142,20 @@ def test_standards_text(capsys):
     assert code == 0
     assert "Wilks (2020)" in out
     assert "IPF GL points" in out
+    assert "Where you stand" in out
+    assert "raw male lifters" in out
+
+
+def test_standards_equipped_flag_changes_the_comparison_group(capsys):
+    _, out_raw, _ = run(capsys, "standards", "--total", "1200", "--bodyweight", "200",
+                        "--sex", "male", "--json")
+    _, out_equipped, _ = run(capsys, "standards", "--total", "1200", "--bodyweight", "200",
+                             "--sex", "male", "--equipped", "--json")
+    raw = json.loads(out_raw)["where_you_stand"]
+    equipped = json.loads(out_equipped)["where_you_stand"]
+    assert raw["raw"] is True
+    assert equipped["raw"] is False
+    assert raw["sample_size"] != equipped["sample_size"]
 
 
 def test_standards_json_kg(capsys):
@@ -151,6 +165,8 @@ def test_standards_json_kg(capsys):
     data = json.loads(out)
     assert data["bodyweight_kg"] == pytest.approx(90.0)
     assert data["wilks"] == pytest.approx(383.498, abs=1e-2)
+    assert "where_you_stand" in data
+    assert data["where_you_stand"]["sex"] == "male"
 
 
 def test_standards_lb_converts_to_kg(capsys):

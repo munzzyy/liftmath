@@ -6,7 +6,7 @@ import { estimateOneRm, percentageTable, HIGH_REP_THRESHOLD } from "./math/one-r
 import { computePlateStack } from "./math/plate-loading.js";
 import { warmupRamp } from "./math/warmup.js";
 import { parseInventorySpec, loadPlatesFromInventory } from "./math/plate-inventory.js";
-import { score } from "./math/strength-scores.js";
+import { score, dotsPercentile } from "./math/strength-scores.js";
 import {
   PL_CLASSES, compareValue, formatSeconds, parseMark, percentOfRecord, recordsAsOf,
   searchRecords, weightClassFor,
@@ -657,6 +657,13 @@ const selectScoreSex = wireChipGroup("score-sex-group", "sex", (value) => {
   updateHashForActiveTab();
 });
 
+let scoreEquip = "raw";
+const selectScoreEquip = wireChipGroup("score-equip-group", "equip", (value) => {
+  scoreEquip = value;
+  writeStored(prefKey("score-equip"), value);
+  renderScore();
+});
+
 function renderScore() {
   const resultsEl = $("score-results");
   const totalRaw = parseFloat($("score-total").value);
@@ -671,8 +678,10 @@ function renderScore() {
   const bodyweightKg = fromUnit(bwRaw, unit);
 
   let s;
+  let standing;
   try {
     s = score(totalKg, bodyweightKg, scoreSex);
+    standing = dotsPercentile(s.dots, scoreSex, scoreEquip === "raw");
   } catch (err) {
     resultsEl.innerHTML = `<p class="notice notice-warn">${escapeHtml(err.message)}</p>`;
     return;
@@ -684,10 +693,13 @@ function renderScore() {
     ["IPF GL", s.ipfGl],
   ];
 
+  const sexWord = scoreSex === "male" ? "men" : "women";
   let html = `<div class="result-hero">
     <p class="result-label">Wilks (2020)</p>
     <p class="result-value">${fmt(s.wilks)}</p>
   </div>
+  <p class="hint">Higher DOTS than ${standing.percentile}% of ${scoreEquip} ${sexWord} in
+    OpenPowerlifting (${standing.sampleSize.toLocaleString()} lifters, as of ${standing.asOf}).</p>
   <table class="result-table"><thead><tr><th>Formula</th><th>Score</th></tr></thead><tbody>`;
   for (const [label, value] of rows) {
     html += `<tr><td>${label}</td><td class="num">${fmt(value)}</td></tr>`;
@@ -1257,6 +1269,7 @@ function restoreSetup() {
     unit: readStored(prefKey("unit")),
     platesPreset: readStored(prefKey("plates-preset")),
     scoreSex: readStored(prefKey("score-sex")),
+    scoreEquip: readStored(prefKey("score-equip")),
     recordsSex: readStored(prefKey("records-sex")),
     tab: readStored(prefKey("tab")),
     fields: PERSISTED_FIELDS.map((id) => [id, readStored(fieldKey(id))]),
@@ -1273,6 +1286,7 @@ function restoreSetup() {
   // means, and the sex chip refills the weight-class select.
   selectPlatesPreset(saved.platesPreset);
   selectScoreSex(saved.scoreSex);
+  selectScoreEquip(saved.scoreEquip);
   selectRecordsSex(saved.recordsSex);
 
   for (const [id, value] of saved.fields) {

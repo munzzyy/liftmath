@@ -62,6 +62,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -177,6 +178,69 @@ def compute_powerlifting(csv_path: Path) -> list[dict]:
                                  r["cls"], r["lift"]))
 
 
+def compute_dots_percentiles(csv_path: Path) -> dict:
+    """Best-DOTS-per-lifter percentile breakpoints, split by sex and raw/equipped.
+
+    Same source data and row filters as compute_powerlifting (Sanctioned=Yes,
+    Place != DD), narrowed to full-power (Event=="SBD") totals with a valid
+    Dots score. "Raw" is Equipment=="Raw"; "equipped" lumps Wraps/Single-ply/
+    Multi-ply together - a coarser split than the 4-way equipment filter
+    elsewhere in this codebase, because a 2-way split is what a percentile
+    comparison on the Score tab actually needs. Each lifter (by Name, same
+    "#2"-suffix handling as compute_powerlifting) counts once per group, at
+    their best total in it.
+
+    Stores one value per integer percentile 1-99 (nearest-rank method: the
+    value such that that percentage of the group's lifters total AT OR BELOW
+    it), not the raw per-lifter list - the raw list would be tens of
+    thousands of floats; 99 breakpoints x 2 sexes x 2 categories is under
+    a hundred numbers per group and reads back at the same lookup meaning.
+    """
+    best_per_lifter: dict[tuple[str, str, str], float] = {}
+
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            if row["Sanctioned"] != "Yes" or row["Place"] == "DD":
+                continue
+            if row["Event"] != "SBD":
+                continue
+            sex = row["Sex"]
+            if sex not in ("M", "F"):
+                continue
+            if row["Equipment"] == "Raw":
+                category = "raw"
+            elif row["Equipment"] in ("Wraps", "Single-ply", "Multi-ply"):
+                category = "equipped"
+            else:
+                continue
+            dots = _num(row["Dots"])
+            if dots is None or dots <= 0:
+                continue
+            name = re.sub(r" #\d+$", "", row["Name"])
+            key = (name, sex, category)
+            if dots > best_per_lifter.get(key, 0.0):
+                best_per_lifter[key] = dots
+
+    groups: dict[tuple[str, str], list[float]] = {
+        ("M", "raw"): [], ("M", "equipped"): [], ("F", "raw"): [], ("F", "equipped"): [],
+    }
+    for (_name, sex, category), dots in best_per_lifter.items():
+        groups[(sex, category)].append(dots)
+
+    percentiles: dict[str, dict] = {}
+    for sex in ("M", "F"):
+        percentiles[sex] = {}
+        for category in ("raw", "equipped"):
+            values = sorted(groups[(sex, category)])
+            n = len(values)
+            breakpoints = [
+                values[max(0, min(n - 1, math.ceil(p / 100 * n) - 1))] if n else 0.0
+                for p in range(1, 100)
+            ]
+            percentiles[sex][category] = {"n": n, "breakpoints": breakpoints}
+    return percentiles
+
+
 def load_curated(path: Path, extra_required: tuple[str, ...] = ()) -> list[dict]:
     if not path.exists():
         print(f"note: {path.relative_to(REPO_ROOT)} not found - skipping that layer",
@@ -193,7 +257,7 @@ def load_curated(path: Path, extra_required: tuple[str, ...] = ()) -> list[dict]
     return curated["records"]
 
 
-def emit(records: list[dict], as_of: str) -> None:
+def emit(records: list[dict], as_of: str, dots_percentiles: dict) -> None:
     dataset = {
         "as_of": as_of,
         "attribution": "Powerlifting records computed from the OpenPowerlifting project's "
@@ -201,6 +265,7 @@ def emit(records: list[dict], as_of: str) -> None:
                        "https://gitlab.com/openpowerlifting/opl-data). Strongman, grip, and "
                        "track & field records hand-curated with per-entry citations.",
         "records": records,
+        "dots_percentiles": dots_percentiles,
     }
     body = json.dumps(dataset, ensure_ascii=False, indent=1)
 
@@ -240,7 +305,8 @@ def main() -> int:
     records = (compute_powerlifting(csv_path)
                + load_curated(CURATED)
                + load_curated(TRACK, extra_required=("level", "direction", "display")))
-    emit(records, m.group(1))
+    dots_percentiles = compute_dots_percentiles(csv_path)
+    emit(records, m.group(1), dots_percentiles)
     return 0
 
 

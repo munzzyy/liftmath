@@ -254,6 +254,17 @@ def gen_strength_scores() -> list[dict]:
             "args": {"totalKg": total, "bodyweightKg": bw, "sex": sex},
             "expected": dump(standards.score(total, bw, sex)),
         })
+    for dots, sex, raw in [
+        (200, "male", True), (400, "male", True), (450, "male", False),
+        (250, "female", True), (350, "female", False),
+        (0.01, "male", True),  # below the 1st percentile
+        (1e6, "female", True),  # above the 99th percentile
+    ]:
+        cases.append({
+            "fn": "dotsPercentile",
+            "args": {"dots": dots, "sex": sex, "raw": raw},
+            "expected": dump(standards.dots_percentile(dots, sex, raw=raw)),
+        })
     return cases
 
 

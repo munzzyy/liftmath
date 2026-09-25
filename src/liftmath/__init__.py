@@ -57,7 +57,9 @@ from liftmath.records import (
     weight_class_for,
 )
 from liftmath.standards import (
+    DotsPercentile,
     StrengthScore,
+    dots_percentile,
     dots_score,
     ipf_gl_points,
     score,
@@ -80,6 +82,8 @@ __all__ = [
     "WarmupSet",
     "score",
     "StrengthScore",
+    "dots_percentile",
+    "DotsPercentile",
     "search_records",
     "Record",
     "percent_of_record",

@@ -196,6 +196,28 @@ test("the my-plates preset reveals the inventory fields and uses them", async ()
   assert.match(app.text("plates-results"), /Short/);
 });
 
+test("the score result shows where the DOTS stands against OpenPowerlifting", async () => {
+  const app = await loadApp();
+  app.$("tab-btn-score").click();
+  const html = app.text("score-results");
+  assert.match(html, /Higher DOTS than \d+% of raw men in/);
+  assert.match(html, /OpenPowerlifting/);
+});
+
+test("switching to equipped changes the percentile comparison group", async () => {
+  const app = await loadApp();
+  app.$("tab-btn-score").click();
+  app.type("score-total", 1200);
+  const percentIn = (html) => Number(/Higher DOTS than (\d+)%/.exec(html)[1]);
+  const rawPercentile = percentIn(app.text("score-results"));
+  app.chip("score-equip-group", "equip", "equipped").click();
+  const equippedHtml = app.text("score-results");
+  assert.match(equippedHtml, /equipped men/);
+  // Raw and equipped are genuinely different sample populations in the
+  // bundled data, so the same DOTS score lands at a different percentile.
+  assert.notEqual(percentIn(equippedHtml), rawPercentile);
+});
+
 test("picking a tab shows that panel and hides the rest", async () => {
   const app = await loadApp();
   assert.equal(app.$("tool-onerm").hidden, false);

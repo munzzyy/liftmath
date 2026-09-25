@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Records snapshot refreshed from OpenPowerlifting (2026-07-11 -> 2026-09-19).
+- `standards`/`score` gets a "where you stand" line: how a DOTS score compares to
+  best-DOTS-per-lifter in OpenPowerlifting, split by sex and raw/equipped (`--equipped` on the
+  CLI, a Raw/Equipped toggle on the web Score tab). Backed by a 99-breakpoint percentile table
+  per group, generated alongside the records snapshot, not the full per-lifter distribution.
 - Web: first run with no saved unit choice now defaults to kg, except lb in the US, Liberia,
   and Myanmar (read from `navigator.language`'s region).
 - Web: deep links - the URL hash reflects the active tab and its inputs for 1RM, Plates, Score

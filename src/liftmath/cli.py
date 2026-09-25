@@ -24,7 +24,7 @@ import os
 import sys
 
 from liftmath import __version__
-from liftmath._serialize import to_json
+from liftmath._serialize import to_dict, to_json
 from liftmath.convert import KG_PER_LB, convert_weight
 from liftmath.convert import lbs_to_kg as _lbs_to_kg
 from liftmath.imports import WorkoutSet, e1rm_trend, parse_hevy_csv, parse_strong_csv, weekly_tonnage
@@ -43,6 +43,7 @@ from liftmath.records import (
     records_as_of,
     search_records,
 )
+from liftmath.standards import dots_percentile
 from liftmath.standards import score as strength_score
 
 
@@ -178,12 +179,16 @@ def cmd_standards(args: argparse.Namespace) -> int:
         bodyweight_kg = _lbs_to_kg(args.bodyweight) if args.unit == "lb" else args.bodyweight
         total_kg = _lbs_to_kg(args.total) if args.unit == "lb" else args.total
         result = strength_score(total_kg, bodyweight_kg, args.sex)
+        standing = dots_percentile(result.dots, args.sex, raw=not args.equipped)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
 
     if args.json:
-        print(to_json(result))
+        # Flattened, not nested under a "score" key: existing callers already
+        # read wilks/dots/etc off the top level, and where_you_stand is new
+        # to keep that contract rather than break it.
+        print(to_json({**to_dict(result), "where_you_stand": to_dict(standing)}))
         return 0
 
     print(f"Relative-strength scores - {args.total:g}{args.unit} total @ {args.bodyweight:g}{args.unit} "
@@ -196,6 +201,10 @@ def cmd_standards(args: argparse.Namespace) -> int:
     print(f"  DOTS              {result.dots:7.2f}")
     print(f"  IPF GL points     {result.ipf_gl:7.2f}")
     print("-" * 40)
+    equip_word = "equipped" if args.equipped else "raw"
+    print(f"  Where you stand: higher DOTS than {standing.percentile}% of {equip_word} "
+          f"{args.sex} lifters in OpenPowerlifting ({standing.sample_size:,}, as of "
+          f"{standing.as_of}).")
     print("IPF GL uses classic (raw) powerlifting coefficients only. All four formulas are fit")
     print("to different samples and disagree slightly, especially at the extremes of the")
     print("bodyweight range - treat them as independent opinions, not a single ground truth.")
@@ -490,6 +499,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--bodyweight", type=float, required=True)
     s.add_argument("--sex", required=True, choices=["male", "female"])
     s.add_argument("--unit", default="lb", choices=["lb", "kg"])
+    s.add_argument("--equipped", action="store_true",
+                   help="compare against equipped (wraps/single-ply/multi-ply) lifters "
+                        "instead of raw for the 'where you stand' percentile")
     s.set_defaults(func=cmd_standards)
 
     s = sub.add_parser("records",

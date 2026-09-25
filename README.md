@@ -170,6 +170,7 @@ Relative-strength scores - 1200lb total @ 200lb bodyweight (male):
   DOTS               350.55
   IPF GL points       72.08
 ----------------------------------------
+  Where you stand: higher DOTS than 48% of raw male lifters in OpenPowerlifting (276,025, as of 2026-09-19).
 IPF GL uses classic (raw) powerlifting coefficients only. All four formulas are fit
 to different samples and disagree slightly, especially at the extremes of the
 bodyweight range - treat them as independent opinions, not a single ground truth.
@@ -181,6 +182,13 @@ federation formulas fit to real competition samples), not evidence in the RCT se
 All four are fit to different samples and disagree slightly, especially at the extremes of the
 bodyweight range. Treat them as independent opinions, not one ground truth.
 
+"Where you stand" (add `--equipped` to compare against equipped lifters instead of raw) is a
+percentile lookup against best-DOTS-per-lifter in the same OpenPowerlifting snapshot, bucketed
+into 99 percentile breakpoints per sex/equipment group rather than shipping the full per-lifter
+list - see `tools/build_records.py`'s `compute_dots_percentiles` for the row filters and why a
+2-way raw/equipped split, not the 4-way equipment filter used elsewhere in this codebase. The web
+Score tab shows the same line, with a Raw/Equipped toggle.
+
 ### Records
 
 World records, bundled as a dated snapshot so lookups work offline like everything else here.
@@ -191,7 +199,7 @@ anywhere, so those records are hand-curated, each entry carrying its own citatio
 
 ```
 $ liftmath records --sport powerlifting --lift deadlift --sex male --bodyweight 220 --equip raw --compare 500
-Records matching your filters (snapshot of 2026-07-11):
+Records matching your filters (snapshot of 2026-09-19):
   Powerlifting rows are computed from the OpenPowerlifting database - all-time =
   any sanctioned federation, tested = drug-tested meets only. Strongman, grip, and
   track & field are curated with per-entry citations (--json carries the sources).

@@ -12,3 +12,4 @@ venv/
 htmlcov/
 .mypy_cache/
 .claude/
+.scratch/
