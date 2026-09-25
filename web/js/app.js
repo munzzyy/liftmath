@@ -1340,6 +1340,11 @@ renderAll();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
+    // Silent by design: the Android wrapper serves this from
+    // appassets.androidplatform.net, where SW registration can legitimately
+    // fail (or just not matter - the wrapper's own asset loader is already
+    // the offline story there). The web PWA works the same either way; only
+    // the offline-caching behavior differs.
     navigator.serviceWorker.register("sw.js").catch(() => {});
   });
 }

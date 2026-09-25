@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Verified the web app for the Android WebView wrapper: works fully offline with no service
+  worker, from a non-root origin (tested by serving it from a nested path), with a plain
+  browser's localStorage disabled. Fixed the manifest `id` (was an absolute `/liftmath/` path,
+  which would resolve against the wrapper's own origin instead of matching its scope).
 - Records snapshot refreshed from OpenPowerlifting (2026-07-11 -> 2026-09-19).
 - `standards`/`score` gets a "where you stand" line: how a DOTS score compares to
   best-DOTS-per-lifter in OpenPowerlifting, split by sex and raw/equipped (`--equipped` on the

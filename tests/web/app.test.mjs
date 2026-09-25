@@ -464,3 +464,20 @@ test("a browser that refuses localStorage still runs", async () => {
   app.$("tab-btn-plates").click();
   assert.equal(app.$("tool-plates").hidden, false);
 });
+
+test("a browser that refuses localStorage can still run the rest timer", async () => {
+  const app = await loadApp({ storage: makeStorage({}, "throwing") });
+  app.chip("timer-preset-group", "seconds", "60").click();
+  assert.equal(app.$("timer-display").textContent, "1:00");
+  app.$("timer-stop-btn").click();
+  assert.equal(app.$("timer-picker").hidden, false);
+});
+
+test("a browser that refuses localStorage still toggles theme and score equip", async () => {
+  const app = await loadApp({ storage: makeStorage({}, "throwing") });
+  app.$("theme-toggle-btn").click();
+  assert.equal(app.document.documentElement.getAttribute("data-theme"), "light");
+  app.$("tab-btn-score").click();
+  app.chip("score-equip-group", "equip", "equipped").click();
+  assert.match(app.text("score-results"), /equipped men/);
+});
