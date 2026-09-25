@@ -8,7 +8,7 @@
 // No CDN, no external requests exist to cache (there aren't any) - every URL
 // below is same-origin, matching the zero-dependency constraint.
 
-const CACHE_NAME = "liftmath-v2.3.12";
+const CACHE_NAME = "liftmath-v2.5.0";
 
 const PRECACHE_URLS = [
   "./",
@@ -34,6 +34,8 @@ const PRECACHE_URLS = [
   "./js/ui/units.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
+  "./icons/icon-192-maskable.png",
+  "./icons/icon-512-maskable.png",
 ];
 
 self.addEventListener("install", (event) => {

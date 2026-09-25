@@ -108,6 +108,22 @@ def _draw_icon(size: int) -> list[tuple[int, int, int]]:
     return pixels
 
 
+def _draw_icon_maskable(size: int) -> list[tuple[int, int, int]]:
+    """Same glyph as _draw_icon, but full-bleed (no rounded corners - the OS
+    applies its own mask shape) and scaled into the ~80%-diameter "safe zone"
+    maskable icons are specced to keep content within, so an aggressive
+    circular or squircle crop doesn't clip the barbell.
+    """
+    pixels = [BG] * (size * size)
+    inner = _draw_icon(int(size * 0.6))
+    inner_size = int(size * 0.6)
+    offset = (size - inner_size) // 2
+    for y in range(inner_size):
+        for x in range(inner_size):
+            pixels[(y + offset) * size + (x + offset)] = inner[y * inner_size + x]
+    return pixels
+
+
 def main() -> int:
     ICONS_DIR.mkdir(parents=True, exist_ok=True)
     for size in SIZES:
@@ -115,6 +131,11 @@ def main() -> int:
         out_path = ICONS_DIR / f"icon-{size}.png"
         _write_png(out_path, size, size, pixels)
         print(f"wrote {out_path.relative_to(REPO_ROOT)} ({size}x{size})")
+
+        maskable_pixels = _draw_icon_maskable(size)
+        maskable_path = ICONS_DIR / f"icon-{size}-maskable.png"
+        _write_png(maskable_path, size, size, maskable_pixels)
+        print(f"wrote {maskable_path.relative_to(REPO_ROOT)} ({size}x{size}, maskable)")
     return 0
 
 

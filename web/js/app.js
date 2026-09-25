@@ -467,7 +467,9 @@ function renderOneRm() {
     for (const row of table) {
       const repsTxt = row.repsCapped ? `${row.reps}+` : `${row.reps}`;
       const note = row.exact ? "" : " title=\"closest achievable\"";
-      html += `<tr class="onerm-percent-row" data-load="${row.load}"${note}>` +
+      const label = `Load ${fmt(row.load)} ${unit} on Plates`;
+      html += `<tr class="onerm-percent-row" data-load="${row.load}" tabindex="0" role="button" ` +
+        `aria-label="${escapeHtml(label)}"${note}>` +
         `<td>${row.percent}%</td><td class="num">${fmt(row.load)} ${unit}</td><td class="num">~${repsTxt}</td></tr>`;
     }
     html += `</tbody></table>`;
@@ -477,7 +479,14 @@ function renderOneRm() {
 
   if (table) {
     resultsEl.querySelectorAll(".onerm-percent-row").forEach((row) => {
-      row.addEventListener("click", () => sendLoadToPlates(parseFloat(row.dataset.load)));
+      const activate = () => sendLoadToPlates(parseFloat(row.dataset.load));
+      row.addEventListener("click", activate);
+      row.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          activate();
+        }
+      });
     });
   }
 }

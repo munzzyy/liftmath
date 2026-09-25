@@ -442,6 +442,20 @@ table.result-table td.num {
   font-weight: 600;
 }
 
+.onerm-percent-row {
+  cursor: pointer;
+}
+
+.onerm-percent-row:hover,
+.onerm-percent-row:focus-visible {
+  background: var(--color-surface-alt);
+}
+
+.onerm-percent-row:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
 /* ---------- barbell ---------- */
 
 .barbell-wrap {

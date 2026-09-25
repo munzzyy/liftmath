@@ -1,6 +1,6 @@
 # liftmath
 
-**A simple gym calculator. Three things you actually reach for mid-workout, done properly instead of eyeballed.**
+**A gym calculator that works offline, on your phone, with no account. Open it, use it, close it.**
 
 [![CI](https://github.com/munzzyy/liftmath/actions/workflows/ci.yml/badge.svg)](https://github.com/munzzyy/liftmath/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/liftmath)](https://pypi.org/project/liftmath/)
@@ -11,27 +11,30 @@
   <a href="https://munzzyy.github.io/liftmath/"><img src="docs/media/app-dark.png" alt="liftmath web app: a 1RM estimate, a plate calculator with a barbell that loads itself, and Wilks/DOTS/IPF strength scores" width="380"></a>
 </p>
 
-Three tools:
+**https://munzzyy.github.io/liftmath/** - nothing to install, works offline once loaded, no
+account, no ads, no tracking. Everything below runs the same math as a Python library and a
+command-line tool, for people who'd rather script it.
 
-- **1RM**: estimate a one-rep max from any set you just did.
-- **Plates**: what to hang on the bar for a target weight.
-- **Strength score**: Wilks, DOTS, and IPF GL points, so you can compare across bodyweights.
+Four tools:
 
-Plus one lookup: **Records** - records for powerlifting, strongman, grip sport, and track &
-field (world, US collegiate, and US high-school levels), searchable by lift or event, sex,
-weight class, equipment, and level, with your own lift or mark shown as a percentage of the
-record.
+- **1RM**: estimate a one-rep max from a set, with optional RPE/RIR, plus a percentage table
+  down to 50% with loads rounded to your plates.
+- **Plates**: what to hang on the bar for a target weight, plus a warm-up ramp from the empty
+  bar up to it.
+- **Strength score**: Wilks, DOTS, and IPF GL points to compare across bodyweights, plus where
+  that DOTS score stands against OpenPowerlifting.
+- **Records**: powerlifting, strongman, grip sport, and track & field (world, US collegiate, US
+  high-school), searchable by lift or event, sex, weight class, equipment, and level, with your
+  own lift or mark shown as a percentage of the record.
 
-That's it. It used to do a lot more; it does less now, on purpose. Every number traces back to a
-named formula or a cited record, and you can read the whole thing in a sitting. There's also a
-small lb/kg converter (`convert`) bolted on, since plates and strength score already needed exact
-unit conversion internally, and an `import` command that reads your own history out of a Strong or
-Hevy export and runs it through the 1RM math above - neither is a fourth tool, they're utilities
-that feed the ones already here.
-
-The fastest way in is the web app: nothing to install, works on your phone at the gym, offline,
-and the barbell loads itself as you type: **https://munzzyy.github.io/liftmath/**. Everything below
-is the same math for people who'd rather script it.
+The web app also has a rest timer, a Share button that builds a deep link back to your exact
+setup, and it remembers your unit/setup between visits. It used to do a lot more tools than this;
+it does fewer now, on purpose - every number traces back to a named formula or a cited record,
+and you can read the whole thing in a sitting. There's also a small lb/kg converter (`convert`)
+bolted on, since plates and strength score already needed exact unit conversion internally, and
+an `import` command that reads your own history out of a Strong or Hevy export and runs it
+through the 1RM math above - neither is a fifth tool, they're utilities that feed the ones
+already here.
 
 The web app also has a rest timer (the header button): 60/90/120/180/300s presets or a custom
 value, a countdown ring, a vibrate + beep at zero, and it survives switching tabs or reloading -

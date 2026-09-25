@@ -80,6 +80,17 @@ test("tapping a percentage row sends that load to Plates and switches tabs", asy
   assert.equal(app.$("plates-target").value, row.dataset.load);
 });
 
+test("a percentage row is keyboard-focusable and activates on Enter", async () => {
+  const app = await loadApp();
+  const row = app.document.querySelector(".onerm-percent-row");
+  assert.equal(row.getAttribute("tabindex"), "0");
+  assert.equal(row.getAttribute("role"), "button");
+  const keydown = new Event("keydown", { bubbles: true, cancelable: true });
+  keydown.key = "Enter";
+  row.dispatchEvent(keydown);
+  assert.equal(app.$("tool-plates").hidden, false);
+});
+
 test("a stepper tap steps the field and re-renders every panel", async () => {
   const app = await loadApp();
   app.$("onerm-weight-inc").click();
