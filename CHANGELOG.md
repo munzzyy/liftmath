@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Web: deep links - the URL hash reflects the active tab and its inputs for 1RM, Plates, Score
+  and Convert, so a shared link restores the exact setup. A link wins over both the localStorage
+  restore and the existing `?tab=` shortcut. New Share header button builds that link and hands
+  it to the native bridge, then the Web Share API, then a clipboard-copy fallback.
 - Web: a rest timer behind a header button - 60/90/120/180/300s presets or a custom value, a
   countdown ring, vibrate + a WebAudio beep at zero, and a Screen Wake Lock while running where
   the browser supports it. Driven by a stored end timestamp so backgrounding the tab can't drift

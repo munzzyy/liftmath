@@ -17,6 +17,7 @@ import { wireStepper, minFromInput } from "./ui/steppers.js";
 import { fromUnit, toUnit, convertDisplayValue, plateTargetUnit } from "./ui/units.js";
 import { notifyNative } from "./native-bridge.js";
 import { remainingMs, formatCountdown, ringFraction, STORAGE_KEY as TIMER_KEY } from "./timer.js";
+import { buildHash, parseHash, toolForTab } from "./deeplink.js";
 
 function $(id) {
   return document.getElementById(id);
@@ -243,6 +244,72 @@ function selectTab(id) {
     btn.tabIndex = active ? 0 : -1;
     $(`tool-${t}`).hidden = !active;
   }
+  updateHashForActiveTab();
+}
+
+/** The inputs deep-linking round-trips for a given tab. Only 1RM, Plates,
+ * Score and Convert are simple enough to encode - see deeplink.js. */
+function paramsForTab(tab) {
+  switch (tab) {
+    case "onerm": {
+      const params = { w: $("onerm-weight").value, r: $("onerm-reps").value, u: unit };
+      const mode = onermEffortMode();
+      if (mode === "rpe") params.rpe = $("onerm-effort-value").value;
+      else if (mode === "rir") params.rir = $("onerm-effort-value").value;
+      return params;
+    }
+    case "plates":
+      return { t: $("plates-target").value, u: unit };
+    case "score":
+      return { t: $("score-total").value, bw: $("score-bodyweight").value, sex: scoreSex, u: unit };
+    case "convert":
+      return { w: $("convert-weight").value, u: unit };
+    default:
+      return {};
+  }
+}
+
+/** Reflect the active tab and its inputs into location.hash, via
+ * replaceState so typing doesn't spam browser history. */
+function updateHashForActiveTab() {
+  const tab = TABS.find((t) => !$(`tool-${t}`).hidden);
+  const tool = toolForTab(tab);
+  if (!tool) return;
+  const hash = buildHash(tool, paramsForTab(tab));
+  if (location.hash !== hash) history.replaceState(null, "", hash);
+}
+
+/** Apply a parsed deep link's params onto the matching tab's fields. Missing
+ * params are left as whatever's already on screen (a default, or a
+ * localStorage-restored value) rather than blanked. */
+function applyDeepLinkParams(tab, params) {
+  if (params.u === "kg" || params.u === "lb") setUnit(params.u);
+  switch (tab) {
+    case "onerm":
+      if (params.w) $("onerm-weight").value = params.w;
+      if (params.r) $("onerm-reps").value = params.r;
+      if (params.rpe) {
+        $("onerm-effort-mode").value = "rpe";
+        $("onerm-effort-value").value = params.rpe;
+        updateOnermEffortInput();
+      } else if (params.rir) {
+        $("onerm-effort-mode").value = "rir";
+        $("onerm-effort-value").value = params.rir;
+        updateOnermEffortInput();
+      }
+      break;
+    case "plates":
+      if (params.t) $("plates-target").value = params.t;
+      break;
+    case "score":
+      if (params.t) $("score-total").value = params.t;
+      if (params.bw) $("score-bodyweight").value = params.bw;
+      if (params.sex === "male" || params.sex === "female") selectScoreSex(params.sex);
+      break;
+    case "convert":
+      if (params.w) $("convert-weight").value = params.w;
+      break;
+  }
 }
 
 function chooseTab(id) {
@@ -423,10 +490,13 @@ function sendLoadToPlates(load) {
   selectTab("plates");
 }
 
-["onerm-weight", "onerm-reps", "onerm-effort-value"].forEach((id) => $(id).addEventListener("input", renderOneRm));
+["onerm-weight", "onerm-reps", "onerm-effort-value"].forEach((id) =>
+  $(id).addEventListener("input", () => { renderOneRm(); updateHashForActiveTab(); })
+);
 $("onerm-effort-mode").addEventListener("change", () => {
   updateOnermEffortInput();
   renderOneRm();
+  updateHashForActiveTab();
 });
 
 // ---------------------------------------------------------------------------
@@ -571,7 +641,7 @@ $("plates-warmup-toggle").addEventListener("click", () => {
 });
 
 ["plates-target", "plates-inventory-bar", "plates-inventory-spec"].forEach((id) =>
-  $(id).addEventListener("input", renderPlates)
+  $(id).addEventListener("input", () => { renderPlates(); updateHashForActiveTab(); })
 );
 
 // ---------------------------------------------------------------------------
@@ -583,6 +653,7 @@ const selectScoreSex = wireChipGroup("score-sex-group", "sex", (value) => {
   scoreSex = value;
   writeStored(prefKey("score-sex"), value);
   renderScore();
+  updateHashForActiveTab();
 });
 
 function renderScore() {
@@ -625,7 +696,9 @@ function renderScore() {
   resultsEl.innerHTML = html;
 }
 
-["score-total", "score-bodyweight"].forEach((id) => $(id).addEventListener("input", renderScore));
+["score-total", "score-bodyweight"].forEach((id) =>
+  $(id).addEventListener("input", () => { renderScore(); updateHashForActiveTab(); })
+);
 
 // ---------------------------------------------------------------------------
 // World records
@@ -973,7 +1046,7 @@ function renderConvert() {
   </div>`;
 }
 
-$("convert-weight").addEventListener("input", renderConvert);
+$("convert-weight").addEventListener("input", () => { renderConvert(); updateHashForActiveTab(); });
 
 // ---------------------------------------------------------------------------
 // Rest timer: driven by a stored end timestamp (see timer.js), not by
@@ -1104,6 +1177,49 @@ function restoreTimer() {
 }
 
 // ---------------------------------------------------------------------------
+// Share: the current tab + inputs as a deep link. Native wrapper first
+// (there's no navigator.share in a WebView), then the real Web Share API,
+// then a clipboard-copy fallback for a browser with neither.
+// ---------------------------------------------------------------------------
+
+function flashShareButton(label) {
+  const btn = $("share-btn");
+  const original = btn.textContent;
+  btn.textContent = label;
+  setTimeout(() => {
+    btn.textContent = original;
+  }, 1500);
+}
+
+async function shareCurrentState() {
+  updateHashForActiveTab();
+  const url = `${location.origin}${location.pathname}${location.hash}`;
+  notifyNative({ type: "share", text: url });
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "liftmath", url });
+    } catch {
+      // The native share sheet was cancelled or dismissed - not an error.
+    }
+    return;
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(url);
+      flashShareButton("Copied!");
+    } catch {
+      // Clipboard permission denied - the NativeApp postMessage above
+      // already covered the wrapper case, and there's nothing more a plain
+      // browser without clipboard access can be told to do silently.
+    }
+  }
+}
+
+$("share-btn").addEventListener("click", shareCurrentState);
+
+// ---------------------------------------------------------------------------
 // Init
 // ---------------------------------------------------------------------------
 
@@ -1114,6 +1230,7 @@ function renderAll() {
   renderRecords();
   renderTrack();
   renderConvert();
+  updateHashForActiveTab();
 }
 
 [
@@ -1164,6 +1281,13 @@ function restoreSetup() {
   if (TABS.includes(saved.tab)) selectTab(saved.tab);
 }
 
+// Read the incoming hash before anything below has a chance to overwrite it -
+// selectTab() re-derives location.hash from whatever tab it switches to
+// (including inside restoreSetup() and the ?tab= shortcut below), so reading
+// it any later would find an already-clobbered value instead of the link the
+// user actually arrived with.
+const incomingHash = location.hash;
+
 restoreSetup();
 restoreTimer();
 
@@ -1173,6 +1297,15 @@ restoreTimer();
 // selected for anything else, including no query string at all.
 const requestedTab = new URLSearchParams(location.search).get("tab");
 if (TABS.includes(requestedTab)) selectTab(requestedTab);
+
+// A #tool?params deep link wins over both the localStorage restore above and
+// the ?tab= shortcut - it's the most specific thing the user could have
+// arrived with.
+const deepLink = parseHash(incomingHash);
+if (deepLink) {
+  selectTab(deepLink.tab);
+  applyDeepLinkParams(deepLink.tab, deepLink.params);
+}
 
 renderAll();
 

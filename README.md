@@ -37,6 +37,12 @@ The web app also has a rest timer (the header button): 60/90/120/180/300s preset
 value, a countdown ring, a vibrate + beep at zero, and it survives switching tabs or reloading -
 it's driven by a stored end time, not a running count, so backgrounding the tab can't drift it.
 
+It's deep-linkable too: the URL hash reflects the active tab and its inputs (1RM, Plates, Score,
+Convert - Records' filters and Track's imported files aren't simple enough to encode), so a link
+someone sends you opens straight into their exact setup instead of the defaults. The Share button
+builds that link and hands it to whatever's available: the OS share sheet if there is one, a
+clipboard copy otherwise.
+
 Pure Python standard library. No dependencies, no network calls, no accounts. Use it as a library
 you import or a command you run.
 

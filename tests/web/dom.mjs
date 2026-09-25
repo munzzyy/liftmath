@@ -430,13 +430,18 @@ let loadCount = 0;
  * @param {object} [opts.storage] - localStorage stand-in (see makeStorage).
  * @param {string} [opts.search] - the page's query string, e.g. "?tab=plates".
  * @param {boolean} [opts.prefersLight] - what matchMedia reports.
+ * @param {string} [opts.hash] - the page's location.hash, e.g. "#plates?t=225&u=lb".
+ * @param {object} [opts.nativeApp] - a fake window.NativeApp ({postMessage(s)}), if any.
  */
-export async function loadApp({ storage = makeStorage(), search = "", prefersLight = false } = {}) {
+export async function loadApp({
+  storage = makeStorage(), search = "", prefersLight = false, hash = "", nativeApp = null,
+} = {}) {
   const document = new FakeDocument(readFileSync(INDEX_HTML, "utf8"));
   const mediaListeners = [];
   let systemPrefersLight = prefersLight;
   const window = {
     addEventListener() {},
+    NativeApp: nativeApp,
     matchMedia: () => ({
       get matches() {
         return systemPrefersLight;
@@ -447,13 +452,29 @@ export async function loadApp({ storage = makeStorage(), search = "", prefersLig
     }),
   };
 
+  const location = {
+    search,
+    hash,
+    origin: "https://example.test",
+    pathname: "/liftmath/",
+  };
+  const history = {
+    replaceState(_state, _title, url) {
+      location.hash = url.startsWith("#") ? url : "";
+    },
+  };
+  const clipboardWrites = [];
   const globals = {
     document,
     window,
     localStorage: storage,
-    location: { search },
+    location,
+    history,
     matchMedia: window.matchMedia,
-    navigator: { userAgent: "node" },
+    navigator: {
+      userAgent: "node",
+      clipboard: { writeText: (text) => (clipboardWrites.push(text), Promise.resolve()) },
+    },
   };
   for (const [name, value] of Object.entries(globals)) {
     try {
@@ -472,6 +493,8 @@ export async function loadApp({ storage = makeStorage(), search = "", prefersLig
   return {
     document,
     storage,
+    location,
+    clipboardWrites,
     $,
     /** The chip carrying data-<key>="<value>" inside a chip group. */
     chip(groupId, key, value) {

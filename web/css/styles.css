@@ -563,6 +563,13 @@ table.result-table td.num {
 
 /* ---------- rest timer ---------- */
 
+/* [hidden] has to win over the flex display below - an author rule beats the
+   UA stylesheet's [hidden] { display: none } at equal specificity, so
+   without this the sheet would render even while hidden was set. */
+.timer-sheet[hidden] {
+  display: none;
+}
+
 .timer-sheet {
   position: fixed;
   inset: 0;
@@ -634,4 +641,17 @@ table.result-table td.num {
   color: var(--color-ink);
   font-weight: 600;
   cursor: pointer;
+}
+
+/* Share added a third icon button to a header that only had room for two on
+   a narrow phone - shrink the padding/gap rather than let it scroll sideways. */
+@media (max-width: 400px) {
+  .header-controls {
+    gap: 0.3rem;
+  }
+
+  .icon-btn {
+    padding: 0 0.5rem;
+    font-size: 0.82rem;
+  }
 }

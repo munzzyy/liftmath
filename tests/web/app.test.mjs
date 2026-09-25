@@ -251,6 +251,84 @@ test("an explicit ?tab= beats the tab you left open", async () => {
   assert.equal(second.$("tool-records").hidden, true);
 });
 
+test("a #1rm deep link restores the tab and its inputs", async () => {
+  const app = await loadApp({ hash: "#1rm?w=315&r=3&u=kg" });
+  assert.equal(app.$("tool-onerm").hidden, false);
+  assert.equal(app.$("onerm-weight").value, "315");
+  assert.equal(app.$("onerm-reps").value, "3");
+  assert.equal(app.$("unit-kg").getAttribute("aria-pressed"), "true");
+});
+
+test("a deep link with rpe restores the effort mode too", async () => {
+  const app = await loadApp({ hash: "#1rm?w=225&r=5&rpe=8.5" });
+  assert.equal(app.$("onerm-effort-mode").value, "rpe");
+  assert.equal(app.$("onerm-effort-value").value, "8.5");
+  assert.equal(app.$("onerm-effort-value").hidden, false);
+});
+
+test("a deep link wins over both localStorage and ?tab=", async () => {
+  const first = await loadApp();
+  first.$("tab-btn-records").click();
+  const app = await loadApp({
+    storage: makeStorage(Object.fromEntries(first.storage.data)),
+    search: "?tab=convert",
+    hash: "#plates?t=405&u=lb",
+  });
+  assert.equal(app.$("tool-plates").hidden, false);
+  assert.equal(app.$("plates-target").value, "405");
+});
+
+test("editing an input updates location.hash to match", async () => {
+  const app = await loadApp();
+  app.type("onerm-weight", 200);
+  assert.match(app.location.hash, /^#1rm\?/);
+  assert.match(app.location.hash, /w=200/);
+});
+
+test("switching tabs updates location.hash to the new tab's tool", async () => {
+  const app = await loadApp();
+  app.$("tab-btn-convert").click();
+  assert.match(app.location.hash, /^#convert/);
+});
+
+const flushMicrotasks = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+test("the native bridge gets a theme message on load and on every theme change", async () => {
+  const posted = [];
+  const app = await loadApp({ nativeApp: { postMessage: (s) => posted.push(JSON.parse(s)) } });
+  assert.deepEqual(posted, [{ type: "theme", theme: "dark" }]);
+  app.$("theme-toggle-btn").click();
+  assert.deepEqual(posted, [{ type: "theme", theme: "dark" }, { type: "theme", theme: "light" }]);
+});
+
+test("the native bridge gets keepAwake on/off around a running timer", async () => {
+  const posted = [];
+  const app = await loadApp({ nativeApp: { postMessage: (s) => posted.push(JSON.parse(s)) } });
+  app.chip("timer-preset-group", "seconds", "60").click();
+  assert.ok(posted.some((m) => m.type === "keepAwake" && m.on === true));
+  app.$("timer-stop-btn").click();
+  assert.ok(posted.some((m) => m.type === "keepAwake" && m.on === false));
+});
+
+test("share copies the current deep link to the clipboard when there's no native app or Web Share", async () => {
+  const app = await loadApp();
+  app.type("onerm-weight", 315);
+  app.$("share-btn").click();
+  await flushMicrotasks();
+  assert.equal(app.clipboardWrites.length, 1);
+  assert.match(app.clipboardWrites[0], /w=315/);
+});
+
+test("share notifies the native bridge before anything else", async () => {
+  const posted = [];
+  const app = await loadApp({ nativeApp: { postMessage: (s) => posted.push(JSON.parse(s)) } });
+  app.$("share-btn").click();
+  await flushMicrotasks();
+  const shareMsg = posted.find((m) => m.type === "share");
+  assert.ok(shareMsg, "expected a share message to be posted");
+  assert.match(shareMsg.text, /^https:\/\/example\.test\/liftmath\/#1rm/);
+});
+
 test("the timer sheet opens and closes", async () => {
   const app = await loadApp();
   assert.equal(app.$("timer-sheet").hidden, true);
