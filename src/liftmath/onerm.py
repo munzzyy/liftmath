@@ -49,27 +49,27 @@ import math
 from dataclasses import dataclass, field
 
 
-def _epley(w: float, r: int) -> float:
+def _epley(w: float, r: float) -> float:
     return w * (1 + r / 30.0)
 
 
-def _brzycki(w: float, r: int) -> float:
+def _brzycki(w: float, r: float) -> float:
     return w * 36.0 / (37.0 - r) if r < 37 else float("nan")
 
 
-def _lombardi(w: float, r: int) -> float:
+def _lombardi(w: float, r: float) -> float:
     return w * (r ** 0.10)
 
 
-def _oconner(w: float, r: int) -> float:
+def _oconner(w: float, r: float) -> float:
     return w * (1 + 0.025 * r)
 
 
-def _lander(w: float, r: int) -> float:
+def _lander(w: float, r: float) -> float:
     return 100.0 * w / (101.3 - 2.67123 * r)
 
 
-def _mayhew(w: float, r: int) -> float:
+def _mayhew(w: float, r: float) -> float:
     return 100.0 * w / (52.2 + 41.9 * math.exp(-0.055 * r))
 
 

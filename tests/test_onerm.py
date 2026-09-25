@@ -148,3 +148,20 @@ def test_rpe_not_a_half_step_raises():
 def test_negative_rir_raises():
     with pytest.raises(ValueError):
         estimate_one_rm(225, 5, rir=-1)
+
+
+def test_fractional_effective_reps_above_threshold_drops_curvilinear():
+    # 11 reps at RPE 8.5 (1.5 RIR) -> 12.5 effective reps, just past the
+    # 12-rep cutoff, so the curvilinear formulas should still be dropped.
+    est = estimate_one_rm(100, 11, unit="lb", rpe=8.5)
+    assert est.effective_reps == pytest.approx(12.5)
+    assert est.high_rep_warning is True
+    assert "Brzycki" not in est.per_formula
+
+
+def test_fractional_effective_reps_at_threshold_keeps_curvilinear():
+    # 10.5 reps effective (exactly at the threshold, not above it) keeps them.
+    est = estimate_one_rm(100, 10, unit="lb", rir=2)
+    assert est.effective_reps == pytest.approx(12.0)
+    assert est.high_rep_warning is False
+    assert "Brzycki" in est.per_formula

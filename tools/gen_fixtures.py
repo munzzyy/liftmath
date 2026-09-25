@@ -96,6 +96,8 @@ def gen_one_rep_max() -> list[dict]:
         (315, 1, {"rpe": 10}),
         (315, 1, {"rpe": 9}),
         (100, 15, {"rir": 0}),
+        (100, 11, {"rpe": 8.5}),
+        (100, 10, {"rir": 2}),
     ]:
         cases.append({
             "fn": "estimateOneRm",
