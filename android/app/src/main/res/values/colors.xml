@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mirrors the web app's light theme (css/styles.css, prefers-color-scheme: light). -->
+    <color name="liftmath_bg">#f4f5f7</color>
+    <color name="ic_launcher_background">#101216</color>
+</resources>

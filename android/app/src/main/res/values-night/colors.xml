@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mirrors the web app's default dark theme (css/styles.css :root). -->
+    <color name="liftmath_bg">#101216</color>
+</resources>
