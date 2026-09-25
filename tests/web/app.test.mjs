@@ -371,14 +371,16 @@ test("share copies the current deep link to the clipboard when there's no native
   assert.match(app.clipboardWrites[0], /w=315/);
 });
 
-test("share notifies the native bridge before anything else", async () => {
+test("in the Android app, share hands the public link to the native sheet and nothing else", async () => {
   const posted = [];
   const app = await loadApp({ nativeApp: { postMessage: (s) => posted.push(JSON.parse(s)) } });
+  app.type("onerm-weight", 315);
   app.$("share-btn").click();
   await flushMicrotasks();
   const shareMsg = posted.find((m) => m.type === "share");
   assert.ok(shareMsg, "expected a share message to be posted");
-  assert.match(shareMsg.text, /^https:\/\/example\.test\/liftmath\/#1rm/);
+  assert.match(shareMsg.text, /^https:\/\/munzzyy\.github\.io\/liftmath\/#1rm\?.*w=315/);
+  assert.equal(app.clipboardWrites.length, 0);
 });
 
 test("the timer sheet opens and closes", async () => {

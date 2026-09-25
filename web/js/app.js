@@ -15,7 +15,7 @@ import { KG_PER_LB, convertWeight } from "./math/unit-convert.js";
 import { renderBarbellSvg, renderPlateLegend } from "./ui/svg-barbell.js";
 import { wireStepper, minFromInput } from "./ui/steppers.js";
 import { fromUnit, toUnit, convertDisplayValue, plateTargetUnit } from "./ui/units.js";
-import { notifyNative } from "./native-bridge.js";
+import { hasNativeApp, notifyNative } from "./native-bridge.js";
 import { remainingMs, formatCountdown, ringFraction, STORAGE_KEY as TIMER_KEY } from "./timer.js";
 import { buildHash, parseHash, toolForTab } from "./deeplink.js";
 import { localeDefaultUnit } from "./locale.js";
@@ -1213,10 +1213,16 @@ function flashShareButton(label) {
   }, 1500);
 }
 
+// The Android app serves this page from a private asset host, so a shared link has to point at the public site.
+const PUBLIC_URL = "https://munzzyy.github.io/liftmath/";
+
 async function shareCurrentState() {
   updateHashForActiveTab();
+  if (hasNativeApp()) {
+    notifyNative({ type: "share", text: `${PUBLIC_URL}${location.hash}` });
+    return;
+  }
   const url = `${location.origin}${location.pathname}${location.hash}`;
-  notifyNative({ type: "share", text: url });
 
   if (navigator.share) {
     try {
@@ -1232,9 +1238,7 @@ async function shareCurrentState() {
       await navigator.clipboard.writeText(url);
       flashShareButton("Copied!");
     } catch {
-      // Clipboard permission denied - the NativeApp postMessage above
-      // already covered the wrapper case, and there's nothing more a plain
-      // browser without clipboard access can be told to do silently.
+      // Clipboard permission denied: nothing more to do silently.
     }
   }
 }
