@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.5.0 - 2026-09-25
 
 - Verified the web app for the Android WebView wrapper: works fully offline with no service
   worker, from a non-root origin (tested by serving it from a nested path), with a plain
