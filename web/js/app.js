@@ -462,11 +462,11 @@ function renderOneRm() {
     table = null;
   }
   if (table) {
-    html += `<p class="hint">Tap a row to load that weight on Plates.</p>`;
+    html += `<p class="hint">Loads are rounded down to what your plates can make. Tap a row to load it on Plates.</p>`;
     html += `<table class="result-table" id="onerm-percent-table"><thead><tr><th>%</th><th>Load</th><th>~Reps</th></tr></thead><tbody>`;
     for (const row of table) {
       const repsTxt = row.repsCapped ? `${row.reps}+` : `${row.reps}`;
-      const note = row.exact ? "" : " title=\"closest achievable\"";
+      const note = row.exact ? "" : " title=\"rounded down to a loadable weight\"";
       const label = `Load ${fmt(row.load)} ${unit} on Plates`;
       html += `<tr class="onerm-percent-row" data-load="${row.load}" tabindex="0" role="button" ` +
         `aria-label="${escapeHtml(label)}"${note}>` +

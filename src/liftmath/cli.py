@@ -91,13 +91,12 @@ def cmd_1rm(args: argparse.Namespace) -> int:
             print("\n[!] Best accuracy is at <=8 reps; treat this as approximate.")
 
     if table is not None:
-        print(f"\nPercentages of {est.consensus:.1f}{args.unit}, load rounded to what your plates")
-        print("can actually load (default plate set), reps estimated via Epley's inversion:")
+        print(f"\nPercentages of {est.consensus:.1f}{args.unit}, each load rounded down to what your")
+        print("plates can load (default plate set), reps estimated via Epley's inversion:")
         print("-" * 34)
         for row in table:
             reps_txt = f"{row.reps}+" if row.reps_capped else f"{row.reps}"
-            shortfall = "" if row.exact else "  (closest achievable)"
-            print(f"  {row.percent:3d}%  {row.load:7.1f}{args.unit}  ~{reps_txt:>3} reps{shortfall}")
+            print(f"  {row.percent:3d}%  {row.load:7.1f}{args.unit}  ~{reps_txt:>3} reps")
     return 0
 
 
@@ -164,11 +163,10 @@ def cmd_warmup(args: argparse.Namespace) -> int:
         print(to_json(ramp))
         return 0
 
-    print(f"Warm-up ramp to {args.target:g}{args.unit}:")
+    print(f"Warm-up ramp to {args.target:g}{args.unit} (each set rounded down to a loadable weight):")
     for row in ramp:
         detail = ", ".join(f"{n}x{p:g}" for p, n in row.plates) if row.plates else "empty bar"
-        note = "" if row.exact else "  (closest achievable)"
-        print(f"  {row.weight:7.1f}{args.unit} x {row.reps:<2d}  {detail}{note}")
+        print(f"  {row.weight:7.1f}{args.unit} x {row.reps:<2d}  {detail}")
     return 0
 
 
