@@ -2,6 +2,8 @@
 
 ## 2.5.0 - 2026-09-25
 
+- Relicensed to GPL-3.0-or-later. Releases up to 2.4.0 stay under the Prosperity Public
+  License 3.0.0.
 - Verified the web app for the Android WebView wrapper: works fully offline with no service
   worker, from a non-root origin (tested by serving it from a nested path), with a plain
   browser's localStorage disabled. Fixed the manifest `id` (was an absolute `/liftmath/` path,

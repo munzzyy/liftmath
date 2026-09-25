@@ -15,6 +15,7 @@ version: 2.5.0
 date-released: "2026-09-25"
 url: "https://github.com/munzzyy/liftmath"
 repository-code: "https://github.com/munzzyy/liftmath"
+license: GPL-3.0-or-later
 license-url: "https://github.com/munzzyy/liftmath/blob/main/LICENSE"
 keywords:
   - one-rep-max

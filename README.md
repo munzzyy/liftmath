@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/munzzyy/liftmath/actions/workflows/ci.yml/badge.svg)](https://github.com/munzzyy/liftmath/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/liftmath)](https://pypi.org/project/liftmath/)
-[![License: Prosperity 3.0.0](https://img.shields.io/badge/license-Prosperity--3.0.0-blue.svg)](LICENSE)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg)](LICENSE)
 ![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
 
 <p align="center">
@@ -422,8 +422,9 @@ Questions and contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-[Prosperity Public License 3.0.0](LICENSE): free for noncommercial use. Commercial use gets a
-30-day free trial, then requires a paid license. See `LICENSE` for the full terms.
+[GPL-3.0-or-later](LICENSE). You can use, study, change and share it. If you distribute a copy
+or a modified version, it has to stay under the GPL and come with its source. Releases up to
+2.4.0 were under the Prosperity Public License 3.0.0.
 
 ## Support
 
