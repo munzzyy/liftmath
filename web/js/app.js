@@ -2,7 +2,7 @@
 // js/math/. No framework, no build step: this file owns DOM wiring only,
 // every number comes out of js/math/*.js untouched.
 
-import { estimateOneRm, HIGH_REP_THRESHOLD } from "./math/one-rep-max.js";
+import { estimateOneRm, percentageTable, HIGH_REP_THRESHOLD } from "./math/one-rep-max.js";
 import { computePlateStack } from "./math/plate-loading.js";
 import { parseInventorySpec, loadPlatesFromInventory } from "./math/plate-inventory.js";
 import { score } from "./math/strength-scores.js";
@@ -351,7 +351,45 @@ function renderOneRm() {
     html += `</tbody></table>`;
   }
 
+  let table = null;
+  try {
+    table = (platesMode === "womens" || platesMode === "metric-no-45") && unit === "kg"
+      ? percentageTable(est.consensus, "kg", { preset: platesMode })
+      : percentageTable(est.consensus, unit);
+  } catch {
+    // A kg-only preset selected while the global unit is lb, or any other
+    // plate-setup mismatch - skip the table rather than crash the 1RM result
+    // it's attached to; the formula breakdown above still rendered fine.
+    table = null;
+  }
+  if (table) {
+    html += `<p class="hint">Tap a row to load that weight on Plates.</p>`;
+    html += `<table class="result-table" id="onerm-percent-table"><thead><tr><th>%</th><th>Load</th><th>~Reps</th></tr></thead><tbody>`;
+    for (const row of table) {
+      const repsTxt = row.repsCapped ? `${row.reps}+` : `${row.reps}`;
+      const note = row.exact ? "" : " title=\"closest achievable\"";
+      html += `<tr class="onerm-percent-row" data-load="${row.load}"${note}>` +
+        `<td>${row.percent}%</td><td class="num">${fmt(row.load)} ${unit}</td><td class="num">~${repsTxt}</td></tr>`;
+    }
+    html += `</tbody></table>`;
+  }
+
   resultsEl.innerHTML = html;
+
+  if (table) {
+    resultsEl.querySelectorAll(".onerm-percent-row").forEach((row) => {
+      row.addEventListener("click", () => sendLoadToPlates(parseFloat(row.dataset.load)));
+    });
+  }
+}
+
+/** Send a load from the 1RM percentage table to the Plates tab and switch to it. */
+function sendLoadToPlates(load) {
+  const displayUnit = plateTargetUnit(platesMode, unit);
+  const value = displayUnit === unit ? load : convertDisplayValue(load, unit, displayUnit);
+  $("plates-target").value = fmt(value);
+  renderPlates();
+  selectTab("plates");
 }
 
 ["onerm-weight", "onerm-reps", "onerm-effort-value"].forEach((id) => $(id).addEventListener("input", renderOneRm));

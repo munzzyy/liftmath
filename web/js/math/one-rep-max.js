@@ -8,6 +8,9 @@
 // RPE/RIR: Zourdos et al. (2016), J Strength Cond Res 30(1), 267-275.
 // RIR = 10 - RPE; effective reps = reps performed + RIR.
 
+import { pyRound } from "./py-round.js";
+import { loadPlates, DEFAULT_BAR, PRESETS } from "./plate-loading.js";
+
 function epley(w, r) {
   return w * (1 + r / 30.0);
 }
@@ -147,4 +150,65 @@ export function estimateOneRm(weight, reps, unit = "lb", { rpe, rir } = {}) {
     rir,
     effectiveReps,
   };
+}
+
+// 100, 95, 90, ... 50
+export const PERCENT_STEPS = Array.from({ length: 11 }, (_, i) => 100 - i * 5);
+
+function resolveBarWeight(unit, bar, preset) {
+  if (preset != null) {
+    if (!(preset in PRESETS)) {
+      throw new RangeError(`unknown preset ${JSON.stringify(preset)}`);
+    }
+    if (unit !== "kg") {
+      throw new RangeError(`preset ${JSON.stringify(preset)} is a kg-only setup; the unit must be kg`);
+    }
+    return bar ?? PRESETS[preset].bar;
+  }
+  return bar ?? DEFAULT_BAR[unit];
+}
+
+/**
+ * Estimated reps at `load` given a 1RM, by inverting Epley's formula
+ * (1RM = w*(1+r/30), so r = 30*(1RM/w - 1)). See onerm.py's _epley_reps_at
+ * for why Epley (not the consensus) is used for this direction, and why the
+ * estimate is capped at HIGH_REP_THRESHOLD.
+ */
+function epleyRepsAt(oneRm, load) {
+  if (!(load > 0) || !Number.isFinite(load)) return { reps: 1, capped: false };
+  const reps = pyRound(30.0 * (oneRm / load - 1.0));
+  if (reps < 1) return { reps: 1, capped: false };
+  if (reps > HIGH_REP_THRESHOLD) return { reps: HIGH_REP_THRESHOLD, capped: true };
+  return { reps, capped: false };
+}
+
+/**
+ * A 100%-down-to-50% (5% steps) table of loads off a 1RM, each rounded to
+ * what the given plate setup can actually load, with an estimated rep count
+ * at that load. Mirrors onerm.py's percentage_table.
+ *
+ * @param {number} consensus - the 1RM to build the table from.
+ * @param {string} [unit="lb"]
+ * @param {{bar?:number, plates?:number[], preset?:string}} [opts]
+ * @returns {{percent:number, load:number, exact:boolean, reps:number, repsCapped:boolean}[]}
+ */
+export function percentageTable(consensus, unit = "lb", { bar = null, plates = null, preset = null } = {}) {
+  if (!(consensus > 0) || !Number.isFinite(consensus)) {
+    throw new RangeError("consensus must be a finite number > 0");
+  }
+  const barWeight = resolveBarWeight(unit, bar, preset);
+  return PERCENT_STEPS.map((percent) => {
+    const rawTarget = (consensus * percent) / 100.0;
+    let load, exact;
+    if (rawTarget <= barWeight) {
+      load = barWeight;
+      exact = true;
+    } else {
+      const pl = loadPlates(rawTarget, { unit, bar, plates, preset });
+      load = pl.achievable;
+      exact = pl.exact;
+    }
+    const { reps, capped } = epleyRepsAt(consensus, load);
+    return { percent, load, exact, reps, repsCapped: capped };
+  });
 }

@@ -107,6 +107,20 @@ def gen_one_rep_max() -> list[dict]:
     return cases
 
 
+def gen_percentage_table() -> list[dict]:
+    cases = []
+    for consensus, unit, kwargs in [
+        (300, "lb", {}), (100, "lb", {}), (50, "lb", {}), (140, "kg", {}),
+        (225, "lb", {"preset": None}),
+    ]:
+        cases.append({
+            "fn": "percentageTable",
+            "args": {"consensus": consensus, "unit": unit, **kwargs},
+            "expected": [dump(row) for row in onerm.percentage_table(consensus, unit=unit, **kwargs)],
+        })
+    return cases
+
+
 # ---------------------------------------------------------------------------
 # plate-loading.js <- liftmath.plates
 # ---------------------------------------------------------------------------
@@ -346,8 +360,12 @@ def gen_records() -> list[dict]:
     return cases
 
 
+def gen_one_rep_max_and_percentage_table() -> list[dict]:
+    return gen_one_rep_max() + gen_percentage_table()
+
+
 GENERATORS = {
-    "one-rep-max": gen_one_rep_max,
+    "one-rep-max": gen_one_rep_max_and_percentage_table,
     "plate-loading": gen_plate_loading,
     "plate-inventory": gen_plate_inventory,
     "strength-scores": gen_strength_scores,

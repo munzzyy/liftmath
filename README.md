@@ -93,6 +93,11 @@ short of failure otherwise underestimates the true 1RM:
 $ liftmath 1rm --weight 225 --reps 5 --rpe 9
 ```
 
+Add `--table` for a 100%-to-50% percentage breakdown of the consensus, load rounded to what the
+default plate set can actually load and reps estimated at that load (Epley's inversion - see
+`onerm.py`'s `_epley_reps_at` for why). The web 1RM tab shows the same table; tapping a row sends
+that load straight to Plates.
+
 ### Plates
 
 Which plates to load per side for a target barbell weight, largest first.

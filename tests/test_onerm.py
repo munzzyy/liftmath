@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from liftmath.onerm import FORMULAS, estimate_one_rm
+from liftmath.onerm import FORMULAS, estimate_one_rm, percentage_table
 
 
 def test_single_rep_is_exact():
@@ -165,3 +165,40 @@ def test_fractional_effective_reps_at_threshold_keeps_curvilinear():
     assert est.effective_reps == pytest.approx(12.0)
     assert est.high_rep_warning is False
     assert "Brzycki" in est.per_formula
+
+
+def test_percentage_table_steps_and_hundred_percent():
+    rows = percentage_table(300, unit="lb")
+    assert [r.percent for r in rows] == [100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50]
+    # 300lb loads exactly on a standard 45lb-bar setup.
+    assert rows[0].load == pytest.approx(300.0)
+    assert rows[0].exact is True
+    assert rows[0].reps == 1
+
+
+def test_percentage_table_reps_decrease_as_percent_drops():
+    rows = percentage_table(300, unit="lb")
+    reps = [r.reps for r in rows]
+    assert reps == sorted(reps)
+
+
+def test_percentage_table_caps_reps_past_high_rep_threshold():
+    rows = percentage_table(300, unit="lb")
+    low_row = next(r for r in rows if r.percent == 50)
+    assert low_row.reps == 12
+    assert low_row.reps_capped is True
+
+
+def test_percentage_table_floors_at_the_empty_bar():
+    # A light enough 1RM means even 50% would be below the bar - clamp to it.
+    rows = percentage_table(50, unit="lb")
+    low_row = next(r for r in rows if r.percent == 50)
+    assert low_row.load == 45.0
+    assert low_row.exact is True
+
+
+def test_percentage_table_rejects_non_positive_consensus():
+    with pytest.raises(ValueError):
+        percentage_table(0, unit="lb")
+    with pytest.raises(ValueError):
+        percentage_table(-5, unit="lb")

@@ -694,5 +694,436 @@
       "weight": 100
     },
     "fn": "estimateOneRm"
+  },
+  {
+    "args": {
+      "consensus": 300,
+      "unit": "lb"
+    },
+    "expected": [
+      {
+        "exact": true,
+        "load": 300.0,
+        "percent": 100,
+        "reps": 1,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 285.0,
+        "percent": 95,
+        "reps": 2,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 270.0,
+        "percent": 90,
+        "reps": 3,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 255.0,
+        "percent": 85,
+        "reps": 5,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 240.0,
+        "percent": 80,
+        "reps": 8,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 225.0,
+        "percent": 75,
+        "reps": 10,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 210.0,
+        "percent": 70,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": true,
+        "load": 195.0,
+        "percent": 65,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": true,
+        "load": 180.0,
+        "percent": 60,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": true,
+        "load": 165.0,
+        "percent": 55,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": true,
+        "load": 150.0,
+        "percent": 50,
+        "reps": 12,
+        "repsCapped": true
+      }
+    ],
+    "fn": "percentageTable"
+  },
+  {
+    "args": {
+      "consensus": 100,
+      "unit": "lb"
+    },
+    "expected": [
+      {
+        "exact": true,
+        "load": 100.0,
+        "percent": 100,
+        "reps": 1,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 95.0,
+        "percent": 95,
+        "reps": 2,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 90.0,
+        "percent": 90,
+        "reps": 3,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 85.0,
+        "percent": 85,
+        "reps": 5,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 80.0,
+        "percent": 80,
+        "reps": 8,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 75.0,
+        "percent": 75,
+        "reps": 10,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 70.0,
+        "percent": 70,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": true,
+        "load": 65.0,
+        "percent": 65,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": true,
+        "load": 60.0,
+        "percent": 60,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": true,
+        "load": 55.0,
+        "percent": 55,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": true,
+        "load": 50.0,
+        "percent": 50,
+        "reps": 12,
+        "repsCapped": true
+      }
+    ],
+    "fn": "percentageTable"
+  },
+  {
+    "args": {
+      "consensus": 50,
+      "unit": "lb"
+    },
+    "expected": [
+      {
+        "exact": true,
+        "load": 50.0,
+        "percent": 100,
+        "reps": 1,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 45.0,
+        "percent": 95,
+        "reps": 3,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 45,
+        "percent": 90,
+        "reps": 3,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 45,
+        "percent": 85,
+        "reps": 3,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 45,
+        "percent": 80,
+        "reps": 3,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 45,
+        "percent": 75,
+        "reps": 3,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 45,
+        "percent": 70,
+        "reps": 3,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 45,
+        "percent": 65,
+        "reps": 3,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 45,
+        "percent": 60,
+        "reps": 3,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 45,
+        "percent": 55,
+        "reps": 3,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 45,
+        "percent": 50,
+        "reps": 3,
+        "repsCapped": false
+      }
+    ],
+    "fn": "percentageTable"
+  },
+  {
+    "args": {
+      "consensus": 140,
+      "unit": "kg"
+    },
+    "expected": [
+      {
+        "exact": true,
+        "load": 140.0,
+        "percent": 100,
+        "reps": 1,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 132.5,
+        "percent": 95,
+        "reps": 2,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 90,
+        "reps": 4,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 117.5,
+        "percent": 85,
+        "reps": 6,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 110.0,
+        "percent": 80,
+        "reps": 8,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 105.0,
+        "percent": 75,
+        "reps": 10,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 97.5,
+        "percent": 70,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 90.0,
+        "percent": 65,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 82.5,
+        "percent": 60,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 75.0,
+        "percent": 55,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": true,
+        "load": 70.0,
+        "percent": 50,
+        "reps": 12,
+        "repsCapped": true
+      }
+    ],
+    "fn": "percentageTable"
+  },
+  {
+    "args": {
+      "consensus": 225,
+      "preset": null,
+      "unit": "lb"
+    },
+    "expected": [
+      {
+        "exact": true,
+        "load": 225.0,
+        "percent": 100,
+        "reps": 1,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 210.0,
+        "percent": 95,
+        "reps": 2,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 200.0,
+        "percent": 90,
+        "reps": 4,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 190.0,
+        "percent": 85,
+        "reps": 6,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 180.0,
+        "percent": 80,
+        "reps": 8,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 165.0,
+        "percent": 75,
+        "reps": 11,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 155.0,
+        "percent": 70,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 145.0,
+        "percent": 65,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": true,
+        "load": 135.0,
+        "percent": 60,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 120.0,
+        "percent": 55,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 110.0,
+        "percent": 50,
+        "reps": 12,
+        "repsCapped": true
+      }
+    ],
+    "fn": "percentageTable"
   }
 ]

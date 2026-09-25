@@ -63,6 +63,23 @@ test("an out-of-range RPE shows an error instead of a stale result", async () =>
   assert.match(app.text("onerm-results"), /notice-warn/);
 });
 
+test("the 1RM result includes a percentage table down to 50%", async () => {
+  const app = await loadApp();
+  const html = app.text("onerm-results");
+  assert.match(html, /id="onerm-percent-table"/);
+  assert.match(html, /100%/);
+  assert.match(html, /50%/);
+});
+
+test("tapping a percentage row sends that load to Plates and switches tabs", async () => {
+  const app = await loadApp();
+  const row = app.document.querySelector(".onerm-percent-row");
+  row.click();
+  assert.equal(app.$("tool-plates").hidden, false);
+  assert.equal(app.$("tool-onerm").hidden, true);
+  assert.equal(app.$("plates-target").value, row.dataset.load);
+});
+
 test("a stepper tap steps the field and re-renders every panel", async () => {
   const app = await loadApp();
   app.$("onerm-weight-inc").click();

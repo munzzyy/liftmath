@@ -5,6 +5,9 @@
 - Relicensed from the Prosperity Public License 3.0.0 to GPL-3.0-or-later, starting with
   2.5.0. Releases up to 2.4.0 stay under Prosperity.
 
+- `1rm --table` (`percentage_table`): a 100%-to-50% percentage breakdown of the consensus,
+  load rounded to what the plate setup can actually load, reps estimated via Epley's
+  inversion. Web 1RM tab shows the same table; tapping a row sends the load to Plates.
 - `1rm`/`estimate_one_rm`: optional `--rpe` (6-10, half steps) or `--rir` on a set that
   wasn't taken to failure. RIR = 10 - RPE (Zourdos et al. 2016); the reps in reserve get
   added to the reps performed before the formulas run. Web 1RM tab gets the same input.

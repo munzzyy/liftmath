@@ -27,7 +27,7 @@ from liftmath._serialize import to_json
 from liftmath.convert import KG_PER_LB, convert_weight
 from liftmath.convert import lbs_to_kg as _lbs_to_kg
 from liftmath.imports import WorkoutSet, e1rm_trend, parse_hevy_csv, parse_strong_csv, weekly_tonnage
-from liftmath.onerm import estimate_one_rm
+from liftmath.onerm import estimate_one_rm, percentage_table
 from liftmath.plates import PRESETS, _parse_inventory_spec, load_plates, load_plates_from_inventory
 from liftmath.records import (
     compare_value,
@@ -46,8 +46,17 @@ def cmd_1rm(args: argparse.Namespace) -> int:
         print(f"error: {e}", file=sys.stderr)
         return 1
 
+    table = None
+    if args.table:
+        try:
+            table = percentage_table(est.consensus, unit=args.unit)
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+
     if args.json:
-        print(to_json(est))
+        payload = to_json(est) if table is None else to_json({"estimate": est, "table": table})
+        print(payload)
         return 0
 
     effort = ""
@@ -56,23 +65,31 @@ def cmd_1rm(args: argparse.Namespace) -> int:
 
     if est.is_exact:
         print(f"That set IS a 1RM: {args.weight:g}{args.unit}.")
-        return 0
+    else:
+        print(f"Estimated 1RM from {args.weight:g}{args.unit} x {args.reps} reps{effort}")
+        print("  No single formula is most accurate across every rep range, so this runs six and")
+        print("  takes the CONSENSUS (median) instead of picking one. Sorted by value, not accuracy.")
+        print("-" * 46)
+        for name, value in sorted(est.per_formula.items(), key=lambda kv: kv[1]):
+            print(f"  {name:<9} {value:6.1f}{args.unit}")
+        print("-" * 46)
+        print(f"  CONSENSUS {est.consensus:6.1f}{args.unit}   (median; range {est.low:.1f}-{est.high:.1f})")
 
-    print(f"Estimated 1RM from {args.weight:g}{args.unit} x {args.reps} reps{effort}")
-    print("  No single formula is most accurate across every rep range, so this runs six and")
-    print("  takes the CONSENSUS (median) instead of picking one. Sorted by value, not accuracy.")
-    print("-" * 46)
-    for name, value in sorted(est.per_formula.items(), key=lambda kv: kv[1]):
-        print(f"  {name:<9} {value:6.1f}{args.unit}")
-    print("-" * 46)
-    print(f"  CONSENSUS {est.consensus:6.1f}{args.unit}   (median; range {est.low:.1f}-{est.high:.1f})")
+        if est.high_rep_warning:
+            print("\n[!] r>12: rep-max equations lose accuracy; dropped the curvilinear ones and")
+            print("    used the median, but treat this as soft. Test a heavier set of <=6 reps for a")
+            print("    sharper estimate.")
+        elif est.soft_estimate_warning:
+            print("\n[!] Best accuracy is at <=8 reps; treat this as approximate.")
 
-    if est.high_rep_warning:
-        print("\n[!] r>12: rep-max equations lose accuracy; dropped the curvilinear ones and")
-        print("    used the median, but treat this as soft. Test a heavier set of <=6 reps for a")
-        print("    sharper estimate.")
-    elif est.soft_estimate_warning:
-        print("\n[!] Best accuracy is at <=8 reps; treat this as approximate.")
+    if table is not None:
+        print(f"\nPercentages of {est.consensus:.1f}{args.unit}, load rounded to what your plates")
+        print("can actually load (default plate set), reps estimated via Epley's inversion:")
+        print("-" * 34)
+        for row in table:
+            reps_txt = f"{row.reps}+" if row.reps_capped else f"{row.reps}"
+            shortfall = "" if row.exact else "  (closest achievable)"
+            print(f"  {row.percent:3d}%  {row.load:7.1f}{args.unit}  ~{reps_txt:>3} reps{shortfall}")
     return 0
 
 
@@ -411,6 +428,9 @@ def build_parser() -> argparse.ArgumentParser:
     effort.add_argument("--rir", type=float,
                         help="reps in reserve the set was stopped at (>= 0), as an "
                              "alternative to --rpe")
+    s.add_argument("--table", action="store_true",
+                   help="also print a 100%%-to-50%% percentage table off the consensus 1RM, "
+                        "loads rounded to the default plate set")
     s.set_defaults(func=cmd_1rm)
 
     s = sub.add_parser("plates", help="plate-loading math", parents=[json_parent])

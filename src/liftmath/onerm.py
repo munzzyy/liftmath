@@ -48,6 +48,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
+from liftmath.plates import DEFAULT_BAR, PRESETS, load_plates
+
 
 def _epley(w: float, r: float) -> float:
     return w * (1 + r / 30.0)
@@ -214,3 +216,93 @@ def estimate_one_rm(weight: float, reps: int, unit: str = "lb", *,
         rir=rir,
         effective_reps=effective_reps,
     )
+
+
+PERCENT_STEPS = tuple(range(100, 45, -5))  # 100, 95, 90, ... 50
+
+
+@dataclass
+class PercentRow:
+    """One row of a percentage-of-1RM table: the load rounded to what the
+    current plate setup can actually put on the bar, and an estimated rep
+    count at that load.
+    """
+
+    percent: int
+    load: float
+    exact: bool
+    reps: int
+    reps_capped: bool
+
+
+def _resolve_bar_weight(unit: str, bar: float | None, preset: str | None) -> float:
+    """The bar weight `load_plates` would use for this unit/bar/preset combo,
+    without running its full plate-loading solve - percentage_table needs it
+    up front to decide whether a percentage falls below the empty bar.
+    """
+    if preset is not None:
+        if preset not in PRESETS:
+            raise ValueError(f"unknown preset {preset!r}, choose from {sorted(PRESETS)}")
+        if unit != "kg":
+            raise ValueError(f"preset {preset!r} is a kg-only setup; the unit must be kg")
+        preset_bar, _ = PRESETS[preset]
+        return bar if bar is not None else preset_bar
+    return bar if bar is not None else DEFAULT_BAR[unit]
+
+
+def _epley_reps_at(one_rm: float, load: float) -> tuple[int, bool]:
+    """Estimated reps at `load` given a 1RM, by inverting Epley's formula
+    (1RM = w*(1+r/30), so r = 30*(1RM/w - 1)).
+
+    Epley is picked for the inversion, not the consensus, because it is the
+    formula most commonly cited in this direction (estimating reps from a
+    known max, rather than a max from reps) and it inverts to a clean closed
+    form - the other five formulas would each give a slightly different rep
+    count at the same load, and picking one consistently keeps the table
+    readable instead of showing six numbers per row. Past
+    HIGH_REP_THRESHOLD reps this module already documents rep-max formulas as
+    unreliable (see the module docstring), so the estimate is capped there
+    and flagged rather than shown as a precise-looking large number.
+    """
+    if load <= 0 or not math.isfinite(load):
+        return 1, False
+    reps = round(30.0 * (one_rm / load - 1.0))
+    if reps < 1:
+        return 1, False
+    if reps > HIGH_REP_THRESHOLD:
+        return HIGH_REP_THRESHOLD, True
+    return reps, False
+
+
+def percentage_table(consensus: float, unit: str = "lb", *, bar: float | None = None,
+                      plates: tuple[float, ...] | None = None,
+                      preset: str | None = None) -> list[PercentRow]:
+    """A 100%-down-to-50% (5% steps) table of loads off a 1RM, each rounded to
+    what the given plate setup can actually load, with an estimated rep count
+    at that load (see `_epley_reps_at`).
+
+    Args:
+        consensus: the 1RM to build the table from (e.g. `OneRmEstimate.consensus`).
+        unit: "lb" or "kg", passed through to `load_plates`.
+        bar, plates, preset: the plate setup, same meaning as `load_plates`'s
+            own arguments - pass whatever the caller's current setup is.
+
+    Raises:
+        ValueError: if consensus isn't a finite number > 0, or anything
+            `load_plates` itself would reject about the plate setup.
+    """
+    if not math.isfinite(consensus) or consensus <= 0:
+        raise ValueError("consensus must be a finite number > 0")
+
+    bar_weight = _resolve_bar_weight(unit, bar, preset)
+    rows = []
+    for percent in PERCENT_STEPS:
+        raw_target = consensus * percent / 100.0
+        if raw_target <= bar_weight:
+            load, exact = bar_weight, True
+        else:
+            pl = load_plates(raw_target, unit=unit, bar=bar, plates=plates, preset=preset)
+            load, exact = pl.achievable, pl.exact
+        reps, capped = _epley_reps_at(consensus, load)
+        rows.append(PercentRow(percent=percent, load=load, exact=exact, reps=reps, reps_capped=capped))
+    return rows

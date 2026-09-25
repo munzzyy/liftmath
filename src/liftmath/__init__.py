@@ -38,7 +38,7 @@ from liftmath.imports import (
     parse_strong_csv,
     weekly_tonnage,
 )
-from liftmath.onerm import OneRmEstimate, estimate_one_rm
+from liftmath.onerm import OneRmEstimate, PercentRow, estimate_one_rm, percentage_table
 from liftmath.plates import (
     InventoryPlateLoad,
     PlateLoad,
@@ -68,6 +68,8 @@ __version__ = "2.4.0"
 __all__ = [
     "estimate_one_rm",
     "OneRmEstimate",
+    "percentage_table",
+    "PercentRow",
     "load_plates",
     "PlateLoad",
     "load_plates_from_inventory",
