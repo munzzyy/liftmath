@@ -432,9 +432,12 @@ let loadCount = 0;
  * @param {boolean} [opts.prefersLight] - what matchMedia reports.
  * @param {string} [opts.hash] - the page's location.hash, e.g. "#plates?t=225&u=lb".
  * @param {object} [opts.nativeApp] - a fake window.NativeApp ({postMessage(s)}), if any.
+ * @param {string} [opts.language] - navigator.language, e.g. "en-US" (the default,
+ *   chosen so existing tests that assume a first-run "lb" default keep working).
  */
 export async function loadApp({
   storage = makeStorage(), search = "", prefersLight = false, hash = "", nativeApp = null,
+  language = "en-US",
 } = {}) {
   const document = new FakeDocument(readFileSync(INDEX_HTML, "utf8"));
   const mediaListeners = [];
@@ -473,6 +476,7 @@ export async function loadApp({
     matchMedia: window.matchMedia,
     navigator: {
       userAgent: "node",
+      language,
       clipboard: { writeText: (text) => (clipboardWrites.push(text), Promise.resolve()) },
     },
   };

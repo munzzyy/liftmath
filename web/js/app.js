@@ -18,6 +18,7 @@ import { fromUnit, toUnit, convertDisplayValue, plateTargetUnit } from "./ui/uni
 import { notifyNative } from "./native-bridge.js";
 import { remainingMs, formatCountdown, ringFraction, STORAGE_KEY as TIMER_KEY } from "./timer.js";
 import { buildHash, parseHash, toolForTab } from "./deeplink.js";
+import { localeDefaultUnit } from "./locale.js";
 
 function $(id) {
   return document.getElementById(id);
@@ -1261,7 +1262,12 @@ function restoreSetup() {
     fields: PERSISTED_FIELDS.map((id) => [id, readStored(fieldKey(id))]),
   };
 
-  if (saved.unit === "lb" || saved.unit === "kg") setUnit(saved.unit);
+  if (saved.unit === "lb" || saved.unit === "kg") {
+    setUnit(saved.unit);
+  } else {
+    // No saved choice yet - default kg everywhere except the US/Liberia/Myanmar.
+    setUnit(localeDefaultUnit(navigator.language));
+  }
 
   // Chips before fields: the preset can change what unit the plate target box
   // means, and the sex chip refills the weight-class select.

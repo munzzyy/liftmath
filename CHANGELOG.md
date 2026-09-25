@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Web: first run with no saved unit choice now defaults to kg, except lb in the US, Liberia,
+  and Myanmar (read from `navigator.language`'s region).
 - Web: deep links - the URL hash reflects the active tab and its inputs for 1RM, Plates, Score
   and Convert, so a shared link restores the exact setup. A link wins over both the localStorage
   restore and the existing `?tab=` shortcut. New Share header button builds that link and hands

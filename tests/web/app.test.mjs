@@ -113,6 +113,25 @@ test("plate loading renders a per-side stack for 315", async () => {
   assert.match(app.text("plates-barbell-wrap"), /<svg/);
 });
 
+test("a first run with no saved unit defaults to kg outside the US/Liberia/Myanmar", async () => {
+  const app = await loadApp({ language: "en-GB" });
+  assert.equal(app.$("unit-kg").getAttribute("aria-pressed"), "true");
+  assert.equal(app.$("unit-lb").getAttribute("aria-pressed"), "false");
+});
+
+test("a first run in the US defaults to lb", async () => {
+  const app = await loadApp({ language: "en-US" });
+  assert.equal(app.$("unit-lb").getAttribute("aria-pressed"), "true");
+});
+
+test("a saved unit choice overrides the locale default", async () => {
+  const app = await loadApp({
+    language: "en-GB",
+    storage: makeStorage({ "liftmath:pref:unit": "lb" }),
+  });
+  assert.equal(app.$("unit-lb").getAttribute("aria-pressed"), "true");
+});
+
 test("first load never pins a theme override into localStorage", async () => {
   const app = await loadApp({ prefersLight: false });
   assert.equal(app.storage.data.has("liftmath:theme"), false);
