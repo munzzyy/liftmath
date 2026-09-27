@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.5.1 - 2026-09-27
+
+- Android: the release build now runs R8 and resource shrinking, as F-Droid asked. Nothing
+  else changed.
+
 ## 2.5.0 - 2026-09-25
 
 - Relicensed to GPL-3.0-or-later. Releases up to 2.4.0 stay under the Prosperity Public

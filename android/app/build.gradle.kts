@@ -11,15 +11,17 @@ android {
         applicationId = "io.github.munzzyy.liftmath"
         minSdk = 24
         targetSdk = 36
-        versionCode = 20500
-        versionName = "2.5.0"
+        versionCode = 20501
+        versionName = "2.5.1"
     }
 
     buildTypes {
         release {
-            // Unsigned on purpose: F-Droid signs with its own key.
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // Unsigned here; tools/release-android.sh signs it, and F-Droid ships
+            // that signature after rebuilding and comparing.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
             vcsInfo.include = false
         }
     }
