@@ -437,3 +437,9 @@ or a modified version, it has to stay under the GPL and come with its source. Re
 ## Support
 
 If liftmath runs your training math, [sponsoring](https://github.com/sponsors/munzzyy) is what keeps it maintained.
+
+Monero works too:
+
+```
+8BApLkfsBS39oNXz4L1qCmZ7f5zKVRr1qLJgrHddRZb4JRcnjDkcKdk7wW7uThCeV9CuLn8o7gAn8d6vFeWNiyeXSmrRUSq
+```
