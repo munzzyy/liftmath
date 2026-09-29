@@ -58,7 +58,10 @@ The same app runs on Android from [`android/`](android): the web app bundled int
 wrapper with no internet permission, so it works with the phone in airplane mode. Share opens the
 system share sheet and the rest timer keeps the screen on. Signed APKs are on the
 [releases page](https://github.com/munzzyy/liftmath/releases), and it has been submitted to F-Droid.
-To build it yourself, run `./gradlew assembleDebug` inside `android/`.
+[Tern](https://github.com/munzzyy/tern) keeps it up to date from those releases. To build it yourself, run `./gradlew assembleDebug`
+inside `android/`.
+
+[<img src="https://munzzyy.github.io/tern/badge.png" alt="Get it with Tern" height="80">](https://munzzyy.github.io/tern/add/?url=https%3A%2F%2Fgithub.com%2Fmunzzyy%2Fliftmath)
 
 ## Install
 
