@@ -379,7 +379,7 @@ test("in the Android app, share hands the public link to the native sheet and no
   await flushMicrotasks();
   const shareMsg = posted.find((m) => m.type === "share");
   assert.ok(shareMsg, "expected a share message to be posted");
-  assert.match(shareMsg.text, /^https:\/\/munzzyy\.github\.io\/liftmath\/#1rm\?.*w=315/);
+  assert.match(shareMsg.text, /^https:\/\/liftmath\.munzzyy\.dev\/#1rm\?.*w=315/);
   assert.equal(app.clipboardWrites.length, 0);
 });
 

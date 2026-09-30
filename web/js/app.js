@@ -1230,7 +1230,7 @@ function flashShareButton(label) {
 }
 
 // The Android app serves this page from a private asset host, so a shared link has to point at the public site.
-const PUBLIC_URL = "https://munzzyy.github.io/liftmath/";
+const PUBLIC_URL = "https://liftmath.munzzyy.dev/";
 
 async function shareCurrentState() {
   updateHashForActiveTab();

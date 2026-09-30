@@ -14,4 +14,4 @@ Everything works in lb or kg, and Share sends a link to the exact numbers on scr
 
 The app has no internet permission, so it never makes a network request. There are no ads and no account, and it does not track you. Your plate setup and settings stay on your phone.
 
-liftmath is free software under the GPL-3.0-or-later. It also runs in any browser at munzzyy.github.io/liftmath and as a Python library and command-line tool.
+liftmath is free software under the GPL-3.0-or-later. It also runs in any browser at liftmath.munzzyy.dev and as a Python library and command-line tool.

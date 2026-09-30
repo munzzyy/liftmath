@@ -8,10 +8,10 @@
 ![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
 
 <p align="center">
-  <a href="https://munzzyy.github.io/liftmath/"><img src="docs/media/app-dark.png" alt="liftmath web app: a 1RM estimate, a plate calculator with a barbell that loads itself, and Wilks/DOTS/IPF strength scores" width="380"></a>
+  <a href="https://liftmath.munzzyy.dev/"><img src="docs/media/app-dark.png" alt="liftmath web app: a 1RM estimate, a plate calculator with a barbell that loads itself, and Wilks/DOTS/IPF strength scores" width="380"></a>
 </p>
 
-**https://munzzyy.github.io/liftmath/** - nothing to install, works offline once loaded, no
+**https://liftmath.munzzyy.dev/** - nothing to install, works offline once loaded, no
 account, no ads, no tracking. Everything below runs the same math as a Python library and a
 command-line tool, for people who'd rather script it.
 
@@ -61,7 +61,7 @@ system share sheet and the rest timer keeps the screen on. Signed APKs are on th
 [Tern](https://github.com/munzzyy/tern) keeps it up to date from those releases. To build it yourself, run `./gradlew assembleDebug`
 inside `android/`.
 
-[<img src="https://munzzyy.github.io/tern/badge.png" alt="Get it with Tern" height="80">](https://munzzyy.github.io/tern/add/?url=https%3A%2F%2Fgithub.com%2Fmunzzyy%2Fliftmath)
+[<img src="https://tern.munzzyy.dev/badge.png" alt="Get it with Tern" height="80">](https://tern.munzzyy.dev/add/?url=https%3A%2F%2Fgithub.com%2Fmunzzyy%2Fliftmath)
 
 ## Install
 
