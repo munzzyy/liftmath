@@ -95,3 +95,5 @@ jobs:
           python-version: "3.12"
       - name: CITATION.cff and __init__.py versions match pyproject.toml
         run: python tools/check_citation_version.py
+      - name: Android version, fastlane changelog, precache list and CSP hashes line up
+        run: python tools/check_release.py

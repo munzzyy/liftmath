@@ -41,6 +41,7 @@ The full local loop:
 node --test "tests/web/*.test.mjs"   # JS math vs the generated fixtures (Node 22+, no npm)
 python tools/gen_fixtures.py         # regenerate fixtures, then commit the diff
 python tools/check_dom_ids.py        # every $("id") in app.js exists in index.html
+python tools/check_release.py        # precache list, CSP hash, Android version and changelog
 python tools/gen_icons.py            # only if you changed web/icons
 ```
 
