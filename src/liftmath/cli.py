@@ -402,7 +402,7 @@ def cmd_import(args: argparse.Namespace) -> int:
         sources.append(source)
         sets.extend(file_sets)
 
-    trend = e1rm_trend(sets)
+    trend = e1rm_trend(sets, use_rpe=args.use_rpe)
     tonnage = weekly_tonnage(sets)
 
     if args.json:
@@ -426,7 +426,8 @@ def cmd_import(args: argparse.Namespace) -> int:
 
     if trend:
         print("-" * 46)
-        print("  Best estimated 1RM per exercise, most recent session:")
+        rpe_note = " (logged RPE counted)" if args.use_rpe else ""
+        print(f"  Best estimated 1RM per exercise, most recent session{rpe_note}:")
         for exercise in sorted(trend):
             last_day = max(trend[exercise])
             print(f"  {exercise:<28} {trend[exercise][last_day]:7.1f}{args.unit}  ({last_day})")
@@ -564,6 +565,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help="unit to report weights in - also the assumed unit for a Strong "
                         "export's own Weight column, which doesn't record one (Hevy always "
                         "records kg, so this only affects Hevy's *output*)")
+    s.add_argument("--use-rpe", action="store_true",
+                   help="count each set's logged RPE (6-10, half steps) in its estimated 1RM; "
+                        "sets with no RPE, or one off that scale, count as taken to failure")
     s.set_defaults(func=cmd_import)
 
     return p

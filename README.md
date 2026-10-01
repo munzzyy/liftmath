@@ -292,6 +292,11 @@ if you'd rather be explicit. Strong's own export has no weight-unit column in it
 (iOS) form - `--unit` is both what that's assumed to already be in, and what a Hevy export (always
 kg internally) gets converted to for display.
 
+Both apps let you log an RPE per set. Pass `--use-rpe` and a set's logged RPE (6-10, half steps)
+goes into its estimated 1RM the same way `1rm --rpe` does, so a top set at RPE 8 counts the two
+reps you had left. Sets with no RPE, or one off that scale, still count as taken to failure.
+Without the flag every set does.
+
 Switched apps partway through your training history? Pass `--file` more than once and they merge
 into one trend and tonnage view instead of two separate ones:
 

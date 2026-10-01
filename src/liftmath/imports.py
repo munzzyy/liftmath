@@ -50,7 +50,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 
 from liftmath.convert import kg_to_lbs, lbs_to_kg
-from liftmath.onerm import estimate_one_rm
+from liftmath.onerm import MAX_RPE, MIN_RPE, estimate_one_rm
 
 _STRONG_REQUIRED = ("Date", "Workout Name", "Exercise Name", "Set Order", "Weight", "Reps")
 _STRONG_DATE_FORMATS = ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %I:%M:%S %p")
@@ -318,7 +318,11 @@ def _check_single_unit(sets: list[WorkoutSet], fn_name: str) -> None:
         )
 
 
-def e1rm_trend(sets: list[WorkoutSet]) -> dict[str, dict[str, float]]:
+def _usable_rpe(rpe: float | None) -> bool:
+    return rpe is not None and MIN_RPE <= rpe <= MAX_RPE and rpe * 2 == round(rpe * 2)
+
+
+def e1rm_trend(sets: list[WorkoutSet], *, use_rpe: bool = False) -> dict[str, dict[str, float]]:
     """Best estimated 1RM per exercise per calendar day, from parsed sets.
 
     For each (exercise, day) pair, runs every applicable set through
@@ -329,6 +333,12 @@ def e1rm_trend(sets: list[WorkoutSet]) -> dict[str, dict[str, float]]:
     no weight, no reps, non-positive weight, or reps < 1 are skipped rather
     than raising - a mixed-content export (strength + cardio + bodyweight)
     is normal input, not an error condition.
+
+    With `use_rpe`, a set's logged RPE goes into the estimate when it's on
+    the scale `estimate_one_rm` takes (6-10 in half steps), so a top set at
+    RPE 8 counts the two reps left in the tank. A blank or off-scale RPE (0,
+    5, 7.3) falls back to treating the set as taken to failure, which is
+    what every set gets without `use_rpe`.
 
     Raises:
         ValueError: if `sets` mixes more than one `unit` - see
@@ -347,7 +357,8 @@ def e1rm_trend(sets: list[WorkoutSet]) -> dict[str, dict[str, float]]:
             continue
         day = s.date[:10]
         try:
-            est = estimate_one_rm(s.weight, s.reps, unit=s.unit)
+            rpe = s.rpe if use_rpe and _usable_rpe(s.rpe) else None
+            est = estimate_one_rm(s.weight, s.reps, unit=s.unit, rpe=rpe)
         except ValueError:
             continue
         by_day = trend.setdefault(s.exercise, {})

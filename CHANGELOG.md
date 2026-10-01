@@ -22,6 +22,9 @@
   because that reads as a thousands separator on combined-event points.
 - Web Track tab: a mark it cannot read gets a one-line hint instead of no comparison at all. The
   field also asks the phone for a text keyboard so the ':' key is there.
+- `liftmath import --use-rpe` (and `e1rm_trend(..., use_rpe=True)`) counts each set's logged
+  RPE from a Strong or Hevy export in its estimated 1RM. A blank or off-scale RPE falls back to
+  reps only. It's opt-in, so the default output is unchanged.
 - Web: the rest timer sheet is a labelled dialog for screen readers. Focus moves into it when it
   opens and back to the Timer button when it closes, whether by its close button, Escape or
   Back. The Timer button says whether the sheet is open, and "Rest over" and "Link copied" get

@@ -7,6 +7,7 @@ import sys
 import pytest
 
 from liftmath.cli import main
+from liftmath.onerm import estimate_one_rm
 
 
 def run(capsys, *argv):
@@ -436,6 +437,19 @@ def test_import_explicit_source_overrides_detection(capsys, tmp_path):
     code, out, _ = run(capsys, "import", "--file", str(csv_file), "--source", "strong")
     assert code == 0
     assert "strong export" in out
+
+
+def test_import_use_rpe_counts_the_logged_rpe(capsys, tmp_path):
+    csv_file = tmp_path / "hevy.csv"
+    csv_file.write_text(HEVY_CSV)
+    code, plain, _ = run(capsys, "import", "--file", str(csv_file), "--unit", "kg")
+    assert code == 0
+    code, with_rpe, _ = run(capsys, "import", "--file", str(csv_file), "--unit", "kg", "--use-rpe")
+    assert code == 0
+    assert "(logged RPE counted)" in with_rpe
+    # 21 kg x 10 at RPE 8.5, so 1.5 reps in reserve on top of the 10.
+    assert f"{estimate_one_rm(21, 10).consensus:7.1f}kg" in plain
+    assert f"{estimate_one_rm(21, 10, rpe=8.5).consensus:7.1f}kg" in with_rpe
 
 
 def test_import_json(capsys, tmp_path):

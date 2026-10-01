@@ -1,6 +1,7 @@
 import pytest
 
 from liftmath.imports import e1rm_trend, parse_hevy_csv, parse_strong_csv, weekly_tonnage
+from liftmath.onerm import estimate_one_rm
 
 # Fixture text below is trimmed from real, publicly posted exports (not invented
 # schemas) - see the module docstring in imports.py for what was verified where.
@@ -241,6 +242,35 @@ def test_e1rm_trend_skips_sets_with_no_reps_or_weight():
     )
     sets = parse_strong_csv(no_reps, unit="lb")
     assert e1rm_trend(sets) == {}
+
+
+STRONG_RPE = (
+    "Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,"
+    "Notes,Workout Notes,RPE\n"
+    '2024-03-04 18:00:00,"Squat Day",1h,"Squat (Barbell)",1,225,5,0,0,,,8\n'
+)
+
+
+def test_e1rm_trend_counts_logged_rpe_only_when_asked():
+    sets = parse_strong_csv(STRONG_RPE, unit="lb")
+    assert e1rm_trend(sets)["Squat (Barbell)"]["2024-03-04"] == estimate_one_rm(225, 5).consensus
+    with_rpe = e1rm_trend(sets, use_rpe=True)["Squat (Barbell)"]["2024-03-04"]
+    assert with_rpe == estimate_one_rm(225, 5, rpe=8).consensus
+    assert with_rpe > estimate_one_rm(225, 5).consensus
+
+
+@pytest.mark.parametrize("rpe", ["", "0", "5", "7.3", "11", "nan"])
+def test_e1rm_trend_falls_back_to_reps_for_an_off_scale_rpe(rpe):
+    hevy = (
+        '"title","start_time","end_time","description","exercise_title","superset_id",'
+        '"exercise_notes","set_index","set_type","weight_kg","reps","distance_km",'
+        '"duration_seconds","rpe"\n'
+        '"Leg day","22 Dec 2025, 08:00","22 Dec 2025, 08:37","","Squat (Barbell)",,'
+        f'"",0,"normal",100,5,,0,{rpe}\n'
+    )
+    sets = parse_hevy_csv(hevy, unit="kg")
+    trend = e1rm_trend(sets, use_rpe=True)
+    assert trend["Squat (Barbell)"]["2025-12-22"] == estimate_one_rm(100, 5).consensus
 
 
 def test_weekly_tonnage_sums_weight_times_reps():
