@@ -21,6 +21,7 @@
 // toward fewer total plates).
 
 import { DEFAULT_BAR } from "./plate-loading.js";
+import { pyRepr } from "./py-repr.js";
 
 // Hard caps on the exhaustive search, mirroring plates.py's
 // MAX_PLATES_PER_SIZE / MAX_SEARCH_COMBINATIONS: the solver enumerates the
@@ -104,8 +105,8 @@ export function loadPlatesFromInventory(target, inventory, opts = {}) {
     throw new RangeError("inventory must have at least one plate size");
   }
   for (const [size, count] of sizeEntries) {
-    if (size <= 0) {
-      throw new RangeError(`plate size must be > 0, got ${size}`);
+    if (!Number.isFinite(size) || size <= 0) {
+      throw new RangeError(`plate size must be a finite number > 0, got ${pyRepr(size)}`);
     }
     if (count <= 0) {
       throw new RangeError(`plate count must be > 0, got ${count} for size ${size}`);
@@ -119,10 +120,10 @@ export function loadPlatesFromInventory(target, inventory, opts = {}) {
 
   const barWeight = bar !== null ? bar : DEFAULT_BAR[unit];
   if (!Number.isFinite(barWeight) || barWeight <= 0) {
-    throw new RangeError(`bar weight must be a finite number > 0, got ${barWeight}`);
+    throw new RangeError(`bar weight must be a finite number > 0, got ${pyRepr(barWeight)}`);
   }
   if (!Number.isFinite(target)) {
-    throw new RangeError(`target must be a finite number, got ${target}`);
+    throw new RangeError(`target must be a finite number, got ${pyRepr(target)}`);
   }
   if (target < barWeight) {
     throw new RangeError(`target ${target}${unit} is below the bar (${barWeight}${unit})`);

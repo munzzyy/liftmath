@@ -75,7 +75,7 @@ def _exact_combo(per_side: float, available: list[float]) -> list[tuple[float, i
     leaving the greedy result in place) if it would exceed MAX_SEARCH_COMBINATIONS
     - the same cap the finite-inventory solver uses.
     """
-    caps = [int(per_side // p + 1e-9) for p in available]
+    caps = [int(per_side / p + 1e-9) for p in available]
     combinations = 1
     for c in caps:
         combinations *= c + 1
@@ -149,7 +149,7 @@ def load_plates(
     remaining = per_side
     loaded: list[tuple[float, int]] = []
     for p in available:
-        n = int(remaining // p + 1e-9)
+        n = int(remaining / p + 1e-9)
         if n > 0:
             loaded.append((p, n))
             remaining -= n * p

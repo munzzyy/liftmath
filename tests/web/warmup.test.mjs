@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { test } from "node:test";
 
-import { assertParity } from "./assert-parity.mjs";
+import { checkFixture } from "./assert-parity.mjs";
 import { warmupRamp } from "../../web/js/math/warmup.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -16,7 +16,6 @@ const fixtures = JSON.parse(
 
 for (const [i, fixture] of fixtures.entries()) {
   test(`warmup #${i}: ${fixture.fn}(${JSON.stringify(fixture.args)})`, () => {
-    const { target, opts } = fixture.args;
-    assertParity(warmupRamp(target, opts), fixture.expected);
+    checkFixture(fixture, ({ target, opts }) => warmupRamp(target, opts));
   });
 }

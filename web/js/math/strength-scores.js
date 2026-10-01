@@ -9,6 +9,7 @@
 // sourcing/citations.
 
 import { pyRound } from "./py-round.js";
+import { pyRepr } from "./py-repr.js";
 import { DATASET } from "../records-data.js";
 
 // Wilks, original (1994). a,b,c,d,e,f per sex; coefficient = 500 / (a+bx+cx^2+dx^3+ex^4+fx^5)
@@ -65,12 +66,22 @@ const WILKS_ORIGINAL_BW_RANGE = { male: [40.0, 201.9], female: [26.51, 154.53] }
 const WILKS_2020_BW_RANGE = { male: [40.0, 200.95], female: [40.0, 150.95] };
 const DOTS_BW_RANGE = { male: [40.0, 210.0], female: [40.0, 150.0] };
 
-function validate(bodyweightKg, sex) {
+// Python prints its sexes tuple as ('male', 'female').
+const SEXES_PY = `(${SEXES.map(pyRepr).join(", ")})`;
+
+function validateSex(sex) {
   if (!SEXES.includes(sex)) {
-    throw new RangeError(`sex must be one of ${JSON.stringify(SEXES)}, got ${JSON.stringify(sex)}`);
+    throw new RangeError(`sex must be one of ${SEXES_PY}, got ${pyRepr(sex)}`);
   }
-  if (bodyweightKg <= 0) {
-    throw new RangeError("bodyweightKg must be > 0");
+}
+
+function validate(totalKg, bodyweightKg, sex) {
+  validateSex(sex);
+  if (!Number.isFinite(totalKg) || totalKg <= 0) {
+    throw new RangeError("total_kg must be a finite number > 0");
+  }
+  if (!Number.isFinite(bodyweightKg) || bodyweightKg <= 0) {
+    throw new RangeError("bodyweight_kg must be a finite number > 0");
   }
 }
 
@@ -85,7 +96,7 @@ function clampBodyweight(bodyweightKg, range, sex) {
  * standard, but still widely quoted/compared historically.
  */
 export function wilksOriginalScore(totalKg, bodyweightKg, sex) {
-  validate(bodyweightKg, sex);
+  validate(totalKg, bodyweightKg, sex);
   const [a, b, c, d, e, f] = WILKS_ORIGINAL[sex];
   const x = clampBodyweight(bodyweightKg, WILKS_ORIGINAL_BW_RANGE, sex);
   const denom = a + b * x + c * x ** 2 + d * x ** 3 + e * x ** 4 + f * x ** 5;
@@ -95,7 +106,7 @@ export function wilksOriginalScore(totalKg, bodyweightKg, sex) {
 
 /** Wilks (2020 revision) score for a total at a given bodyweight. */
 export function wilksScore(totalKg, bodyweightKg, sex) {
-  validate(bodyweightKg, sex);
+  validate(totalKg, bodyweightKg, sex);
   const [a, b, c, d, e, f] = WILKS_2020[sex];
   const x = clampBodyweight(bodyweightKg, WILKS_2020_BW_RANGE, sex);
   const denom = a + b * x + c * x ** 2 + d * x ** 3 + e * x ** 4 + f * x ** 5;
@@ -105,7 +116,7 @@ export function wilksScore(totalKg, bodyweightKg, sex) {
 
 /** DOTS score for a total at a given bodyweight. */
 export function dotsScore(totalKg, bodyweightKg, sex) {
-  validate(bodyweightKg, sex);
+  validate(totalKg, bodyweightKg, sex);
   const [a, b, c, d, e] = DOTS[sex];
   const x = clampBodyweight(bodyweightKg, DOTS_BW_RANGE, sex);
   const denom = a * x ** 4 + b * x ** 3 + c * x ** 2 + d * x + e;
@@ -121,7 +132,7 @@ export function dotsScore(totalKg, bodyweightKg, sex) {
  * instead of leveling off.
  */
 export function ipfGlPoints(totalKg, bodyweightKg, sex) {
-  validate(bodyweightKg, sex);
+  validate(totalKg, bodyweightKg, sex);
   const [a, b, c] = IPF_GL[sex];
   const x = Math.max(bodyweightKg, IPF_GL_BW_FLOOR[sex]);
   const coefficient = pyRound(100.0 / (a - b * Math.exp(-c * x)), 6);
@@ -134,10 +145,11 @@ export function ipfGlPoints(totalKg, bodyweightKg, sex) {
  * @param {number} totalKg - competition total (or single-lift result), in kilograms.
  * @param {number} bodyweightKg - bodyweight, in kilograms.
  * @param {string} sex - "male" or "female".
- * @throws {RangeError} if sex isn't "male"/"female" or bodyweightKg <= 0.
+ * @throws {RangeError} if sex isn't "male"/"female", or totalKg or bodyweightKg
+ *   isn't a finite number > 0.
  */
 export function score(totalKg, bodyweightKg, sex) {
-  validate(bodyweightKg, sex);
+  validate(totalKg, bodyweightKg, sex);
   return {
     total: totalKg,
     bodyweightKg,
@@ -175,9 +187,7 @@ function countAtOrBelow(breakpoints, value) {
  * @throws {RangeError} if sex isn't "male"/"female" or dots isn't > 0.
  */
 export function dotsPercentile(dots, sex, raw = true) {
-  if (sex !== "male" && sex !== "female") {
-    throw new RangeError(`sex must be "male" or "female", got ${JSON.stringify(sex)}`);
-  }
+  validateSex(sex);
   if (!(dots > 0) || !Number.isFinite(dots)) {
     throw new RangeError("dots must be a finite number > 0");
   }

@@ -25,6 +25,14 @@
   JavaScript or CSS newer than that floor, and the timer overlay no longer needs Chrome 87.
 - Android: Share copies the public liftmath.munzzyy.dev link even on a WebView too old for the
   native share bridge, instead of the app's private asset address.
+- Library: `load_plates` gets float-noise targets right. `load_plates(350 * 0.7)` is
+  244.99999999999997, and it used to come back as 240 with "can't make it exactly". It loads
+  245 (2x45 and a 10 per side) now, the same as the web app always did, so a caller passing a
+  computed target gets different plates than before. The CLI and the web app aren't affected.
+- The web app's math throws the same errors as the Python library for bad input: a nan or
+  infinite weight, total, bodyweight, bar or target, and a plate size of zero or below. A negative
+  plate size used to hang `loadPlates`. The web app checks its inputs first, so none of this was
+  reachable from the page. The parity fixtures pin these error messages now, not only results.
 
 ## 2.5.1 - 2026-09-27
 

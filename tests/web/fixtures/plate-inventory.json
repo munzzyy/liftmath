@@ -287,5 +287,159 @@
       "unit": "kg"
     },
     "fn": "loadPlatesFromInventory"
+  },
+  {
+    "args": {
+      "inventory": {},
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "loadPlatesFromInventory",
+    "raises": "inventory must have at least one plate size"
+  },
+  {
+    "args": {
+      "inventory": {
+        "-5": 2
+      },
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "loadPlatesFromInventory",
+    "raises": "plate size must be a finite number > 0, got -5"
+  },
+  {
+    "args": {
+      "inventory": {
+        "0": 1,
+        "45": 2
+      },
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "loadPlatesFromInventory",
+    "raises": "plate size must be a finite number > 0, got 0"
+  },
+  {
+    "args": {
+      "inventory": {
+        "45": 0
+      },
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "loadPlatesFromInventory",
+    "raises": "plate count must be > 0, got 0 for size 45"
+  },
+  {
+    "args": {
+      "inventory": {
+        "45": 100
+      },
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "loadPlatesFromInventory",
+    "raises": "plate count must be <= 99 per size, got 100 for size 45"
+  },
+  {
+    "args": {
+      "inventory": {
+        "45": 2
+      },
+      "opts": {
+        "unit": "lb"
+      },
+      "target": {
+        "$num": "NaN"
+      }
+    },
+    "fn": "loadPlatesFromInventory",
+    "raises": "target must be a finite number, got nan"
+  },
+  {
+    "args": {
+      "inventory": {
+        "45": 2
+      },
+      "opts": {
+        "unit": "lb"
+      },
+      "target": {
+        "$num": "Infinity"
+      }
+    },
+    "fn": "loadPlatesFromInventory",
+    "raises": "target must be a finite number, got inf"
+  },
+  {
+    "args": {
+      "inventory": {
+        "45": 2
+      },
+      "opts": {
+        "bar": 0,
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "loadPlatesFromInventory",
+    "raises": "bar weight must be a finite number > 0, got 0"
+  },
+  {
+    "args": {
+      "inventory": {
+        "45": 2
+      },
+      "opts": {
+        "bar": {
+          "$num": "NaN"
+        },
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "loadPlatesFromInventory",
+    "raises": "bar weight must be a finite number > 0, got nan"
+  },
+  {
+    "args": {
+      "inventory": {
+        "45": 2
+      },
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 40
+    },
+    "fn": "loadPlatesFromInventory",
+    "raises": "target 40lb is below the bar (45lb)"
+  },
+  {
+    "args": {
+      "inventory": {
+        "5": 50,
+        "10": 50,
+        "25": 50,
+        "35": 50,
+        "45": 50
+      },
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "loadPlatesFromInventory",
+    "raises": "inventory is too big to search (345025251 combinations, cap 5000000) - drop some plate sizes or counts"
   }
 ]

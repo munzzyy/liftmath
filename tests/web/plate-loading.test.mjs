@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { test } from "node:test";
 
-import { assertParity } from "./assert-parity.mjs";
+import { checkFixture } from "./assert-parity.mjs";
 import { loadPlates } from "../../web/js/math/plate-loading.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -17,21 +17,21 @@ const fixtures = JSON.parse(
 
 for (const [i, fixture] of fixtures.entries()) {
   test(`plate-loading #${i}: loadPlates(${JSON.stringify(fixture.args)})`, () => {
-    const { target, opts } = fixture.args;
-    const actual = loadPlates(target, opts);
-    // getters (exact/achievable) aren't own-enumerable in a plain object
-    // spread comparison, so pull them explicitly before asserting.
-    const plain = {
-      target: actual.target,
-      bar: actual.bar,
-      unit: actual.unit,
-      perSide: actual.perSide,
-      plates: actual.plates,
-      shortfall: actual.shortfall,
-      exact: actual.exact,
-      achievable: actual.achievable,
-    };
-    assertParity(plain, fixture.expected);
+    checkFixture(fixture, ({ target, opts }) => {
+      const actual = loadPlates(target, opts);
+      // getters (exact/achievable) aren't own-enumerable in a plain object
+      // spread comparison, so pull them explicitly before asserting.
+      return {
+        target: actual.target,
+        bar: actual.bar,
+        unit: actual.unit,
+        perSide: actual.perSide,
+        plates: actual.plates,
+        shortfall: actual.shortfall,
+        exact: actual.exact,
+        achievable: actual.achievable,
+      };
+    });
   });
 }
 

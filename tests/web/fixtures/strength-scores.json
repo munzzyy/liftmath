@@ -314,5 +314,152 @@
       "sex": "female"
     },
     "fn": "dotsPercentile"
+  },
+  {
+    "args": {
+      "bodyweightKg": 83,
+      "sex": "x",
+      "totalKg": 500
+    },
+    "fn": "score",
+    "raises": "sex must be one of ('male', 'female'), got 'x'"
+  },
+  {
+    "args": {
+      "bodyweightKg": 83,
+      "sex": "M",
+      "totalKg": 500
+    },
+    "fn": "score",
+    "raises": "sex must be one of ('male', 'female'), got 'M'"
+  },
+  {
+    "args": {
+      "bodyweightKg": 83,
+      "sex": "male",
+      "totalKg": 0
+    },
+    "fn": "score",
+    "raises": "total_kg must be a finite number > 0"
+  },
+  {
+    "args": {
+      "bodyweightKg": 83,
+      "sex": "female",
+      "totalKg": -500
+    },
+    "fn": "score",
+    "raises": "total_kg must be a finite number > 0"
+  },
+  {
+    "args": {
+      "bodyweightKg": 83,
+      "sex": "male",
+      "totalKg": {
+        "$num": "NaN"
+      }
+    },
+    "fn": "score",
+    "raises": "total_kg must be a finite number > 0"
+  },
+  {
+    "args": {
+      "bodyweightKg": 83,
+      "sex": "male",
+      "totalKg": {
+        "$num": "Infinity"
+      }
+    },
+    "fn": "score",
+    "raises": "total_kg must be a finite number > 0"
+  },
+  {
+    "args": {
+      "bodyweightKg": 0,
+      "sex": "male",
+      "totalKg": 500
+    },
+    "fn": "score",
+    "raises": "bodyweight_kg must be a finite number > 0"
+  },
+  {
+    "args": {
+      "bodyweightKg": -83,
+      "sex": "female",
+      "totalKg": 500
+    },
+    "fn": "score",
+    "raises": "bodyweight_kg must be a finite number > 0"
+  },
+  {
+    "args": {
+      "bodyweightKg": {
+        "$num": "NaN"
+      },
+      "sex": "male",
+      "totalKg": 500
+    },
+    "fn": "score",
+    "raises": "bodyweight_kg must be a finite number > 0"
+  },
+  {
+    "args": {
+      "bodyweightKg": {
+        "$num": "Infinity"
+      },
+      "sex": "female",
+      "totalKg": 500
+    },
+    "fn": "score",
+    "raises": "bodyweight_kg must be a finite number > 0"
+  },
+  {
+    "args": {
+      "dots": 300,
+      "raw": true,
+      "sex": "x"
+    },
+    "fn": "dotsPercentile",
+    "raises": "sex must be one of ('male', 'female'), got 'x'"
+  },
+  {
+    "args": {
+      "dots": 0,
+      "raw": true,
+      "sex": "male"
+    },
+    "fn": "dotsPercentile",
+    "raises": "dots must be a finite number > 0"
+  },
+  {
+    "args": {
+      "dots": -1,
+      "raw": true,
+      "sex": "female"
+    },
+    "fn": "dotsPercentile",
+    "raises": "dots must be a finite number > 0"
+  },
+  {
+    "args": {
+      "dots": {
+        "$num": "NaN"
+      },
+      "raw": true,
+      "sex": "male"
+    },
+    "fn": "dotsPercentile",
+    "raises": "dots must be a finite number > 0"
+  },
+  {
+    "args": {
+      "dots": {
+        "$num": "Infinity"
+      },
+      "raw": true,
+      "sex": "male"
+    },
+    "fn": "dotsPercentile",
+    "raises": "dots must be a finite number > 0"
   }
 ]

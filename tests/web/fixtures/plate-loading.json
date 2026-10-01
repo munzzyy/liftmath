@@ -386,5 +386,235 @@
       "unit": "lb"
     },
     "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 244.99999999999997
+    },
+    "expected": {
+      "achievable": 244.99999999999997,
+      "bar": 45,
+      "exact": true,
+      "perSide": 99.99999999999999,
+      "plates": [
+        [
+          45,
+          2
+        ],
+        [
+          10,
+          1
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 244.99999999999997,
+      "unit": "lb"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "plates": [
+          45,
+          25
+        ],
+        "unit": "lb"
+      },
+      "target": 244.99999999999997
+    },
+    "expected": {
+      "achievable": 244.99999999999997,
+      "bar": 45,
+      "exact": true,
+      "perSide": 99.99999999999999,
+      "plates": [
+        [
+          25,
+          4
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 244.99999999999997,
+      "unit": "lb"
+    },
+    "fn": "loadPlates"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": {
+        "$num": "NaN"
+      }
+    },
+    "fn": "loadPlates",
+    "raises": "target must be a finite number, got nan"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": {
+        "$num": "Infinity"
+      }
+    },
+    "fn": "loadPlates",
+    "raises": "target must be a finite number, got inf"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "target": {
+        "$num": "-Infinity"
+      }
+    },
+    "fn": "loadPlates",
+    "raises": "target must be a finite number, got -inf"
+  },
+  {
+    "args": {
+      "opts": {
+        "bar": 0,
+        "unit": "lb"
+      },
+      "target": 135
+    },
+    "fn": "loadPlates",
+    "raises": "bar weight must be a finite number > 0, got 0"
+  },
+  {
+    "args": {
+      "opts": {
+        "bar": -45,
+        "unit": "lb"
+      },
+      "target": 135
+    },
+    "fn": "loadPlates",
+    "raises": "bar weight must be a finite number > 0, got -45"
+  },
+  {
+    "args": {
+      "opts": {
+        "bar": {
+          "$num": "NaN"
+        },
+        "unit": "lb"
+      },
+      "target": 135
+    },
+    "fn": "loadPlates",
+    "raises": "bar weight must be a finite number > 0, got nan"
+  },
+  {
+    "args": {
+      "opts": {
+        "bar": {
+          "$num": "Infinity"
+        },
+        "unit": "lb"
+      },
+      "target": 135
+    },
+    "fn": "loadPlates",
+    "raises": "bar weight must be a finite number > 0, got inf"
+  },
+  {
+    "args": {
+      "opts": {
+        "plates": [
+          -5
+        ],
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "loadPlates",
+    "raises": "plate denominations must be finite numbers > 0, got -5"
+  },
+  {
+    "args": {
+      "opts": {
+        "plates": [
+          45,
+          0
+        ],
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "loadPlates",
+    "raises": "plate denominations must be finite numbers > 0, got 0"
+  },
+  {
+    "args": {
+      "opts": {
+        "plates": [
+          45,
+          {
+            "$num": "NaN"
+          }
+        ],
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "loadPlates",
+    "raises": "plate denominations must be finite numbers > 0, got nan"
+  },
+  {
+    "args": {
+      "opts": {
+        "plates": [
+          {
+            "$num": "Infinity"
+          }
+        ],
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "loadPlates",
+    "raises": "plate denominations must be finite numbers > 0, got inf"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 40
+    },
+    "fn": "loadPlates",
+    "raises": "target 40lb is below the bar (45lb)"
+  },
+  {
+    "args": {
+      "opts": {
+        "preset": "olympic",
+        "unit": "kg"
+      },
+      "target": 60
+    },
+    "fn": "loadPlates",
+    "raises": "unknown preset 'olympic', choose from ['metric-no-45', 'womens']"
+  },
+  {
+    "args": {
+      "opts": {
+        "preset": "womens",
+        "unit": "lb"
+      },
+      "target": 60
+    },
+    "fn": "loadPlates",
+    "raises": "preset 'womens' is a kg-only setup; the unit must be kg"
   }
 ]

@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { test } from "node:test";
 
-import { assertParity } from "./assert-parity.mjs";
+import { checkFixture } from "./assert-parity.mjs";
 import { estimateOneRm, percentageTable } from "../../web/js/math/one-rep-max.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -16,12 +16,13 @@ const fixtures = JSON.parse(
 
 for (const [i, fixture] of fixtures.entries()) {
   test(`one-rep-max #${i}: ${fixture.fn}(${JSON.stringify(fixture.args)})`, () => {
-    if (fixture.fn === "percentageTable") {
-      const { consensus, unit, ...opts } = fixture.args;
-      assertParity(percentageTable(consensus, unit, opts), fixture.expected);
-      return;
-    }
-    const { weight, reps, unit, rpe, rir } = fixture.args;
-    assertParity(estimateOneRm(weight, reps, unit, { rpe, rir }), fixture.expected);
+    checkFixture(fixture, (args) => {
+      if (fixture.fn === "percentageTable") {
+        const { consensus, unit, ...opts } = args;
+        return percentageTable(consensus, unit, opts);
+      }
+      const { weight, reps, unit, rpe, rir } = args;
+      return estimateOneRm(weight, reps, unit, { rpe, rir });
+    });
   });
 }

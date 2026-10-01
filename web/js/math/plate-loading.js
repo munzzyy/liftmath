@@ -8,6 +8,8 @@
 // This is the pure computePlateStack() layer the SVG barbell renderer sits
 // on top of - see web/js/ui/svg-barbell.js.
 
+import { pyRepr } from "./py-repr.js";
+
 export const DEFAULT_PLATES = {
   kg: [25, 20, 15, 10, 5, 2.5, 1.25],
   lb: [45, 35, 25, 10, 5, 2.5],
@@ -87,24 +89,22 @@ function exactCombo(perSide, available) {
  * @param {string|null} [opts.preset=null] - a named non-standard setup from
  *   `PRESETS` (e.g. "womens" for a 15kg bar). Presets are kg-only; pairing
  *   one with unit="lb" is an error.
- * @throws {RangeError} if target is below the bar weight, if `preset` isn't
- *   a known preset name, or if `preset` is combined with unit="lb".
+ * @throws {RangeError} if target isn't a finite number or is below the bar
+ *   weight, if the bar weight or any plate denomination isn't a finite number
+ *   > 0, if `preset` isn't a known preset name, or if `preset` is combined
+ *   with unit="lb".
  */
 export function loadPlates(target, opts = {}) {
   let { unit = "lb", bar = null, plates = null, preset = null } = opts;
 
   if (preset !== null) {
     if (!(preset in PRESETS)) {
-      throw new RangeError(
-        `unknown preset ${JSON.stringify(preset)}, choose from ${JSON.stringify(
-          Object.keys(PRESETS).sort()
-        )}`
-      );
+      throw new RangeError(`unknown preset ${pyRepr(preset)}, choose from ${pyRepr(Object.keys(PRESETS).sort())}`);
     }
     if (unit !== "kg") {
       // Same wording as the Python mirror: no flag or keyword name in it, so
       // it reads the same in the CLI, the library, and the app.
-      throw new RangeError(`preset ${JSON.stringify(preset)} is a kg-only setup; the unit must be kg`);
+      throw new RangeError(`preset ${pyRepr(preset)} is a kg-only setup; the unit must be kg`);
     }
     const presetDef = PRESETS[preset];
     bar = bar !== null ? bar : presetDef.bar;
@@ -112,6 +112,12 @@ export function loadPlates(target, opts = {}) {
   }
 
   const barWeight = bar !== null ? bar : DEFAULT_BAR[unit];
+  if (!Number.isFinite(barWeight) || barWeight <= 0) {
+    throw new RangeError(`bar weight must be a finite number > 0, got ${pyRepr(barWeight)}`);
+  }
+  if (!Number.isFinite(target)) {
+    throw new RangeError(`target must be a finite number, got ${pyRepr(target)}`);
+  }
   if (target < barWeight) {
     throw new RangeError(`target ${target}${unit} is below the bar (${barWeight}${unit})`);
   }
@@ -120,6 +126,12 @@ export function loadPlates(target, opts = {}) {
   // `!== null` rather than falsy-or: an explicitly empty plates=[] means "no
   // plates available" and must not silently fall back to defaults.
   const available = [...(plates !== null ? plates : DEFAULT_PLATES[unit])].sort((a, b) => b - a);
+  for (const p of available) {
+    // A size <= 0 would also never let the odometer in exactCombo finish.
+    if (!Number.isFinite(p) || p <= 0) {
+      throw new RangeError(`plate denominations must be finite numbers > 0, got ${pyRepr(p)}`);
+    }
+  }
 
   let remaining = perSide;
   let loaded = [];
@@ -179,10 +191,10 @@ export function loadPlates(target, opts = {}) {
 export function resolveBarWeight(unit, bar, preset) {
   if (preset != null) {
     if (!(preset in PRESETS)) {
-      throw new RangeError(`unknown preset ${JSON.stringify(preset)}`);
+      throw new RangeError(`unknown preset ${pyRepr(preset)}, choose from ${pyRepr(Object.keys(PRESETS).sort())}`);
     }
     if (unit !== "kg") {
-      throw new RangeError(`preset ${JSON.stringify(preset)} is a kg-only setup; the unit must be kg`);
+      throw new RangeError(`preset ${pyRepr(preset)} is a kg-only setup; the unit must be kg`);
     }
     return bar ?? PRESETS[preset].bar;
   }

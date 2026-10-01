@@ -33,6 +33,20 @@ def test_142_5kg_on_20kg_bar_default_plates():
     assert result.exact is True
 
 
+def test_float_noise_target_still_loads_exactly():
+    # 350 * 0.7 is 244.99999999999997, so per side is a hair under 100.
+    result = load_plates(350 * 0.7, unit="lb")
+    assert result.plates == [(45, 2), (10, 1)]
+    assert result.exact is True
+
+
+def test_float_noise_target_reaches_the_exact_combo_search():
+    # Greedy comes up short with 45s and 25s; the backstop has to allow four 25s.
+    result = load_plates(350 * 0.7, unit="lb", plates=(45, 25))
+    assert result.plates == [(25, 4)]
+    assert result.exact is True
+
+
 def test_target_below_bar_raises():
     with pytest.raises(ValueError):
         load_plates(30, unit="lb", bar=45)

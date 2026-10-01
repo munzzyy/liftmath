@@ -697,6 +697,106 @@
   },
   {
     "args": {
+      "reps": 0,
+      "unit": "lb",
+      "weight": 225
+    },
+    "fn": "estimateOneRm",
+    "raises": "reps must be >= 1"
+  },
+  {
+    "args": {
+      "reps": 5,
+      "unit": "lb",
+      "weight": {
+        "$num": "NaN"
+      }
+    },
+    "fn": "estimateOneRm",
+    "raises": "weight must be a finite number"
+  },
+  {
+    "args": {
+      "reps": 5,
+      "unit": "lb",
+      "weight": {
+        "$num": "Infinity"
+      }
+    },
+    "fn": "estimateOneRm",
+    "raises": "weight must be a finite number"
+  },
+  {
+    "args": {
+      "reps": 5,
+      "unit": "lb",
+      "weight": 0
+    },
+    "fn": "estimateOneRm",
+    "raises": "weight must be > 0"
+  },
+  {
+    "args": {
+      "reps": 5,
+      "unit": "lb",
+      "weight": -100
+    },
+    "fn": "estimateOneRm",
+    "raises": "weight must be > 0"
+  },
+  {
+    "args": {
+      "reps": 5,
+      "rpe": 5,
+      "unit": "lb",
+      "weight": 225
+    },
+    "fn": "estimateOneRm",
+    "raises": "rpe must be between 6 and 10 in 0.5 steps"
+  },
+  {
+    "args": {
+      "reps": 5,
+      "rpe": 7.3,
+      "unit": "lb",
+      "weight": 225
+    },
+    "fn": "estimateOneRm",
+    "raises": "rpe must be between 6 and 10 in 0.5 steps"
+  },
+  {
+    "args": {
+      "reps": 5,
+      "rpe": 11,
+      "unit": "lb",
+      "weight": 225
+    },
+    "fn": "estimateOneRm",
+    "raises": "rpe must be between 6 and 10 in 0.5 steps"
+  },
+  {
+    "args": {
+      "reps": 5,
+      "rir": 2,
+      "rpe": 8,
+      "unit": "lb",
+      "weight": 225
+    },
+    "fn": "estimateOneRm",
+    "raises": "pass rpe or rir, not both"
+  },
+  {
+    "args": {
+      "reps": 5,
+      "rir": -1,
+      "unit": "lb",
+      "weight": 225
+    },
+    "fn": "estimateOneRm",
+    "raises": "rir must be >= 0"
+  },
+  {
+    "args": {
       "consensus": 300,
       "unit": "lb"
     },
@@ -1125,5 +1225,59 @@
       }
     ],
     "fn": "percentageTable"
+  },
+  {
+    "args": {
+      "consensus": 0,
+      "unit": "lb"
+    },
+    "fn": "percentageTable",
+    "raises": "consensus must be a finite number > 0"
+  },
+  {
+    "args": {
+      "consensus": -1,
+      "unit": "lb"
+    },
+    "fn": "percentageTable",
+    "raises": "consensus must be a finite number > 0"
+  },
+  {
+    "args": {
+      "consensus": {
+        "$num": "NaN"
+      },
+      "unit": "lb"
+    },
+    "fn": "percentageTable",
+    "raises": "consensus must be a finite number > 0"
+  },
+  {
+    "args": {
+      "consensus": {
+        "$num": "Infinity"
+      },
+      "unit": "kg"
+    },
+    "fn": "percentageTable",
+    "raises": "consensus must be a finite number > 0"
+  },
+  {
+    "args": {
+      "consensus": 300,
+      "preset": "olympic",
+      "unit": "kg"
+    },
+    "fn": "percentageTable",
+    "raises": "unknown preset 'olympic', choose from ['metric-no-45', 'womens']"
+  },
+  {
+    "args": {
+      "consensus": 300,
+      "preset": "womens",
+      "unit": "lb"
+    },
+    "fn": "percentageTable",
+    "raises": "preset 'womens' is a kg-only setup; the unit must be kg"
   }
 ]

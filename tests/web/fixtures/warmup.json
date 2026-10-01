@@ -280,5 +280,84 @@
       }
     ],
     "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": 0
+    },
+    "fn": "warmupRamp",
+    "raises": "target must be a finite number > 0"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": -225
+    },
+    "fn": "warmupRamp",
+    "raises": "target must be a finite number > 0"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "lb"
+      },
+      "target": {
+        "$num": "NaN"
+      }
+    },
+    "fn": "warmupRamp",
+    "raises": "target must be a finite number > 0"
+  },
+  {
+    "args": {
+      "opts": {
+        "unit": "kg"
+      },
+      "target": {
+        "$num": "Infinity"
+      }
+    },
+    "fn": "warmupRamp",
+    "raises": "target must be a finite number > 0"
+  },
+  {
+    "args": {
+      "opts": {
+        "preset": "olympic",
+        "unit": "kg"
+      },
+      "target": 100
+    },
+    "fn": "warmupRamp",
+    "raises": "unknown preset 'olympic', choose from ['metric-no-45', 'womens']"
+  },
+  {
+    "args": {
+      "opts": {
+        "preset": "womens",
+        "unit": "lb"
+      },
+      "target": 100
+    },
+    "fn": "warmupRamp",
+    "raises": "preset 'womens' is a kg-only setup; the unit must be kg"
+  },
+  {
+    "args": {
+      "opts": {
+        "plates": [
+          -5
+        ],
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "warmupRamp",
+    "raises": "plate denominations must be finite numbers > 0, got -5"
   }
 ]

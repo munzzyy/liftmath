@@ -131,6 +131,16 @@ def gen_one_rep_max() -> list[dict]:
             "args": {"weight": weight, "reps": reps, "unit": "lb", **kwargs},
             "expected": dump(onerm.estimate_one_rm(weight, reps, unit="lb", **kwargs)),
         })
+    for weight, reps, kwargs in [
+        (225, 0, {}), (math.nan, 5, {}), (math.inf, 5, {}), (0, 5, {}), (-100, 5, {}),
+        (225, 5, {"rpe": 5}), (225, 5, {"rpe": 7.3}), (225, 5, {"rpe": 11}),
+        (225, 5, {"rpe": 8, "rir": 2}), (225, 5, {"rir": -1}),
+    ]:
+        cases.append(raises(
+            "estimateOneRm", {"weight": weight, "reps": reps, "unit": "lb", **kwargs},
+            lambda weight=weight, reps=reps, kwargs=kwargs:
+                onerm.estimate_one_rm(weight, reps, unit="lb", **kwargs),
+        ))
     return cases
 
 
@@ -145,6 +155,15 @@ def gen_percentage_table() -> list[dict]:
             "args": {"consensus": consensus, "unit": unit, **kwargs},
             "expected": [dump(row) for row in onerm.percentage_table(consensus, unit=unit, **kwargs)],
         })
+    for consensus, unit, kwargs in [
+        (0, "lb", {}), (-1, "lb", {}), (math.nan, "lb", {}), (math.inf, "kg", {}),
+        (300, "kg", {"preset": "olympic"}), (300, "lb", {"preset": "womens"}),
+    ]:
+        cases.append(raises(
+            "percentageTable", {"consensus": consensus, "unit": unit, **kwargs},
+            lambda consensus=consensus, unit=unit, kwargs=kwargs:
+                onerm.percentage_table(consensus, unit=unit, **kwargs),
+        ))
     return cases
 
 
@@ -191,6 +210,26 @@ def gen_plate_loading() -> list[dict]:
         "args": {"target": 165, "opts": {"unit": "lb", "bar": 45, "plates": [45, 30]}},
         "expected": dump(plates.load_plates(165, unit="lb", bar=45, plates=(45, 30))),
     })
+    # 350 * 0.7 is 244.99999999999997: the tolerance has to apply before truncating
+    for opts in [{"unit": "lb"}, {"unit": "lb", "plates": [45, 25]}]:
+        kwargs = {**opts, "plates": tuple(opts["plates"])} if "plates" in opts else opts
+        cases.append({
+            "fn": "loadPlates",
+            "args": {"target": 350 * 0.7, "opts": opts},
+            "expected": dump(plates.load_plates(350 * 0.7, **kwargs)),
+        })
+    for target, opts in [
+        (math.nan, {"unit": "lb"}), (math.inf, {"unit": "lb"}), (-math.inf, {"unit": "kg"}),
+        (135, {"unit": "lb", "bar": 0}), (135, {"unit": "lb", "bar": -45}),
+        (135, {"unit": "lb", "bar": math.nan}), (135, {"unit": "lb", "bar": math.inf}),
+        (225, {"unit": "lb", "plates": [-5]}), (225, {"unit": "lb", "plates": [45, 0]}),
+        (225, {"unit": "lb", "plates": [45, math.nan]}), (225, {"unit": "lb", "plates": [math.inf]}),
+        (40, {"unit": "lb"}), (60, {"unit": "kg", "preset": "olympic"}),
+        (60, {"unit": "lb", "preset": "womens"}),
+    ]:
+        kwargs = {**opts, "plates": tuple(opts["plates"])} if "plates" in opts else opts
+        cases.append(raises("loadPlates", {"target": target, "opts": opts},
+                            lambda target=target, kwargs=kwargs: plates.load_plates(target, **kwargs)))
     return cases
 
 
@@ -211,6 +250,14 @@ def gen_warmup() -> list[dict]:
         "args": {"target": 100, "opts": {"unit": "kg", "preset": "womens"}},
         "expected": [dump(row) for row in plates.warmup_ramp(100, unit="kg", preset="womens")],
     })
+    for target, opts in [
+        (0, {"unit": "lb"}), (-225, {"unit": "lb"}), (math.nan, {"unit": "lb"}), (math.inf, {"unit": "kg"}),
+        (100, {"unit": "kg", "preset": "olympic"}), (100, {"unit": "lb", "preset": "womens"}),
+        (225, {"unit": "lb", "plates": [-5]}),
+    ]:
+        kwargs = {**opts, "plates": tuple(opts["plates"])} if "plates" in opts else opts
+        cases.append(raises("warmupRamp", {"target": target, "opts": opts},
+                            lambda target=target, kwargs=kwargs: plates.warmup_ramp(target, **kwargs)))
     return cases
 
 
@@ -256,6 +303,19 @@ def gen_plate_inventory() -> list[dict]:
         "args": {"target": 120, "inventory": inv_kg, "opts": {"unit": "kg", "bar": 20}},
         "expected": dump(plates.load_plates_from_inventory(120, inv_kg, unit="kg", bar=20)),
     })
+    for target, inventory, opts in [
+        (225, {}, {"unit": "lb"}), (225, {-5: 2}, {"unit": "lb"}), (225, {45: 2, 0: 1}, {"unit": "lb"}),
+        (225, {45: 0}, {"unit": "lb"}), (225, {45: plates.MAX_PLATES_PER_SIZE + 1}, {"unit": "lb"}),
+        (math.nan, {45: 2}, {"unit": "lb"}), (math.inf, {45: 2}, {"unit": "lb"}),
+        (225, {45: 2}, {"unit": "lb", "bar": 0}), (225, {45: 2}, {"unit": "lb", "bar": math.nan}),
+        (40, {45: 2}, {"unit": "lb"}),
+        (225, {s: 50 for s in (45, 35, 25, 10, 5)}, {"unit": "lb"}),
+    ]:
+        cases.append(raises(
+            "loadPlatesFromInventory", {"target": target, "inventory": inventory, "opts": opts},
+            lambda target=target, inventory=inventory, opts=opts:
+                plates.load_plates_from_inventory(target, inventory, **opts),
+        ))
     return cases
 
 
@@ -292,6 +352,16 @@ def gen_strength_scores() -> list[dict]:
             "args": {"dots": dots, "sex": sex, "raw": raw},
             "expected": dump(standards.dots_percentile(dots, sex, raw=raw)),
         })
+    for total, bw, sex in [
+        (500, 83, "x"), (500, 83, "M"), (0, 83, "male"), (-500, 83, "female"), (math.nan, 83, "male"),
+        (math.inf, 83, "male"), (500, 0, "male"), (500, -83, "female"), (500, math.nan, "male"),
+        (500, math.inf, "female"),
+    ]:
+        cases.append(raises("score", {"totalKg": total, "bodyweightKg": bw, "sex": sex},
+                            lambda total=total, bw=bw, sex=sex: standards.score(total, bw, sex)))
+    for dots, sex in [(300, "x"), (0, "male"), (-1, "female"), (math.nan, "male"), (math.inf, "male")]:
+        cases.append(raises("dotsPercentile", {"dots": dots, "sex": sex, "raw": True},
+                            lambda dots=dots, sex=sex: standards.dots_percentile(dots, sex)))
     return cases
 
 

@@ -74,12 +74,18 @@ export function rpeToRir(rpe) {
  *   consensus:number, low:number, high:number, highRepWarning:boolean,
  *   softEstimateWarning:boolean, isExact:boolean, rpe:?number, rir:?number,
  *   effectiveReps:number}}
- * @throws {RangeError} if reps < 1, both rpe and rir are given, rpe is out of range
- *   or not a half-step, or rir is negative.
+ * @throws {RangeError} if reps < 1, weight isn't a finite number > 0, both rpe and
+ *   rir are given, rpe is out of range or not a half-step, or rir is negative.
  */
 export function estimateOneRm(weight, reps, unit = "lb", { rpe, rir } = {}) {
   if (reps < 1) {
     throw new RangeError("reps must be >= 1");
+  }
+  if (!Number.isFinite(weight)) {
+    throw new RangeError("weight must be a finite number");
+  }
+  if (weight <= 0) {
+    throw new RangeError("weight must be > 0");
   }
   if (rpe != null && rir != null) {
     throw new RangeError("pass rpe or rir, not both");
