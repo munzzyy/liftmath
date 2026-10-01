@@ -11,7 +11,6 @@ venv/
 .coverage
 htmlcov/
 .mypy_cache/
-.claude/
 .scratch/
 android/local.properties
 android/.gradle/
