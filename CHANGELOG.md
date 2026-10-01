@@ -29,6 +29,10 @@
   `index.html?tab=...`, and the service worker only had the page cached without the query
   string, so an installed app with no signal showed a network error instead. Any page load the
   cache doesn't know falls back to the app, and a missing file is a clean network error.
+- Web: opening a shared link no longer rewrites your saved setup. A friend's kg link used to
+  switch your app to kg for good and save your bodyweight and bar converted, while your plate
+  list stayed in lb numbers. The link's unit and values now last for that visit. They are saved,
+  unit and weights together, only once you change a setting yourself.
 - Web: the rest timer sheet is a labelled dialog for screen readers. Focus moves into it when it
   opens and back to the Timer button when it closes, whether by its close button, Escape or
   Back. The Timer button says whether the sheet is open, and "Rest over" and "Link copied" get

@@ -354,6 +354,45 @@ test("a deep link wins over both localStorage and ?tab=", async () => {
   assert.equal(app.$("plates-target").value, "405");
 });
 
+const LB_SETUP = {
+  "liftmath:pref:unit": "lb",
+  "liftmath:field:score-bodyweight": "183",
+  "liftmath:field:plates-inventory-bar": "45",
+};
+
+test("opening someone's kg link shows it in kg but leaves the saved lb setup alone", async () => {
+  const storage = makeStorage(LB_SETUP);
+  const app = await loadApp({ storage, hash: "#1rm?w=100&r=5&u=kg" });
+  assert.equal(app.$("unit-kg").getAttribute("aria-pressed"), "true");
+  assert.equal(hero(app.text("onerm-results")), "115.19 kg");
+  assert.equal(storage.data.get("liftmath:pref:unit"), "lb");
+  assert.equal(storage.data.get("liftmath:field:score-bodyweight"), "183");
+  assert.equal(storage.data.get("liftmath:field:plates-inventory-bar"), "45");
+
+  const next = await loadApp({ storage });
+  assert.equal(next.$("unit-lb").getAttribute("aria-pressed"), "true");
+  assert.equal(next.$("score-bodyweight").value, "183");
+});
+
+test("editing a field after opening a link saves the unit and the fields together", async () => {
+  const storage = makeStorage(LB_SETUP);
+  const app = await loadApp({ storage, hash: "#1rm?w=100&r=5&u=kg" });
+  app.type("score-bodyweight", 90);
+  assert.equal(storage.data.get("liftmath:pref:unit"), "kg");
+  assert.equal(storage.data.get("liftmath:field:score-bodyweight"), "90");
+  assert.equal(storage.data.get("liftmath:field:plates-inventory-bar"), app.$("plates-inventory-bar").value);
+});
+
+test("a link's sex choice doesn't overwrite the saved one until a chip is picked", async () => {
+  const storage = makeStorage({ "liftmath:pref:score-sex": "male" });
+  const app = await loadApp({ storage, hash: "#score?t=400&bw=60&sex=female&u=kg" });
+  assert.equal(app.chip("score-sex-group", "sex", "female").getAttribute("aria-pressed"), "true");
+  assert.equal(storage.data.get("liftmath:pref:score-sex"), "male");
+  app.chip("score-equip-group", "equip", "equipped").click();
+  assert.equal(storage.data.get("liftmath:pref:score-equip"), "equipped");
+  assert.equal(storage.data.get("liftmath:pref:unit"), "kg");
+});
+
 test("editing an input updates location.hash to match", async () => {
   const app = await loadApp();
   app.type("onerm-weight", 200);

@@ -148,6 +148,26 @@ function saveFields() {
   for (const id of PERSISTED_FIELDS) writeStored(fieldKey(id), $(id).value);
 }
 
+// While a shared link's unit and values are on screen, the saved setup is left alone until the user changes a setting.
+let linkHold = false;
+
+function savePref(name, value) {
+  if (!linkHold) writeStored(prefKey(name), value);
+}
+
+// The unit and the weights are saved as a pair, so a saved 183 never comes back in the other unit.
+function saveSetup() {
+  if (linkHold) return;
+  writeStored(prefKey("unit"), unit);
+  saveFields();
+}
+
+function releaseLinkHold() {
+  if (!linkHold) return;
+  linkHold = false;
+  saveSetup();
+}
+
 // ---------------------------------------------------------------------------
 // Unit toggle (lb/kg). Weight-bearing fields are converted in place on
 // toggle (via js/ui/units.js) so the same real-world weight stays
@@ -221,15 +241,16 @@ function setUnit(newUnit) {
     input.step = COARSE_FIELDS.includes(id) ? COARSE_STEP[fieldNewUnit] : FINE_STEP[fieldNewUnit];
     rewireStepper(id);
   }
-  // The stored field values are whatever's on screen, so they have to be
-  // re-saved in the new unit or a saved 183 lb comes back as 183 kg.
-  writeStored(prefKey("unit"), unit);
-  saveFields();
+  saveSetup();
   renderAll();
 }
 
-$("unit-lb").addEventListener("click", () => setUnit("lb"));
-$("unit-kg").addEventListener("click", () => setUnit("kg"));
+for (const choice of ["lb", "kg"]) {
+  $(`unit-${choice}`).addEventListener("click", () => {
+    releaseLinkHold();
+    setUnit(choice);
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Tabs
@@ -284,6 +305,7 @@ function updateHashForActiveTab() {
  * params are left as whatever's already on screen (a default, or a
  * localStorage-restored value) rather than blanked. */
 function applyDeepLinkParams(tab, params) {
+  linkHold = true;
   if (params.u === "kg" || params.u === "lb") setUnit(params.u);
   switch (tab) {
     case "onerm":
@@ -356,7 +378,10 @@ function wireChipGroup(groupId, dataKey, onSelect) {
   }
 
   for (const btn of chips) {
-    btn.addEventListener("click", () => select(btn.dataset[dataKey]));
+    btn.addEventListener("click", () => {
+      releaseLinkHold();
+      select(btn.dataset[dataKey]);
+    });
   }
   return select;
 }
@@ -533,7 +558,7 @@ const selectPlatesPreset = wireChipGroup("plates-preset-group", "preset", (value
     rewireStepper("plates-target");
   }
   $("plates-inventory-fields").hidden = value !== "my-plates";
-  writeStored(prefKey("plates-preset"), value);
+  savePref("plates-preset", value);
   renderPlates();
 });
 
@@ -661,7 +686,7 @@ $("plates-warmup-toggle").addEventListener("click", () => {
 let scoreSex = "male";
 const selectScoreSex = wireChipGroup("score-sex-group", "sex", (value) => {
   scoreSex = value;
-  writeStored(prefKey("score-sex"), value);
+  savePref("score-sex", value);
   renderScore();
   updateHashForActiveTab();
 });
@@ -669,7 +694,7 @@ const selectScoreSex = wireChipGroup("score-sex-group", "sex", (value) => {
 let scoreEquip = "raw";
 const selectScoreEquip = wireChipGroup("score-equip-group", "equip", (value) => {
   scoreEquip = value;
-  writeStored(prefKey("score-equip"), value);
+  savePref("score-equip", value);
   renderScore();
 });
 
@@ -921,7 +946,7 @@ wireChipGroup("records-sport-group", "sport", (value) => {
 
 const selectRecordsSex = wireChipGroup("records-sex-group", "sex", (value) => {
   recordsSex = value;
-  writeStored(prefKey("records-sex"), value);
+  savePref("records-sex", value);
   fillRecordsClassSelect();
   if (recordsSport !== "powerlifting") fillRecordsEventSelect();
   renderRecords();
@@ -1316,7 +1341,10 @@ function renderAll() {
 ].forEach(wireStepperFor);
 
 for (const id of PERSISTED_FIELDS) {
-  $(id).addEventListener("input", () => writeStored(fieldKey(id), $(id).value));
+  $(id).addEventListener("input", () => {
+    releaseLinkHold();
+    writeStored(fieldKey(id), $(id).value);
+  });
 }
 
 /**
