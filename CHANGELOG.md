@@ -25,6 +25,10 @@
 - `liftmath import --use-rpe` (and `e1rm_trend(..., use_rpe=True)`) counts each set's logged
   RPE from a Strong or Hevy export in its estimated 1RM. A blank or off-scale RPE falls back to
   reps only. It's opt-in, so the default output is unchanged.
+- Web: the home-screen shortcuts (1RM, Plates, Score, ...) open offline. They link to
+  `index.html?tab=...`, and the service worker only had the page cached without the query
+  string, so an installed app with no signal showed a network error instead. Any page load the
+  cache doesn't know falls back to the app, and a missing file is a clean network error.
 - Web: the rest timer sheet is a labelled dialog for screen readers. Focus moves into it when it
   opens and back to the Timer button when it closes, whether by its close button, Escape or
   Back. The Timer button says whether the sheet is open, and "Rest over" and "Link copied" get

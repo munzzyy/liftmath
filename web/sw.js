@@ -8,7 +8,7 @@
 // No CDN, no external requests exist to cache (there aren't any) - every URL
 // below is same-origin, matching the zero-dependency constraint.
 
-const CACHE_NAME = "liftmath-v2.5.1-7";
+const CACHE_NAME = "liftmath-v2.5.1-8";
 
 const PRECACHE_URLS = [
   "./",
@@ -55,23 +55,27 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
+  const request = event.request;
+  if (request.method !== "GET") return;
+  // The home-screen shortcuts open ./index.html?tab=..., and only the bare page is precached.
+  const navigate = request.mode === "navigate";
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
+    caches.match(request, { ignoreSearch: navigate }).then((cached) => {
       if (cached) return cached;
-      return fetch(event.request)
+      return fetch(request)
         .then((response) => {
           // Only same-origin, successful, basic responses get cached - never
           // cache an opaque cross-origin response (there shouldn't be any,
           // but this keeps the guarantee explicit).
           if (response.ok && response.type === "basic") {
             const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
           }
           return response;
         })
-        .catch(() => cached);
+        .catch(() => (navigate ? caches.match("./index.html") : undefined))
+        .then((response) => response || Response.error());
     })
   );
 });
