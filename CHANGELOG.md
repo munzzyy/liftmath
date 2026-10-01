@@ -14,6 +14,11 @@
   because that reads as a thousands separator on combined-event points.
 - Web Track tab: a mark it cannot read gets a one-line hint instead of no comparison at all. The
   field also asks the phone for a text keyboard so the ':' key is there.
+- Web: the rest timer sheet is a labelled dialog for screen readers. Focus moves into it when it
+  opens and back to the Timer button when it closes, whether by its close button, Escape or
+  Back. The Timer button says whether the sheet is open, and "Rest over" and "Link copied" get
+  read out. The sex and equipment chips no longer call themselves radio groups, since their
+  buttons are toggles.
 
 ## 2.5.1 - 2026-09-27
 

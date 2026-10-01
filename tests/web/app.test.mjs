@@ -393,6 +393,7 @@ test("share copies the current deep link to the clipboard when there's no native
   await flushMicrotasks();
   assert.equal(app.clipboardWrites.length, 1);
   assert.match(app.clipboardWrites[0], /w=315/);
+  assert.equal(app.$("status-announcer").textContent, "Link copied");
 });
 
 test("in the Android app, share hands the public link to the native sheet and nothing else", async () => {
@@ -430,6 +431,88 @@ test("closing the timer sheet with its button pops the entry it pushed", async (
   app.$("timer-close-btn").click();
   assert.equal(app.$("timer-sheet").hidden, true);
   assert.equal(app.history.state, null);
+});
+
+/** Which element has focus, by id or a preset chip's seconds. assert.equal on two
+ * elements would try to diff the whole DOM tree when it fails. */
+function focused(app) {
+  const el = app.document.activeElement;
+  if (el === null) return null;
+  return el.id || `chip ${el.dataset.seconds}`;
+}
+
+test("the timer sheet is a labelled modal dialog and the Timer button says whether it's open", async () => {
+  const app = await loadApp();
+  const sheet = app.$("timer-sheet");
+  assert.equal(sheet.getAttribute("role"), "dialog");
+  assert.equal(sheet.getAttribute("aria-modal"), "true");
+  assert.equal(app.$(sheet.getAttribute("aria-labelledby")).textContent, "Rest timer");
+
+  const toggle = app.$("timer-toggle-btn");
+  assert.equal(toggle.hasAttribute("aria-pressed"), false);
+  assert.equal(toggle.getAttribute("aria-expanded"), "false");
+  toggle.click();
+  assert.equal(toggle.getAttribute("aria-expanded"), "true");
+  app.$("timer-close-btn").click();
+  assert.equal(toggle.getAttribute("aria-expanded"), "false");
+});
+
+test("opening the timer sheet moves focus into it, onto the first preset", async () => {
+  const app = await loadApp();
+  app.$("timer-toggle-btn").click();
+  assert.equal(focused(app), "chip 60");
+});
+
+test("every way of closing the timer sheet hands focus back to the Timer button", async () => {
+  const app = await loadApp();
+  const toggle = app.$("timer-toggle-btn");
+  const closers = {
+    "close button": () => app.$("timer-close-btn").click(),
+    "Escape": () => app.pressKey("Escape"),
+    "Back": () => app.history.back(),
+  };
+  for (const [name, close] of Object.entries(closers)) {
+    toggle.click();
+    assert.equal(focused(app), "chip 60", `${name}: focus should start inside the sheet`);
+    close();
+    assert.equal(app.$("timer-sheet").hidden, true, `${name}: sheet still open`);
+    assert.equal(focused(app), "timer-toggle-btn", `${name}: focus didn't come back`);
+  }
+});
+
+test("starting a rest from the sheet puts focus on Stop, not on the hidden preset", async () => {
+  const app = await loadApp();
+  app.$("timer-toggle-btn").click();
+  app.chip("timer-preset-group", "seconds", "90").click();
+  try {
+    assert.equal(focused(app), "timer-stop-btn");
+  } finally {
+    app.$("timer-stop-btn").click(); // a failed assert would otherwise leave a 90 s interval running
+  }
+  assert.equal(focused(app), "chip 60");
+});
+
+test("a screen reader hears that the rest is over", async () => {
+  const app = await loadApp({
+    storage: makeStorage({ "liftmath:timer:end": String(Date.now() + 300) }),
+  });
+  assert.equal(app.$("status-announcer").getAttribute("role"), "status");
+  assert.equal(app.$("status-announcer").textContent, "");
+  await new Promise((resolve) => setTimeout(resolve, 700));
+  assert.equal(app.$("timer-picker").hidden, false);
+  assert.equal(app.$("status-announcer").textContent, "Rest over");
+});
+
+test("the sex and equipment chips are plain toggle groups, not radio groups with no radios", async () => {
+  const app = await loadApp();
+  for (const id of ["score-sex-group", "score-equip-group", "records-sex-group", "track-sex-group"]) {
+    const group = app.$(id);
+    assert.equal(group.getAttribute("role"), "group", id);
+    for (const chip of group.querySelectorAll(".chip")) {
+      assert.ok(chip.hasAttribute("aria-pressed"), `${id}: chip without aria-pressed`);
+      assert.equal(chip.getAttribute("role"), null, `${id}: chip claims a role`);
+    }
+  }
 });
 
 test("picking a preset starts a running countdown at that duration", async () => {

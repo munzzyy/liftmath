@@ -50,6 +50,7 @@
 </head>
 <body>
 <a class="visually-hidden" href="#main-content" id="skip-link">Skip to content</a>
+<div class="visually-hidden" role="status" id="status-announcer"></div>
 
 <header class="app-header">
   <h1 class="app-title"><span id="app-title-lift">lift</span><span class="accent" id="app-title-math">math</span></h1>
@@ -59,17 +60,17 @@
       <button type="button" id="unit-kg" aria-pressed="false">kg</button>
     </div>
     <button type="button" class="icon-btn" id="share-btn">Share</button>
-    <button type="button" class="icon-btn" id="timer-toggle-btn" aria-pressed="false">Timer</button>
+    <button type="button" class="icon-btn" id="timer-toggle-btn" aria-expanded="false" aria-controls="timer-sheet">Timer</button>
     <button type="button" class="icon-btn" id="theme-toggle-btn" aria-pressed="false">Dark</button>
   </div>
 </header>
 
-<div class="timer-sheet" id="timer-sheet" hidden>
+<div class="timer-sheet" id="timer-sheet" role="dialog" aria-modal="true" aria-labelledby="timer-title" hidden>
   <div class="timer-sheet-inner">
     <button type="button" class="icon-btn" id="timer-close-btn" aria-label="Close timer">&times;</button>
 
     <div id="timer-picker">
-      <p class="timer-label">Rest timer</p>
+      <p class="timer-label" id="timer-title">Rest timer</p>
       <div class="chip-row" role="group" aria-label="Preset duration" id="timer-preset-group">
         <button type="button" class="chip" data-seconds="60">1:00</button>
         <button type="button" class="chip" data-seconds="90">1:30</button>
@@ -230,14 +231,14 @@
     </div>
     <div class="field">
       <span id="score-sex-label">Sex (formula coefficients)</span>
-      <div class="radio-row" role="radiogroup" aria-labelledby="score-sex-label" id="score-sex-group">
+      <div class="radio-row" role="group" aria-labelledby="score-sex-label" id="score-sex-group">
         <button type="button" class="chip" data-sex="male" aria-pressed="true" id="score-sex-male-btn">Male</button>
         <button type="button" class="chip" data-sex="female" aria-pressed="false" id="score-sex-female-btn">Female</button>
       </div>
     </div>
     <div class="field">
       <span id="score-equip-label">Compare against</span>
-      <div class="radio-row" role="radiogroup" aria-labelledby="score-equip-label" id="score-equip-group">
+      <div class="radio-row" role="group" aria-labelledby="score-equip-label" id="score-equip-group">
         <button type="button" class="chip" data-equip="raw" aria-pressed="true" id="score-equip-raw-btn">Raw</button>
         <button type="button" class="chip" data-equip="equipped" aria-pressed="false" id="score-equip-equipped-btn">Equipped</button>
       </div>
@@ -265,7 +266,7 @@
 
     <div class="field">
       <span id="records-sex-label">Sex</span>
-      <div class="radio-row" role="radiogroup" aria-labelledby="records-sex-label" id="records-sex-group">
+      <div class="radio-row" role="group" aria-labelledby="records-sex-label" id="records-sex-group">
         <button type="button" class="chip" data-sex="male" aria-pressed="true" id="records-sex-male-btn">Male</button>
         <button type="button" class="chip" data-sex="female" aria-pressed="false" id="records-sex-female-btn">Female</button>
       </div>
@@ -341,7 +342,7 @@
 
     <div class="field">
       <span id="track-sex-label">Sex</span>
-      <div class="radio-row" role="radiogroup" aria-labelledby="track-sex-label" id="track-sex-group">
+      <div class="radio-row" role="group" aria-labelledby="track-sex-label" id="track-sex-group">
         <button type="button" class="chip" data-sex="male" aria-pressed="true" id="track-sex-male-btn">Male</button>
         <button type="button" class="chip" data-sex="female" aria-pressed="false" id="track-sex-female-btn">Female</button>
       </div>

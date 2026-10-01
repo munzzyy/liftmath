@@ -544,6 +544,10 @@ export async function loadApp({
     text(id) {
       return $(id).innerHTML;
     },
+    /** A key press that reaches window's keydown listeners, the way Escape does in a browser. */
+    pressKey(key) {
+      for (const fn of windowListeners.keydown || []) fn({ key });
+    },
     /** Simulate the OS flipping its light/dark setting - flips what
      * matchMedia reports and fires its "change" listeners. */
     setSystemPrefersLight(value) {

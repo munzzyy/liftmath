@@ -1151,6 +1151,8 @@ function startTimer(seconds) {
   const endTs = Date.now() + seconds * 1000;
   writeStored(TIMER_KEY, String(endTs));
   runTimer(endTs, seconds * 1000);
+  // The button that was pressed is hidden now, so focus would otherwise fall back to the page.
+  if (!$("timer-sheet").hidden) $("timer-stop-btn").focus();
 }
 
 function runTimer(endTs, totalMs) {
@@ -1169,26 +1171,39 @@ function stopTimer(finished) {
   if (finished) {
     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
     beep();
+    announce("Rest over");
   }
   showTimerPicker();
+  if (!$("timer-sheet").hidden) firstTimerChip().focus();
+}
+
+function firstTimerChip() {
+  return $("timer-preset-group").querySelector(".chip");
 }
 
 // The open sheet owns a history entry, so Back (Android's or the browser's) closes it instead of leaving the app.
 function openTimerSheet() {
   if (!$("timer-sheet").hidden) return;
   $("timer-sheet").hidden = false;
+  $("timer-toggle-btn").setAttribute("aria-expanded", "true");
   history.pushState({ timerSheet: true }, "");
+  ($("timer-picker").hidden ? $("timer-stop-btn") : firstTimerChip()).focus();
+}
+
+function hideTimerSheet() {
+  if ($("timer-sheet").hidden) return;
+  $("timer-sheet").hidden = true;
+  $("timer-toggle-btn").setAttribute("aria-expanded", "false");
+  $("timer-toggle-btn").focus();
 }
 
 function closeTimerSheet() {
   if ($("timer-sheet").hidden) return;
-  $("timer-sheet").hidden = true;
+  hideTimerSheet();
   if (history.state && history.state.timerSheet) history.back();
 }
 
-window.addEventListener("popstate", () => {
-  $("timer-sheet").hidden = true;
-});
+window.addEventListener("popstate", hideTimerSheet);
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeTimerSheet();
 });
@@ -1225,6 +1240,15 @@ function restoreTimer() {
 // then a clipboard-copy fallback for a browser with neither.
 // ---------------------------------------------------------------------------
 
+// Screen readers hear this; it's cleared again so the same message can be announced twice in a row.
+function announce(message) {
+  const el = $("status-announcer");
+  el.textContent = message;
+  setTimeout(() => {
+    if (el.textContent === message) el.textContent = "";
+  }, 1500);
+}
+
 function flashShareButton(label) {
   const btn = $("share-btn");
   const original = btn.textContent;
@@ -1258,6 +1282,7 @@ async function shareCurrentState() {
     try {
       await navigator.clipboard.writeText(url);
       flashShareButton("Copied!");
+      announce("Link copied");
     } catch {
       // Clipboard permission denied: nothing more to do silently.
     }
