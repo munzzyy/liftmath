@@ -11,6 +11,12 @@ Fixture keys are emitted in camelCase (converted from the Python dataclasses'
 snake_case field names) so they line up 1:1 with the JS modules' own return
 shapes and no key-mapping layer is needed in the Node test runner.
 
+Error paths are pinned too: a case with a "raises" key instead of
+"expected" holds the exact ValueError message Python gives for those args,
+and the JS has to throw with the same message. JSON has no NaN or Infinity,
+so a non-finite argument is written as {"$num": "NaN"} (or "Infinity",
+"-Infinity") and decoded by tests/web/assert-parity.mjs.
+
 Committed, not regenerated at test time: re-run this script explicitly
 (`py tools/gen_fixtures.py`) after touching the Python reference or this
 generator, then review the fixture diff like any other source change.
@@ -22,6 +28,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -61,6 +68,26 @@ def to_camel(obj):
 def dump(result) -> dict:
     """dataclass (or nested structure of them) -> camelCase plain dict."""
     return to_camel(to_dict(result))
+
+
+def encode_args(obj):
+    """Swap nan/inf for the {"$num": ...} marker so the fixture stays valid JSON."""
+    if isinstance(obj, float) and not math.isfinite(obj):
+        return {"$num": "NaN" if math.isnan(obj) else ("Infinity" if obj > 0 else "-Infinity")}
+    if isinstance(obj, dict):
+        return {k: encode_args(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [encode_args(v) for v in obj]
+    return obj
+
+
+def raises(fn: str, args: dict, call) -> dict:
+    """An error case: `call()` must raise ValueError, and its message is what JS must throw."""
+    try:
+        call()
+    except ValueError as e:
+        return {"fn": fn, "args": encode_args(args), "raises": str(e)}
+    raise AssertionError(f"{fn}({args}) was expected to raise and didn't")
 
 
 # ---------------------------------------------------------------------------
@@ -283,6 +310,9 @@ def gen_unit_convert() -> list[dict]:
             "args": {"value": value, "unit": unit},
             "expected": dump(convert.convert_weight(value, unit=unit)),
         })
+    for value, unit in [(math.nan, "lb"), (math.inf, "kg"), (-math.inf, "lb"), (-1, "lb"), (-0.5, "kg")]:
+        cases.append(raises("convertWeight", {"value": value, "unit": unit},
+                            lambda value=value, unit=unit: convert.convert_weight(value, unit=unit)))
     return cases
 
 
@@ -311,13 +341,20 @@ def gen_records() -> list[dict]:
             "args": {"bodyweightKg": bw, "sex": sex, "scheme": "ipf"},
             "expected": records.weight_class_for(bw, sex, scheme="ipf"),
         })
-    # track-mark parsing and rendering
-    for text in ["9.58", "58.53s", "1:40.91", "3:26.00", "2:00:35", " 12.4 "]:
+    for bw in [math.nan, math.inf, 0, -80]:
+        cases.append(raises("weightClassFor", {"bodyweightKg": bw, "sex": "male"},
+                            lambda bw=bw: records.weight_class_for(bw, "male")))
+    # track-mark parsing and rendering, decimal commas included
+    for text in ["9.58", "58.53s", "1:40.91", "3:26.00", "2:00:35", " 12.4 ", "10,85", "4:12,3",
+                 "8961", "2:00,5"]:
         cases.append({
             "fn": "parseMark",
             "args": {"text": text},
             "expected": records.parse_mark(text),
         })
+    # junk, and a comma that reads as a thousands separator (combined-event points)
+    for text in ["abc", "9,126", "1,234,567", "4:", "1:2:3:4", "nan", "", "4:-1"]:
+        cases.append(raises("parseMark", {"text": text}, lambda text=text: records.parse_mark(text)))
     for seconds in [9.58, 59.994, 100.91, 206.0, 7235, 3599.996]:
         cases.append({
             "fn": "formatSeconds",
@@ -411,7 +448,8 @@ def main() -> int:
     for name, gen in GENERATORS.items():
         cases = gen()
         out_path = FIXTURES_DIR / f"{name}.json"
-        out_path.write_text(json.dumps(cases, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        out_path.write_text(json.dumps(cases, indent=2, sort_keys=True, allow_nan=False) + "\n",
+                            encoding="utf-8")
         print(f"wrote {len(cases):3d} cases -> {out_path.relative_to(REPO_ROOT)}")
     return 0
 

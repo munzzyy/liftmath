@@ -15,13 +15,14 @@ export const KG_PER_LB = 0.45359237;
 
 /**
  * Convert pounds to kilograms using the exact avoirdupois pound.
- * @param {number} lbs - weight in pounds. Must be >= 0.
+ * @param {number} lbs - weight in pounds. Must be a finite number >= 0.
  * @param {number} [ndigits] - if given, round the result to this many
  *   decimal places (Python round-half-to-even via pyRound); omitted returns
  *   the full-precision value.
- * @throws {RangeError} if lbs < 0.
+ * @throws {RangeError} if lbs is NaN/Infinity or < 0.
  */
 export function lbsToKg(lbs, ndigits) {
+  if (!Number.isFinite(lbs)) throw new RangeError("lbs must be a finite number");
   if (lbs < 0) throw new RangeError("lbs must be >= 0");
   const kg = lbs * KG_PER_LB;
   return ndigits === undefined ? kg : pyRound(kg, ndigits);
@@ -29,11 +30,12 @@ export function lbsToKg(lbs, ndigits) {
 
 /**
  * Convert kilograms to pounds using the exact avoirdupois pound.
- * @param {number} kg - weight in kilograms. Must be >= 0.
+ * @param {number} kg - weight in kilograms. Must be a finite number >= 0.
  * @param {number} [ndigits] - see lbsToKg.
- * @throws {RangeError} if kg < 0.
+ * @throws {RangeError} if kg is NaN/Infinity or < 0.
  */
 export function kgToLbs(kg, ndigits) {
+  if (!Number.isFinite(kg)) throw new RangeError("kg must be a finite number");
   if (kg < 0) throw new RangeError("kg must be >= 0");
   const lbs = kg / KG_PER_LB;
   return ndigits === undefined ? lbs : pyRound(lbs, ndigits);
@@ -41,10 +43,10 @@ export function kgToLbs(kg, ndigits) {
 
 /**
  * Convert a weight to the other unit ("lb" -> "kg" or "kg" -> "lb").
- * @param {number} value - weight in `unit`. Must be >= 0.
+ * @param {number} value - weight in `unit`. Must be a finite number >= 0.
  * @param {string} unit - "lb" or "kg", the unit `value` is already in.
  * @param {number} [ndigits] - see lbsToKg.
- * @throws {RangeError} if unit isn't "lb"/"kg", or value < 0.
+ * @throws {RangeError} if unit isn't "lb"/"kg", or value is NaN/Infinity or < 0.
  */
 export function convertWeight(value, unit, ndigits) {
   if (unit !== "lb" && unit !== "kg") {

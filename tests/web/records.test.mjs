@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { test } from "node:test";
 
-import { assertParity } from "./assert-parity.mjs";
+import { checkFixture } from "./assert-parity.mjs";
 import {
   compareValue, formatSeconds, parseMark, percentOfRecord, searchRecords, weightClassFor,
 } from "../../web/js/math/records.js";
@@ -19,23 +19,23 @@ const fixtures = JSON.parse(readFileSync(path.join(here, "fixtures", "records.js
 
 for (const [i, fixture] of fixtures.entries()) {
   test(`records #${i}: ${fixture.fn}(${JSON.stringify(fixture.args).slice(0, 80)})`, () => {
-    let actual;
-    if (fixture.fn === "weightClassFor") {
-      actual = weightClassFor(fixture.args.bodyweightKg, fixture.args.sex,
-        fixture.args.scheme ?? "traditional");
-    } else if (fixture.fn === "searchRecords") {
-      actual = searchRecords(fixture.args);
-    } else if (fixture.fn === "percentOfRecord") {
-      actual = percentOfRecord(fixture.args.value, fixture.args.record);
-    } else if (fixture.fn === "compareValue") {
-      actual = compareValue(fixture.args.record, fixture.args.mark, fixture.args.displayUnit);
-    } else if (fixture.fn === "parseMark") {
-      actual = parseMark(fixture.args.text);
-    } else if (fixture.fn === "formatSeconds") {
-      actual = formatSeconds(fixture.args.seconds);
-    } else {
-      throw new Error(`unknown fixture fn ${fixture.fn}`);
-    }
-    assertParity(actual, fixture.expected);
+    checkFixture(fixture, (args) => {
+      switch (fixture.fn) {
+        case "weightClassFor":
+          return weightClassFor(args.bodyweightKg, args.sex, args.scheme ?? "traditional");
+        case "searchRecords":
+          return searchRecords(args);
+        case "percentOfRecord":
+          return percentOfRecord(args.value, args.record);
+        case "compareValue":
+          return compareValue(args.record, args.mark, args.displayUnit);
+        case "parseMark":
+          return parseMark(args.text);
+        case "formatSeconds":
+          return formatSeconds(args.seconds);
+        default:
+          throw new Error(`unknown fixture fn ${fixture.fn}`);
+      }
+    });
   });
 }

@@ -17,6 +17,7 @@ standards.py's IPF GL coefficient).
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 KG_PER_LB = 0.45359237
@@ -36,14 +37,16 @@ def lbs_to_kg(lbs: float, *, round_to: int | None = None) -> float:
     """Convert pounds to kilograms using the exact avoirdupois pound (1 lb = 0.45359237 kg).
 
     Args:
-        lbs: weight in pounds. Must be >= 0.
+        lbs: weight in pounds. Must be a finite number >= 0.
         round_to: if given, round the result to this many decimal places
             (Python's round(), banker's rounding) before returning; omitted
             (the default) returns the full-precision float.
 
     Raises:
-        ValueError: if lbs < 0.
+        ValueError: if lbs is nan/inf or < 0.
     """
+    if not math.isfinite(lbs):
+        raise ValueError("lbs must be a finite number")
     if lbs < 0:
         raise ValueError("lbs must be >= 0")
     kg = lbs * KG_PER_LB
@@ -54,14 +57,16 @@ def kg_to_lbs(kg: float, *, round_to: int | None = None) -> float:
     """Convert kilograms to pounds using the exact avoirdupois pound (1 lb = 0.45359237 kg).
 
     Args:
-        kg: weight in kilograms. Must be >= 0.
+        kg: weight in kilograms. Must be a finite number >= 0.
         round_to: if given, round the result to this many decimal places
             (Python's round(), banker's rounding) before returning; omitted
             (the default) returns the full-precision float.
 
     Raises:
-        ValueError: if kg < 0.
+        ValueError: if kg is nan/inf or < 0.
     """
+    if not math.isfinite(kg):
+        raise ValueError("kg must be a finite number")
     if kg < 0:
         raise ValueError("kg must be >= 0")
     lbs = kg / KG_PER_LB
@@ -76,12 +81,12 @@ def convert_weight(value: float, *, unit: str, round_to: int | None = None) -> W
     anywhere else a paired before/after is more useful than a bare float.
 
     Args:
-        value: weight in `unit`. Must be >= 0.
+        value: weight in `unit`. Must be a finite number >= 0.
         unit: "lb" or "kg" - the unit `value` is already in.
         round_to: passed through to the underlying conversion function.
 
     Raises:
-        ValueError: if unit isn't "lb"/"kg", or value < 0.
+        ValueError: if unit isn't "lb"/"kg", or value is nan/inf or < 0.
     """
     if unit not in ("lb", "kg"):
         raise ValueError(f"unit must be 'lb' or 'kg', got {unit!r}")

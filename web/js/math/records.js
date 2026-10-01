@@ -41,7 +41,9 @@ function canonicalSex(sex) {
 
 /** Powerlifting weight-class label ("82.5", "140+") for a bodyweight, per scheme. */
 export function weightClassFor(bodyweightKg, sex, scheme = "traditional") {
-  if (!(bodyweightKg > 0)) throw new Error("bodyweightKg must be > 0");
+  if (!Number.isFinite(bodyweightKg) || bodyweightKg <= 0) {
+    throw new Error("bodyweight_kg must be a finite number > 0");
+  }
   if (!SCHEMES.includes(scheme)) {
     throw new Error(`scheme must be one of ${SCHEMES.join("/")}, got ${scheme}`);
   }
@@ -52,19 +54,25 @@ export function weightClassFor(bodyweightKg, sex, scheme = "traditional") {
   return `${ceilings[ceilings.length - 1]}+`;
 }
 
+const THOUSANDS_COMMA = /,\d{3}$/;
+
 /**
  * Parse a track-style mark into seconds (or a plain number for field marks).
  * Accepts "9.58", "1:40.91" (M:SS), "2:00:35" (H:MM:SS); trailing "s" tolerated.
+ * A decimal comma ("10,85") reads as a point, but ",126" at the end is a
+ * thousands separator ("9,126" points) and is rejected, same as the Python.
  */
 export function parseMark(text) {
   const cleaned = String(text).trim().replace(/s$/, "");
   if (!cleaned) throw new Error("empty mark");
-  const parts = cleaned.split(":");
-  if (parts.length > 3) throw new Error(`can't parse mark ${text}`);
+  const junk = `can't parse mark '${text}'`;
+  if (THOUSANDS_COMMA.test(cleaned)) throw new Error(junk);
+  const parts = cleaned.replace(/,/g, ".").split(":");
+  if (parts.length > 3) throw new Error(junk);
   let total = 0;
   for (const part of parts) {
     const value = Number(part);
-    if (!Number.isFinite(value) || part.trim() === "") throw new Error(`can't parse mark ${text}`);
+    if (!Number.isFinite(value) || part.trim() === "") throw new Error(junk);
     if (value < 0) throw new Error("mark parts must be >= 0");
     total = total * 60 + value;
   }

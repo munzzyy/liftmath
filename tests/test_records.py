@@ -51,6 +51,9 @@ def test_weight_class_accepts_m_f_aliases():
 def test_weight_class_rejects_bad_inputs():
     with pytest.raises(ValueError):
         weight_class_for(0, "male")
+    for bad in (float("nan"), float("inf")):
+        with pytest.raises(ValueError, match="finite"):
+            weight_class_for(bad, "male")
     with pytest.raises(ValueError):
         weight_class_for(80, "yes")
     with pytest.raises(ValueError):
@@ -66,6 +69,9 @@ def test_weight_class_rejects_bad_inputs():
     ("3:26.00", 206.0),
     ("2:00:35", 7235.0),
     (" 12.4 ", 12.4),
+    ("10,85", 10.85),
+    ("4:12,3", 252.3),
+    ("2:00,5", 120.5),
 ])
 def test_parse_mark(text, expected):
     assert parse_mark(text) == pytest.approx(expected)
@@ -78,6 +84,15 @@ def test_parse_mark_rejects_junk(bad):
     # CLI); parse_mark rejects them up front, matching the JS port.
     with pytest.raises(ValueError):
         parse_mark(bad)
+
+
+@pytest.mark.parametrize("bad", ["abc", "a:b", "1,2,3", "9,126", "1,234", "4:12,345"])
+def test_parse_mark_junk_message_matches_js(bad):
+    # Not float()'s "could not convert string to float", which the CLI used
+    # to print, and a comma before exactly three digits reads as thousands.
+    with pytest.raises(ValueError) as exc:
+        parse_mark(bad)
+    assert str(exc.value) == f"can't parse mark {bad!r}"
 
 
 @pytest.mark.parametrize("seconds,expected", [

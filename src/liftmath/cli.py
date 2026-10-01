@@ -225,13 +225,13 @@ def _record_value_text(r, display_unit: str) -> str:
     return f"{r.value:g}{'m' if r.unit == 'm' else ' pts'}"
 
 
-def _compare_line(r, compare_raw: str, display_unit: str) -> str | None:
-    """The 'your X = Y% of this record' line, direction- and unit-aware."""
-    try:
-        value = compare_value(r, compare_raw, display_unit)
-        pct = percent_of_record(value, r)
-    except ValueError:
-        return None
+def _compare_line(r, compare_raw: str, display_unit: str) -> str:
+    """The 'your X = Y% of this record' line, direction- and unit-aware.
+
+    Raises ValueError when the mark can't be read against this record.
+    """
+    value = compare_value(r, compare_raw, display_unit)
+    pct = percent_of_record(value, r)
     yours = f"{float(compare_raw):g}{display_unit}" if r.unit == "kg" else compare_raw
     if r.direction == "lower":
         gap = value - r.value
@@ -280,12 +280,26 @@ def cmd_records(args: argparse.Namespace) -> int:
         print("--level/--scheme, or pass --all (or --json) to print everything.")
         return 0
 
+    # One query can mix kg, m, s and pts records, so a mark only has to read
+    # against some of them; it's an error when it reads against none.
+    compare_lines: list[str | None] = [None] * len(matches)
+    if args.compare is not None:
+        first_error = None
+        for i, r in enumerate(matches):
+            try:
+                compare_lines[i] = _compare_line(r, args.compare, args.unit)
+            except ValueError as e:
+                first_error = first_error or e
+        if not any(compare_lines):
+            print(f"error: {first_error}", file=sys.stderr)
+            return 1
+
     print(f"Records matching your filters (snapshot of {records_as_of()}):")
     print("  Powerlifting rows are computed from the OpenPowerlifting database - all-time =")
     print("  any sanctioned federation, tested = drug-tested meets only. Strongman, grip, and")
     print("  track & field are curated with per-entry citations (--json carries the sources).")
     print("-" * 84)
-    for r in matches:
+    for r, compare_line in zip(matches, compare_lines):
         value = _record_value_text(r, args.unit)
         cls = f" {r.weight_class}" if r.weight_class else ("" if r.sport == "track" else " open")
         scheme = f" [{r.scheme}]" if r.scheme else ""
@@ -304,10 +318,8 @@ def cmd_records(args: argparse.Namespace) -> int:
             if r.goodlift:
                 extras.append(f"{r.goodlift:g} IPF GL")
             print(f"      {' - '.join(extras)}")
-        if args.compare is not None:
-            line = _compare_line(r, args.compare, args.unit)
-            if line:
-                print(line)
+        if compare_line:
+            print(compare_line)
     print("-" * 84)
     print("Records move; a bundled snapshot can trail the current record. Official federation")
     print("lists (e.g. the IPF's) are curated separately and differ from all-time-in-the-data.")

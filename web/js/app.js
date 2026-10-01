@@ -985,13 +985,18 @@ function renderTrack() {
   const event = $("track-event").value;
 
   let compareValue = null;
+  let compareHint = "";
   const compareRaw = $("track-compare").value.trim();
   if (compareRaw) {
     try {
       const parsed = parseMark(compareRaw);
       if (parsed > 0) compareValue = parsed;
     } catch {
-      // Half-typed mark ("4:") - just render without the comparison.
+      // A half-typed mark ("4:", "10,") is still being entered, so only say something about real junk.
+      if (!/[:.,]$/.test(compareRaw)) {
+        compareHint = `<p class="hint">Couldn't read that mark. Times go in as 10.85 or 4:12.3,
+          distances and points as a plain number like 8961.</p>`;
+      }
     }
   }
 
@@ -1007,7 +1012,7 @@ function renderTrack() {
   }
 
   if (!matches.length) {
-    resultsEl.innerHTML = `<p class="notice">No record in the bundled snapshot for this
+    resultsEl.innerHTML = `${compareHint}<p class="notice">No record in the bundled snapshot for this
       combination.</p>`;
     return;
   }
@@ -1015,7 +1020,7 @@ function renderTrack() {
   // With no event picked, comparing one mark against every event is noise -
   // only show the meter once an event is chosen.
   const compareFor = event === "all" ? null : compareValue;
-  let html = matches.map((r) => recordCard(r, compareFor)).join("");
+  let html = compareHint + matches.map((r) => recordCard(r, compareFor)).join("");
   html += `<p class="hint">Snapshot of ${escapeHtml(recordsAsOf())}. World records per World Athletics;
     US collegiate and high-school records per the Track &amp; Field News record lists - all curated,
     each entry linking its source. High-school throws use lighter implements, so levels aren't

@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+- `convert` and `records --bodyweight` turn down nan and inf with an `error:` line and exit 1.
+  `convert --weight nan` used to print "nanlb = nankg". A nan bodyweight used to land in the
+  140+ class. `lbs_to_kg`, `kg_to_lbs` and `weight_class_for` raise ValueError on them now. The
+  web app's copies throw the same message.
+- `records --compare`: a mark that fits none of the matched records is an error now
+  (`error: can't parse mark 'abc'`). It used to drop the comparison without a word. A query that
+  mixes weights, times and distances still only needs the mark to fit some rows.
+- Track marks take a decimal comma. "10,85" and "4:12,3" work in `parse_mark`, `--compare` and
+  the web Track tab. A comma before exactly three digits at the end ("9,126") is turned down,
+  because that reads as a thousands separator on combined-event points.
+- Web Track tab: a mark it cannot read gets a one-line hint instead of no comparison at all. The
+  field also asks the phone for a text keyboard so the ':' key is there.
+
 ## 2.5.1 - 2026-09-27
 
 - Android: the release build now runs R8 and resource shrinking, as F-Droid asked. Nothing

@@ -234,6 +234,16 @@ def test_convert_negative_weight_errors(capsys):
     assert "error" in err
 
 
+@pytest.mark.parametrize("weight", ["nan", "inf"])
+@pytest.mark.parametrize("unit", ["lb", "kg"])
+def test_convert_non_finite_weight_errors(capsys, weight, unit):
+    # Used to print "nanlb = nankg" and exit 0.
+    code, out, err = run(capsys, "convert", "--weight", weight, "--unit", unit)
+    assert code == 1
+    assert out == ""
+    assert err.startswith("error: ")
+
+
 def test_convert_bad_unit_errors(capsys):
     with pytest.raises(SystemExit):  # argparse choices rejects it before our handler
         run(capsys, "convert", "--weight", "100", "--unit", "stone")
@@ -318,14 +328,59 @@ def test_records_negative_bodyweight_errors_cleanly_in_lb(capsys):
     assert "error" in err
 
 
-def test_records_nan_compare_does_not_traceback(capsys):
+def test_records_nan_compare_errors_cleanly(capsys):
     # nan/inf compare marks used to crash deep in format_seconds (track) or
-    # print "nanlb = nan%" (weight records); now the compare line is just
-    # dropped and the records still list, exit 0.
-    code, out, _ = run(capsys, "records", "--sport", "track", "--event", "1500m",
-                       "--sex", "male", "--level", "world", "--compare", "nan")
+    # print "nanlb = nan%" (weight records). A mark no matched record can
+    # read is an error now, not a comparison that quietly goes missing.
+    code, out, err = run(capsys, "records", "--sport", "track", "--event", "1500m",
+                         "--sex", "male", "--level", "world", "--compare", "nan")
+    assert code == 1
+    assert out == ""
+    assert err == "error: can't parse mark 'nan'\n"
+
+
+def test_records_typo_compare_errors_instead_of_vanishing(capsys):
+    code, out, err = run(capsys, "records", "--sport", "track", "--event", "100m",
+                         "--sex", "male", "--level", "world", "--compare", "abc")
+    assert code == 1
+    assert out == ""
+    assert err == "error: can't parse mark 'abc'\n"
+
+
+def test_records_compare_only_has_to_read_against_some_rows(capsys):
+    # Grip mixes kg lifts with timed holds in seconds. "4:12" isn't a weight,
+    # but it is a time, so the holds get a comparison and the lifts don't.
+    code, out, err = run(capsys, "records", "--sport", "grip", "--compare", "4:12", "--all")
     assert code == 0
-    assert "% of record pace" not in out
+    assert err == ""
+    assert out.count("your 4:12 = ") == 3
+    assert "Silver Bullet Hold" in out
+
+
+def test_records_compare_takes_a_decimal_comma(capsys):
+    code, out, _ = run(capsys, "records", "--sport", "track", "--event", "100m",
+                       "--sex", "male", "--level", "world", "--compare", "10,85")
+    assert code == 0
+    assert "your 10,85 = 88.3% of record pace" in out
+
+
+def test_records_compare_rejects_a_thousands_comma(capsys):
+    # 9,126 decathlon points, not 9.126.
+    code, out, err = run(capsys, "records", "--sport", "track", "--event", "decathlon",
+                         "--sex", "male", "--level", "world", "--compare", "9,126")
+    assert code == 1
+    assert err == "error: can't parse mark '9,126'\n"
+
+
+@pytest.mark.parametrize("bodyweight", ["nan", "inf"])
+@pytest.mark.parametrize("unit", ["lb", "kg"])
+def test_records_non_finite_bodyweight_errors(capsys, bodyweight, unit):
+    # nan used to slip past the "> 0" check and land in the 140+ class.
+    code, out, err = run(capsys, "records", "--sport", "powerlifting", "--lift", "squat",
+                         "--sex", "male", "--bodyweight", bodyweight, "--unit", unit)
+    assert code == 1
+    assert out == ""
+    assert err.startswith("error: ")
 
 
 def test_records_too_many_matches_hint(capsys):

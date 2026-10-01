@@ -38,6 +38,16 @@ def test_negative_kg_rejected():
         kg_to_lbs(-0.01)
 
 
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
+def test_non_finite_rejected_both_ways(bad):
+    with pytest.raises(ValueError, match="lbs must be a finite number"):
+        lbs_to_kg(bad)
+    with pytest.raises(ValueError, match="kg must be a finite number"):
+        kg_to_lbs(bad)
+    with pytest.raises(ValueError):
+        convert_weight(bad, unit="lb")
+
+
 def test_round_to_applies_python_rounding():
     # 225 * 0.45359237 = 102.05828325 -> round to 2dp
     assert lbs_to_kg(225, round_to=2) == 102.06

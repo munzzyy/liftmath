@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { test } from "node:test";
 
-import { assertParity } from "./assert-parity.mjs";
+import { checkFixture } from "./assert-parity.mjs";
 import { convertWeight } from "../../web/js/math/unit-convert.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -19,7 +19,6 @@ for (const [i, fixture] of fixtures.entries()) {
     if (fixture.fn !== "convertWeight") {
       throw new Error(`unknown fixture fn ${fixture.fn}`);
     }
-    const actual = convertWeight(fixture.args.value, fixture.args.unit);
-    assertParity(actual, fixture.expected);
+    checkFixture(fixture, (args) => convertWeight(args.value, args.unit));
   });
 }

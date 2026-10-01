@@ -168,6 +168,42 @@
   },
   {
     "args": {
+      "bodyweightKg": {
+        "$num": "NaN"
+      },
+      "sex": "male"
+    },
+    "fn": "weightClassFor",
+    "raises": "bodyweight_kg must be a finite number > 0"
+  },
+  {
+    "args": {
+      "bodyweightKg": {
+        "$num": "Infinity"
+      },
+      "sex": "male"
+    },
+    "fn": "weightClassFor",
+    "raises": "bodyweight_kg must be a finite number > 0"
+  },
+  {
+    "args": {
+      "bodyweightKg": 0,
+      "sex": "male"
+    },
+    "fn": "weightClassFor",
+    "raises": "bodyweight_kg must be a finite number > 0"
+  },
+  {
+    "args": {
+      "bodyweightKg": -80,
+      "sex": "male"
+    },
+    "fn": "weightClassFor",
+    "raises": "bodyweight_kg must be a finite number > 0"
+  },
+  {
+    "args": {
       "text": "9.58"
     },
     "expected": 9.58,
@@ -207,6 +243,90 @@
     },
     "expected": 12.4,
     "fn": "parseMark"
+  },
+  {
+    "args": {
+      "text": "10,85"
+    },
+    "expected": 10.85,
+    "fn": "parseMark"
+  },
+  {
+    "args": {
+      "text": "4:12,3"
+    },
+    "expected": 252.3,
+    "fn": "parseMark"
+  },
+  {
+    "args": {
+      "text": "8961"
+    },
+    "expected": 8961.0,
+    "fn": "parseMark"
+  },
+  {
+    "args": {
+      "text": "2:00,5"
+    },
+    "expected": 120.5,
+    "fn": "parseMark"
+  },
+  {
+    "args": {
+      "text": "abc"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark 'abc'"
+  },
+  {
+    "args": {
+      "text": "9,126"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark '9,126'"
+  },
+  {
+    "args": {
+      "text": "1,234,567"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark '1,234,567'"
+  },
+  {
+    "args": {
+      "text": "4:"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark '4:'"
+  },
+  {
+    "args": {
+      "text": "1:2:3:4"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark '1:2:3:4'"
+  },
+  {
+    "args": {
+      "text": "nan"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark 'nan'"
+  },
+  {
+    "args": {
+      "text": ""
+    },
+    "fn": "parseMark",
+    "raises": "empty mark"
+  },
+  {
+    "args": {
+      "text": "4:-1"
+    },
+    "fn": "parseMark",
+    "raises": "mark parts must be >= 0"
   },
   {
     "args": {

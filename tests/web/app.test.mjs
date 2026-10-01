@@ -245,6 +245,30 @@ test("a bad value in a field blanks its results instead of rendering NaN", async
   app.type("onerm-weight", "");
   assert.equal(app.text("onerm-results"), "");
 });
+test("a Track mark with a decimal comma still gets the comparison meter", async () => {
+  const app = await loadApp();
+  app.$("tab-btn-track").click();
+  app.select("track-event", "100m");
+  app.type("track-compare", "10,85");
+  const html = app.text("track-results");
+  assert.match(html, /record-meter/);
+  assert.match(html, /88\.29% of record pace/);
+});
+
+test("a Track mark that can't be read says so, but a half-typed one doesn't", async () => {
+  const app = await loadApp();
+  app.$("tab-btn-track").click();
+  app.select("track-event", "100m");
+  app.type("track-compare", "abc");
+  let html = app.text("track-results");
+  assert.match(html, /Couldn't read that mark/);
+  assert.doesNotMatch(html, /record-meter/);
+
+  app.type("track-compare", "4:");
+  html = app.text("track-results");
+  assert.doesNotMatch(html, /Couldn't read that mark/);
+});
+
 // ---------------------------------------------------------------------------
 // Setup that survives a reload
 // ---------------------------------------------------------------------------

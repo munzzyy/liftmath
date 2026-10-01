@@ -62,3 +62,31 @@ export function assertParity(actual, expected, path = "$") {
   // string / boolean / null / undefined: exact match
   assert.equal(actual, expected, `${path}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
 }
+
+/**
+ * Undo tools/gen_fixtures.py's encode_args: {"$num": "NaN"} (or "Infinity",
+ * "-Infinity") back to the number, since JSON can't carry those directly.
+ */
+export function decodeArgs(value) {
+  if (Array.isArray(value)) return value.map(decodeArgs);
+  if (isPlainObject(value)) {
+    const keys = Object.keys(value);
+    if (keys.length === 1 && keys[0] === "$num") return Number(value.$num);
+    return Object.fromEntries(keys.map((k) => [k, decodeArgs(value[k])]));
+  }
+  return value;
+}
+
+/**
+ * Run one fixture case through `run(args)`. A normal case must match
+ * `expected`; an error case (a "raises" key) must throw with exactly the
+ * message the Python reference raised.
+ */
+export function checkFixture(fixture, run) {
+  const args = decodeArgs(fixture.args);
+  if ("raises" in fixture) {
+    assert.throws(() => run(args), { message: fixture.raises });
+    return;
+  }
+  assertParity(run(args), fixture.expected);
+}

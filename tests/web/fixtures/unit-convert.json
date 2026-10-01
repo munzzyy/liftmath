@@ -102,5 +102,51 @@
       "value": 142.5
     },
     "fn": "convertWeight"
+  },
+  {
+    "args": {
+      "unit": "lb",
+      "value": {
+        "$num": "NaN"
+      }
+    },
+    "fn": "convertWeight",
+    "raises": "lbs must be a finite number"
+  },
+  {
+    "args": {
+      "unit": "kg",
+      "value": {
+        "$num": "Infinity"
+      }
+    },
+    "fn": "convertWeight",
+    "raises": "kg must be a finite number"
+  },
+  {
+    "args": {
+      "unit": "lb",
+      "value": {
+        "$num": "-Infinity"
+      }
+    },
+    "fn": "convertWeight",
+    "raises": "lbs must be a finite number"
+  },
+  {
+    "args": {
+      "unit": "lb",
+      "value": -1
+    },
+    "fn": "convertWeight",
+    "raises": "lbs must be >= 0"
+  },
+  {
+    "args": {
+      "unit": "kg",
+      "value": -0.5
+    },
+    "fn": "convertWeight",
+    "raises": "kg must be >= 0"
   }
 ]

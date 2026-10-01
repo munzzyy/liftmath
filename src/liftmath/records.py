@@ -58,6 +58,7 @@ against kg records and raise ValueError otherwise.
 from __future__ import annotations
 
 import math
+import re
 from dataclasses import dataclass
 
 from liftmath._records_data import DATASET
@@ -83,6 +84,8 @@ PL_CLASSES = {
 }
 
 _SEX_ALIASES = {"m": "M", "male": "M", "f": "F", "female": "F"}
+
+_THOUSANDS_COMMA = re.compile(r",\d{3}$")
 
 
 @dataclass
@@ -142,8 +145,8 @@ def weight_class_for(bodyweight_kg: float, sex: str, scheme: str = "traditional"
     scheme picks the class table: "traditional" (all-time convention) or
     "ipf" (current IPF senior classes).
     """
-    if bodyweight_kg <= 0:
-        raise ValueError("bodyweight_kg must be > 0")
+    if not math.isfinite(bodyweight_kg) or bodyweight_kg <= 0:
+        raise ValueError("bodyweight_kg must be a finite number > 0")
     if scheme not in SCHEMES:
         raise ValueError(f"scheme must be one of {SCHEMES}, got {scheme!r}")
     ceilings = PL_CLASSES[scheme][_canonical_sex(sex)]
@@ -158,17 +161,25 @@ def parse_mark(text: str) -> float:
 
     Accepts "9.58", "1:40.91" (M:SS), and "2:00:35" (H:MM:SS); a trailing
     "s" is tolerated. Plain numbers pass through, so the same parser reads
-    a 5000m time and a shot-put distance.
+    a 5000m time and a shot-put distance. A decimal comma ("10,85",
+    "4:12,3") reads as a decimal point, except a comma followed by exactly
+    three digits at the end ("9,126"), which is rejected: that reads as a
+    thousands separator, and combined-event points are four digits.
     """
     cleaned = text.strip().rstrip("s")
     if not cleaned:
         raise ValueError("empty mark")
-    parts = cleaned.split(":")
+    if _THOUSANDS_COMMA.search(cleaned):
+        raise ValueError(f"can't parse mark {text!r}")
+    parts = cleaned.replace(",", ".").split(":")
     if len(parts) > 3:
         raise ValueError(f"can't parse mark {text!r}")
     total = 0.0
     for part in parts:
-        value = float(part)  # raises ValueError on junk, which is the right error
+        try:
+            value = float(part)
+        except ValueError:
+            raise ValueError(f"can't parse mark {text!r}") from None
         if not math.isfinite(value):
             raise ValueError(f"can't parse mark {text!r}")
         if value < 0:
