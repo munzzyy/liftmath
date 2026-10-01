@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The barbell from ic_launcher_fg without its dark tile, since a themed icon only keeps the alpha. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="432"
+    android:viewportHeight="432">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M121,145h40v141h-40z M270,145h40v141h-40z M161,204h109v23h-109z" />
+</vector>

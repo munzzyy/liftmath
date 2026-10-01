@@ -36,6 +36,11 @@
   JavaScript or CSS newer than that floor, and the timer overlay no longer needs Chrome 87.
 - Android: Share copies the public liftmath.munzzyy.dev link even on a WebView too old for the
   native share bridge, instead of the app's private asset address.
+- Android 7 to 11: the app's data gets backed up now. The backup rules pointed those versions at
+  a file written for Android 12 and up, so they gave up on the whole backup and your unit and plate
+  setup were never saved. Checked on an Android 9 emulator: backup, clear, restore brings the saved
+  unit back.
+- Android 13 and up: the launcher icon has a monochrome layer, so it follows themed icons.
 - Library: `load_plates` gets float-noise targets right. `load_plates(350 * 0.7)` is
   244.99999999999997, and it used to come back as 240 with "can't make it exactly". It loads
   245 (2x45 and a 10 per side) now, the same as the web app always did, so a caller passing a
