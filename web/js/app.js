@@ -1,4 +1,4 @@
-// liftmath - three gym calculators, wired to the pure math modules in
+// liftmath's web app, wired to the pure math modules in
 // js/math/. No framework, no build step: this file owns DOM wiring only,
 // every number comes out of js/math/*.js untouched.
 

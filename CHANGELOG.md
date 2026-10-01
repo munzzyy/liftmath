@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- The site moved to liftmath.munzzyy.dev, and Share in the Android app hands out links there.
+- The page footer says who made it and links to github.com/munzzyy. The F-Droid listing's author
+  website points there too from the next release.
+- README: a Tern badge for keeping the Android app updated, in place of Obtainium, and a Monero
+  address under Support.
+- README: the `warmup` example matches what the CLI prints, and a test now runs every
+  README example that shows its full output and compares it with the CLI.
+- The web app's install description mentions track & field.
 - `convert` and `records --bodyweight` turn down nan and inf with an `error:` line and exit 1.
   `convert --weight nan` used to print "nanlb = nankg". A nan bodyweight used to land in the
   140+ class. `lbs_to_kg`, `kg_to_lbs` and `weight_class_for` raise ValueError on them now. The

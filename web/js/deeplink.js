@@ -4,14 +4,10 @@
 // into the DOM.
 //
 // Hash shape: "#tool?key=value&key=value", e.g. "#1rm?w=225&r=5&u=lb".
-// Only a handful of tabs (1rm, plates, score, convert) have simple enough
-// inputs to round-trip through a short query string - records' filters and
-// track's imported files aren't encoded, so sharing those tabs links to the
-// tab itself without restoring state.
+// Every tab can be linked to, but only 1rm, plates, score and convert
+// round-trip their inputs. Records' and Track's filters aren't encoded, so a
+// link to either opens the tab without restoring them.
 
-// Every tab can be deep-linked to (switches the tab on load); only these four
-// also round-trip their inputs through the query string. Records' filters and
-// Track's imported files aren't simple enough to encode in a short URL.
 export const TABS = ["onerm", "plates", "score", "records", "track", "convert"];
 const SHAREABLE_TOOLS = new Set(["1rm", "plates", "score", "convert"]);
 const TOOL_TO_TAB = { "1rm": "onerm", plates: "plates", score: "score", records: "records",

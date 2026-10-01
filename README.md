@@ -36,7 +36,7 @@ an `import` command that reads your own history out of a Strong or Hevy export a
 through the 1RM math above - neither is a fifth tool, they're utilities that feed the ones
 already here.
 
-The web app also has a rest timer (the header button): 60/90/120/180/300s presets or a custom
+The rest timer sits behind the header's Timer button: 60/90/120/180/300s presets or a custom
 value, a countdown ring, a vibrate + beep at zero, and it survives switching tabs or reloading -
 it's driven by a stored end time, not a running count, so backgrounding the tab can't drift it.
 
@@ -44,7 +44,7 @@ First run with no saved unit choice defaults to kg, except in the US, Liberia, a
 (read from the browser's own language setting) - those three default to lb.
 
 It's deep-linkable too: the URL hash reflects the active tab and its inputs (1RM, Plates, Score,
-Convert - Records' filters and Track's imported files aren't simple enough to encode), so a link
+Convert - Records' and Track's filters aren't simple enough to encode), so a link
 someone sends you opens straight into their exact setup instead of the defaults. The Share button
 builds that link and hands it to whatever's available: the OS share sheet if there is one, a
 clipboard copy otherwise.
@@ -58,7 +58,7 @@ The same app runs on Android from [`android/`](android): the web app bundled int
 wrapper with no internet permission, so it works with the phone in airplane mode. Share opens the
 system share sheet and the rest timer keeps the screen on. Signed APKs are on the
 [releases page](https://github.com/munzzyy/liftmath/releases), and it has been submitted to F-Droid.
-[Tern](https://github.com/munzzyy/tern) keeps it up to date from those releases. To build it yourself, run `./gradlew assembleDebug`
+[Tern](https://tern.munzzyy.dev) keeps it up to date from those releases. To build it yourself, run `./gradlew assembleDebug`
 inside `android/`.
 
 [<img src="https://tern.munzzyy.dev/badge.png" alt="Get it with Tern" height="80">](https://tern.munzzyy.dev/add/?url=https%3A%2F%2Fgithub.com%2Fmunzzyy%2Fliftmath)
@@ -158,11 +158,11 @@ collapse into one row):
 
 ```
 $ liftmath warmup --target 225
-Warm-up ramp to 225lb:
-   45.0lb x 10  empty bar
-   90.0lb x 5   2x10, 1x2.5
-  135.0lb x 3   1x45
-  180.0lb x 1   1x45, 2x10, 1x2.5
+Warm-up ramp to 225lb (each set rounded down to a loadable weight):
+     45.0lb x 10  empty bar
+     90.0lb x 5   2x10, 1x2.5
+    135.0lb x 3   1x45
+    180.0lb x 1   1x45, 2x10, 1x2.5
 ```
 
 The web Plates tab has the same ramp behind a "Warm-up ramp" toggle. `--inventory`'s finite
