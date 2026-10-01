@@ -1260,6 +1260,7 @@ function flashShareButton(label) {
 
 // The Android app serves this page from a private asset host, so a shared link has to point at the public site.
 const PUBLIC_URL = "https://liftmath.munzzyy.dev/";
+const ANDROID_ASSET_HOST = "appassets.androidplatform.net";
 
 async function shareCurrentState() {
   updateHashForActiveTab();
@@ -1267,7 +1268,10 @@ async function shareCurrentState() {
     notifyNative({ type: "share", text: `${PUBLIC_URL}${location.hash}` });
     return;
   }
-  const url = `${location.origin}${location.pathname}${location.hash}`;
+  // A WebView too old for the native bridge still lands here, on the private host.
+  const url = location.hostname === ANDROID_ASSET_HOST
+    ? `${PUBLIC_URL}${location.hash}`
+    : `${location.origin}${location.pathname}${location.hash}`;
 
   if (navigator.share) {
     try {

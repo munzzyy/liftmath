@@ -408,6 +408,15 @@ test("in the Android app, share hands the public link to the native sheet and no
   assert.equal(app.clipboardWrites.length, 0);
 });
 
+test("in a WebView too old for the native bridge, share still copies the public link", async () => {
+  const app = await loadApp({ origin: "https://appassets.androidplatform.net" });
+  app.type("onerm-weight", 315);
+  app.$("share-btn").click();
+  await flushMicrotasks();
+  assert.equal(app.clipboardWrites.length, 1);
+  assert.match(app.clipboardWrites[0], /^https:\/\/liftmath\.munzzyy\.dev\/#1rm\?.*w=315/);
+});
+
 test("the timer sheet opens and closes", async () => {
   const app = await loadApp();
   assert.equal(app.$("timer-sheet").hidden, true);

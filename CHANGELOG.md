@@ -19,6 +19,12 @@
   Back. The Timer button says whether the sheet is open, and "Rest over" and "Link copied" get
   read out. The sex and equipment chips no longer call themselves radio groups, since their
   buttons are toggles.
+- Android: on a phone whose Android System WebView is older than version 80, the app opens to a
+  short screen that names the installed version and asks for a WebView update. Before, the
+  page's script failed to load and the tabs did nothing. A test now fails if the web app picks up
+  JavaScript or CSS newer than that floor, and the timer overlay no longer needs Chrome 87.
+- Android: Share copies the public liftmath.munzzyy.dev link even on a WebView too old for the
+  native share bridge, instead of the app's private asset address.
 
 ## 2.5.1 - 2026-09-27
 

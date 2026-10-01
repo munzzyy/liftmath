@@ -434,10 +434,12 @@ let loadCount = 0;
  * @param {object} [opts.nativeApp] - a fake window.NativeApp ({postMessage(s)}), if any.
  * @param {string} [opts.language] - navigator.language, e.g. "en-US" (the default,
  *   chosen so existing tests that assume a first-run "lb" default keep working).
+ * @param {string} [opts.origin] - the page's origin, e.g. the Android app's
+ *   "https://appassets.androidplatform.net".
  */
 export async function loadApp({
   storage = makeStorage(), search = "", prefersLight = false, hash = "", nativeApp = null,
-  language = "en-US",
+  language = "en-US", origin = "https://example.test",
 } = {}) {
   const document = new FakeDocument(readFileSync(INDEX_HTML, "utf8"));
   const mediaListeners = [];
@@ -461,7 +463,8 @@ export async function loadApp({
   const location = {
     search,
     hash,
-    origin: "https://example.test",
+    origin,
+    hostname: new URL(origin).hostname,
     pathname: "/liftmath/",
   };
   const entries = [{ state: null }];

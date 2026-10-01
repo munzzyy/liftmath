@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebResourceRequest
@@ -14,6 +16,9 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
@@ -33,6 +38,9 @@ class MainActivity : ComponentActivity() {
         const val ORIGIN = "https://$ASSET_HOST"
         const val START_URL = "$ORIGIN/index.html"
         const val MAX_SHARE_CHARS = 4000
+
+        // The page's JavaScript uses ?? (Chrome 80). Flex gap needs 84, but without it rows only sit closer.
+        const val MIN_WEBVIEW = 80
     }
 
     private lateinit var webView: WebView
@@ -52,12 +60,6 @@ class MainActivity : ComponentActivity() {
         }
 
         root = FrameLayout(this)
-        webView = WebView(this)
-        webView.setBackgroundColor(Color.TRANSPARENT)
-        root.addView(
-            webView,
-            FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT),
-        )
         setContentView(root)
         applyChrome()
 
@@ -69,6 +71,17 @@ class MainActivity : ComponentActivity() {
             view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
             insets
         }
+
+        // An old WebView can't parse the page's script and would open to tabs that do nothing.
+        val webViewProblem = webViewProblem()
+        if (webViewProblem != null) {
+            root.addView(problemView(webViewProblem), matchParent())
+            return
+        }
+
+        webView = WebView(this)
+        webView.setBackgroundColor(Color.TRANSPARENT)
+        root.addView(webView, matchParent())
 
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(this))
@@ -126,6 +139,47 @@ class MainActivity : ComponentActivity() {
             },
         )
     }
+
+    // Chrome/NN from the user agent, since some WebView packages number their own versions differently.
+    private fun webViewProblem(): String? {
+        val userAgent = try {
+            WebSettings.getDefaultUserAgent(this)
+        } catch (e: RuntimeException) {
+            return getString(R.string.webview_missing)
+        }
+        val major = Regex("""Chrome/(\d+)""").find(userAgent)?.groupValues?.get(1)?.toIntOrNull() ?: return null
+        return if (major < MIN_WEBVIEW) getString(R.string.webview_too_old, MIN_WEBVIEW, major) else null
+    }
+
+    private fun problemView(message: String): ScrollView {
+        val pad = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, resources.displayMetrics).toInt()
+        val title = TextView(this).apply {
+            setTextAppearance(android.R.style.TextAppearance_Material_Headline)
+            text = getString(R.string.webview_title)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+            setTypeface(typeface, Typeface.BOLD)
+        }
+        ViewCompat.setAccessibilityHeading(title, true)
+        val body = TextView(this).apply {
+            setTextAppearance(android.R.style.TextAppearance_Material_Body1)
+            text = message
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f)
+            setLineSpacing(0f, 1.3f)
+            setPadding(0, pad / 2, 0, 0)
+        }
+        val column = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(pad, pad, pad, pad)
+            addView(title)
+            addView(body)
+        }
+        return ScrollView(this).apply {
+            addView(column, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        }
+    }
+
+    private fun matchParent() =
+        FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
     // uiMode is in configChanges so a system theme flip keeps the WebView alive; repaint the chrome by hand.
     override fun onConfigurationChanged(newConfig: Configuration) {

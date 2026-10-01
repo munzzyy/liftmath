@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">liftmath</string>
+    <string name="webview_title">Update Android System WebView</string>
+    <string name="webview_too_old">liftmath runs inside Android System WebView and needs version %1$d or newer. This phone has version %2$d.\n\nUpdate Android System WebView (on some phones it comes with Chrome) from your app store, or install your phone\'s latest system update, then open liftmath again.</string>
+    <string name="webview_missing">liftmath runs inside Android System WebView, and this phone doesn\'t have a working one. It may be turned off in your phone\'s app settings, or it may need an update from your app store.</string>
 </resources>
