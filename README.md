@@ -57,7 +57,7 @@ you import or a command you run.
 The same app runs on Android from [`android/`](android): the web app bundled into a small WebView
 wrapper with no internet permission, so it works with the phone in airplane mode. Share opens the
 system share sheet and the rest timer keeps the screen on. Signed APKs are on the
-[releases page](https://github.com/munzzyy/liftmath/releases), and it has been submitted to F-Droid.
+[releases page](https://github.com/munzzyy/liftmath/releases), and F-Droid is on the way (see [Roadmap](#roadmap)).
 [Tern](https://tern.munzzyy.dev) keeps it up to date from those releases. To build it yourself, run `./gradlew assembleDebug`
 inside `android/`.
 
@@ -431,6 +431,26 @@ node --test "tests/web/*.test.mjs"  # assert the JS math matches them
 ```
 
 If you change any math, both engines need the change. CONTRIBUTING.md has the full rundown.
+
+## Roadmap
+
+What's left needs a release, a store or a decision more than it needs code.
+
+- A 2.5.2 release. Everything under Unreleased in [CHANGELOG.md](CHANGELOG.md) is waiting on it,
+  since PyPI and the APK still carry 2.5.1. Until then the Android app's Share button hands out
+  the old munzzyy.github.io/liftmath address instead of liftmath.munzzyy.dev.
+- F-Droid. The build recipe was merged into fdroiddata on 2026-10-01, but the package page isn't
+  up yet, so F-Droid's build server still has to build and publish the first version. Each update
+  after that has to rebuild from its tag to the same bytes as the signed APK here, which is what
+  lets F-Droid ship this signature instead of its own. The link goes in this README once the
+  listing is live.
+- A rest timer that alerts with the app in the background on Android. The timer runs inside the
+  page, and the WebView throttles and then freezes the page once you switch away, so the buzz at
+  zero can't be counted on if you go to your music between sets. A native alarm would fix it but
+  needs a notification permission on top of today's vibrate-only list, so it's a decision before
+  it's code.
+- Whether `liftmath import` should count logged RPE by default. It's opt-in with `--use-rpe` for
+  now so nobody's numbers move without asking.
 
 ## Contributing
 
