@@ -13,7 +13,7 @@
 
 **https://liftmath.munzzyy.dev/** - nothing to install, works offline once loaded, no
 account, no ads, no tracking. Everything below runs the same math as a Python library and a
-command-line tool, for people who'd rather script it.
+command-line tool, for people who would rather script it.
 
 Four tools:
 
@@ -27,8 +27,13 @@ Four tools:
   high-school), searchable by lift or event, sex, weight class, equipment, and level, with your
   own lift or mark shown as a percentage of the record.
 
-The web app also has a rest timer, a Share button that builds a deep link back to your exact
-setup, and it remembers your unit/setup between visits. It used to do a lot more tools than this;
+The web app also has a rest timer behind the Timer button in the header: 60/90/120/180/300s
+presets or a custom value, a countdown ring and a vibrate + beep at zero. It survives switching
+tabs or reloading because it runs off a stored end time and not a running count. Backgrounding
+the tab does not drift it either. A Share button builds a deep link back to your exact setup.
+The app also remembers your unit/setup between visits.
+
+It used to do a lot more tools than this;
 it does fewer now, on purpose - every number traces back to a named formula or a cited record,
 and you can read the whole thing in a sitting. There's also a small lb/kg converter (`convert`)
 bolted on, since plates and strength score already needed exact unit conversion internally, and
@@ -36,15 +41,11 @@ an `import` command that reads your own history out of a Strong or Hevy export a
 through the 1RM math above - neither is a fifth tool, they're utilities that feed the ones
 already here.
 
-The rest timer sits behind the header's Timer button: 60/90/120/180/300s presets or a custom
-value, a countdown ring, a vibrate + beep at zero, and it survives switching tabs or reloading -
-it's driven by a stored end time, not a running count, so backgrounding the tab can't drift it.
-
 First run with no saved unit choice defaults to kg, except in the US, Liberia, and Myanmar
 (read from the browser's own language setting) - those three default to lb.
 
 It's deep-linkable too: the URL hash reflects the active tab and its inputs (1RM, Plates, Score,
-Convert - Records' and Track's filters aren't simple enough to encode), so a link
+Convert - the Records and Track filters are not simple enough to encode), so a link
 someone sends you opens straight into their exact setup instead of the defaults. The Share button
 builds that link and hands it to whatever's available: the OS share sheet if there is one, a
 clipboard copy otherwise.
@@ -94,7 +95,7 @@ of text. Loads are unit-agnostic; pass `--unit kg` or `--unit lb` (default lb).
 
 Estimate a one-rep max from a weight × reps set. No single formula is most accurate across every
 rep range, so it runs six published equations and reports the median consensus instead of picking
-one, dropping the curvilinear formulas past 12 reps where they're known to drift.
+one, dropping the curvilinear formulas past 12 reps where they are known to drift.
 
 ```
 $ liftmath 1rm --weight 225 --reps 5
@@ -137,7 +138,7 @@ Load 315lb on a 45lb bar:
 
 Home gym or travel kit with a finite set of plates? Pass `--inventory` with the exact per-side
 counts you have and it solves against that instead of assuming an unlimited supply (an exhaustive
-search, since greedy picks aren't optimal once supply runs out):
+search, since greedy picks are not optimal once supply runs out):
 
 ```
 $ liftmath plates --target 405 --inventory 45x3,25x1,10x1
@@ -166,7 +167,7 @@ Warm-up ramp to 225lb (each set rounded down to a loadable weight):
 ```
 
 The web Plates tab has the same ramp behind a "Warm-up ramp" toggle. `--inventory`'s finite
-plate counts aren't supported here yet (same unlimited-supply assumption as `--plates`).
+plate counts are not supported here yet (same unlimited-supply assumption as `--plates`).
 
 ### Strength score
 
@@ -292,10 +293,10 @@ if you'd rather be explicit. Strong's own export has no weight-unit column in it
 (iOS) form - `--unit` is both what that's assumed to already be in, and what a Hevy export (always
 kg internally) gets converted to for display.
 
-Both apps let you log an RPE per set. Pass `--use-rpe` and a set's logged RPE (6-10, half steps)
-goes into its estimated 1RM the same way `1rm --rpe` does, so a top set at RPE 8 counts the two
-reps you had left. Sets with no RPE, or one off that scale, still count as taken to failure.
-Without the flag every set does.
+Both apps let you log an RPE per set. Pass `--use-rpe` and the RPE logged for each set (6-10 in
+half steps) goes into its estimated 1RM the same way `1rm --rpe` does. So a top set at RPE 8
+counts the two reps you had left. Sets with no RPE or one off that scale still count as taken to
+failure. Without the flag every set does.
 
 Switched apps partway through your training history? Pass `--file` more than once and they merge
 into one trend and tonnage view instead of two separate ones:
@@ -373,7 +374,7 @@ openly rather than asserting an uncited fix. RPE/RIR (--rpe/--rir) uses the reps
 from Zourdos et al. (2016), J Strength Cond Res 30(1), 267-275.
 
 The plate solver is a plain greedy largest-first pass for the unlimited case; the finite-inventory
-solver does an exhaustive bounded search instead, because greedy isn't optimal once you can run out
+solver does an exhaustive bounded search instead, because greedy is not optimal once you can run out
 of a plate (one 25 + one 25 beats grabbing the single 45 you own). `plates.py` explains why.
 
 The strength scores come from the IPF's own published GL coefficients (May 2020), the original and
@@ -398,11 +399,11 @@ The bundle is a dated snapshot; records move, so `tools/build_records.py`'s docs
 how to regenerate it from a fresh CSV.
 
 The lb/kg conversion uses the exact international avoirdupois pound (1 lb = 0.45359237 kg, fixed
-by the 1959 international yard-and-pound agreement), not a rounded approximation. It's the same
+by the 1959 international yard-and-pound agreement), not a rounded approximation. It is the same
 factor `standards.py` was already converting with internally for its `--unit lb` handling.
 
 Neither Strong nor Hevy publishes their CSV export schema - Strong's help center confirms export
-exists but not its columns, and Hevy's doesn't document its CSV at all. `imports.py`'s column
+exists but not its columns, and Hevy does not document its CSV at all. `imports.py`'s column
 layout was built from real exports pulled from public workout-log-tooling repos plus a few
 independent open-source importers for cross-checking, not guessed from either app's marketing
 copy - its docstring says exactly what came from where, including that Strong's own schema has
@@ -410,8 +411,8 @@ changed across app versions and differs between iOS and Android.
 
 ## What this is not
 
-This computes training math. It doesn't design your program, pick your exercises, or replace a coach
-who can watch you lift. Informational and educational only, not medical advice.
+This computes training math. It does not design your program, pick your exercises, or replace a
+coach who can watch you lift. Informational and educational only, not medical advice.
 
 ## Tests
 
@@ -421,9 +422,9 @@ pytest
 ruff check .
 ```
 
-Every formula is pinned against hand-checked reference values in `tests/`. The web app's JavaScript
-math is parity-tested against the Python reference so the two never drift, and those tests run on
-Node 22+ with no npm packages at all:
+Every formula is pinned against hand-checked reference values in `tests/`. The JavaScript math in
+the web app is parity-tested against the Python reference so the two never drift, and those tests
+run on Node 22+ with no npm packages at all:
 
 ```
 python tools/gen_fixtures.py        # regenerate fixtures from the Python reference
@@ -434,23 +435,21 @@ If you change any math, both engines need the change. CONTRIBUTING.md has the fu
 
 ## Roadmap
 
-What's left needs a release, a store or a decision more than it needs code.
+These need a store or a decision more than they need code.
 
-- A 2.5.2 release. Everything under Unreleased in [CHANGELOG.md](CHANGELOG.md) is waiting on it,
-  since PyPI and the APK still carry 2.5.1. Until then the Android app's Share button hands out
-  the old munzzyy.github.io/liftmath address instead of liftmath.munzzyy.dev.
-- F-Droid. The build recipe was merged into fdroiddata on 2026-10-01, but the package page isn't
-  up yet, so F-Droid's build server still has to build and publish the first version. Each update
-  after that has to rebuild from its tag to the same bytes as the signed APK here, which is what
-  lets F-Droid ship this signature instead of its own. The link goes in this README once the
-  listing is live.
-- A rest timer that alerts with the app in the background on Android. The timer runs inside the
-  page, and the WebView throttles and then freezes the page once you switch away, so the buzz at
-  zero can't be counted on if you go to your music between sets. A native alarm would fix it but
-  needs a notification permission on top of today's vibrate-only list, so it's a decision before
-  it's code.
-- Whether `liftmath import` should count logged RPE by default. It's opt-in with `--use-rpe` for
-  now so nobody's numbers move without asking.
+- F-Droid. The build recipe
+  [was merged into fdroiddata](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/50147) on
+  2026-10-01. The package page is not up yet, so F-Droid still has to build and publish the first
+  version. Every update after that has to rebuild from its tag to the same bytes as the signed
+  APK here. That is what lets F-Droid ship this signature instead of its own. The link goes in
+  this README once the listing is live.
+- A rest timer that alerts while the Android app is in the background. The timer runs inside the
+  page. Once you switch away the WebView throttles the page and then freezes it, so the buzz at
+  zero is not reliable if you go to your music between sets. A native alarm would fix that. It
+  would also need a notification permission on top of the vibrate permission the app has now, so
+  it is a decision before it is code.
+- Whether `liftmath import` should count logged RPE by default. For now it is opt-in with
+  `--use-rpe`, so nobody gets new numbers without asking.
 
 ## Contributing
 

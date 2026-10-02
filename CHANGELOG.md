@@ -2,61 +2,63 @@
 
 ## Unreleased
 
-- The site moved to liftmath.munzzyy.dev, and Share in the Android app hands out links there.
-- The page footer says who made it and links to github.com/munzzyy. The F-Droid listing's author
-  website points there too from the next release.
-- README: a Tern badge for keeping the Android app updated, in place of Obtainium, and a Monero
-  address under Support.
-- README: the `warmup` example matches what the CLI prints, and a test now runs every
-  README example that shows its full output and compares it with the CLI.
-- The web app's install description mentions track & field.
+- The site moved to liftmath.munzzyy.dev. Share in the Android app hands out links there too.
+- The page footer says who made it and links to github.com/munzzyy. From the next release the
+  author website on the F-Droid listing points there too.
+- README: a Tern badge for keeping the Android app updated, and a Monero address under Support.
+- README: the `warmup` example matches what the CLI prints. A test now runs every README example
+  that shows its full output and checks it against the CLI.
+- The web app manifest mentions track & field in its description.
 - `convert` and `records --bodyweight` turn down nan and inf with an `error:` line and exit 1.
   `convert --weight nan` used to print "nanlb = nankg". A nan bodyweight used to land in the
-  140+ class. `lbs_to_kg`, `kg_to_lbs` and `weight_class_for` raise ValueError on them now. The
-  web app's copies throw the same message.
+  140+ class. `lbs_to_kg`, `kg_to_lbs` and `weight_class_for` raise ValueError on them now. Their
+  copies in the web app throw the same message.
 - `records --compare`: a mark that fits none of the matched records is an error now
-  (`error: can't parse mark 'abc'`). It used to drop the comparison without a word. A query that
-  mixes weights, times and distances still only needs the mark to fit some rows.
-- Track marks take a decimal comma. "10,85" and "4:12,3" work in `parse_mark`, `--compare` and
-  the web Track tab. A comma before exactly three digits at the end ("9,126") is turned down,
-  because that reads as a thousands separator on combined-event points.
+  (`error: can't parse mark 'abc'`, or `can't parse weight` against weight records). It used to
+  drop the comparison without a word. A query that mixes weights, times and distances still only
+  needs the mark to fit some rows.
+- Track marks take a decimal comma. `10,85` and `4:12,3` work in `parse_mark` and `--compare` and
+  on the web Track tab. A comma before exactly three final digits (`9,126`) is turned down
+  because it reads as a thousands separator on combined-event points.
 - Web Track tab: a mark it cannot read gets a one-line hint instead of no comparison at all. The
   field also asks the phone for a text keyboard so the ':' key is there.
-- `liftmath import --use-rpe` (and `e1rm_trend(..., use_rpe=True)`) counts each set's logged
-  RPE from a Strong or Hevy export in its estimated 1RM. A blank or off-scale RPE falls back to
-  reps only. It's opt-in, so the default output is unchanged.
-- Web: the home-screen shortcuts (1RM, Plates, Score, ...) open offline. They link to
-  `index.html?tab=...`, and the service worker only had the page cached without the query
-  string, so an installed app with no signal showed a network error instead. Any page load the
-  cache doesn't know falls back to the app, and a missing file is a clean network error.
-- Web: opening a shared link no longer rewrites your saved setup. A friend's kg link used to
-  switch your app to kg for good and save your bodyweight and bar converted, while your plate
-  list stayed in lb numbers. The link's unit and values now last for that visit. They are saved,
-  unit and weights together, only once you change a setting yourself.
+- `liftmath import --use-rpe` (and `e1rm_trend(..., use_rpe=True)`) puts the RPE logged on each
+  set of a Strong or Hevy export into its estimated 1RM. A blank or off-scale RPE falls back to
+  reps only. The flag is opt-in and the default output is unchanged.
+- Web: the home-screen shortcuts (1RM, Plates, Score and the rest) open offline. They link to
+  `index.html?tab=...` and the service worker only had the page cached without the query string.
+  An installed app with no signal showed a network error instead. Any page load the cache does
+  not know now falls back to the app. A missing file still gets a clean network error.
+- Web: opening a shared link no longer rewrites your saved setup. A kg link from a friend used to
+  switch your app to kg for good. It also saved your bodyweight and bar converted while your plate
+  list stayed in lb numbers. The unit and values from a link now last for that visit. They get
+  saved only once you change a setting yourself, unit and weights together.
 - Web: the rest timer sheet is a labelled dialog for screen readers. Focus moves into it when it
-  opens and back to the Timer button when it closes, whether by its close button, Escape or
-  Back. The Timer button says whether the sheet is open, and "Rest over" and "Link copied" get
-  read out. The sex and equipment chips no longer call themselves radio groups, since their
+  opens. When it closes by its close button or by Escape or Back, focus goes back to the Timer
+  button. The Timer button says whether the sheet is open, and "Rest over" and "Link copied" get
+  read out. The sex and equipment chips no longer call themselves radio groups since their
   buttons are toggles.
-- Android: on a phone whose Android System WebView is older than version 80, the app opens to a
-  short screen that names the installed version and asks for a WebView update. Before, the
-  page's script failed to load and the tabs did nothing. A test now fails if the web app picks up
-  JavaScript or CSS newer than that floor, and the timer overlay no longer needs Chrome 87.
+- Android: on a phone whose Android System WebView is older than version 80 the app opens to a
+  short screen. It names the installed version and asks for a WebView update. Before this the
+  page script failed to load and the tabs did nothing. A test now fails if the web app picks up
+  JavaScript or CSS newer than that floor, unless it falls back cleanly. The timer overlay no
+  longer needs Chrome 87, and the 1RM table rows keep their hover highlight below Chrome 86.
 - Android: Share copies the public liftmath.munzzyy.dev link even on a WebView too old for the
-  native share bridge, instead of the app's private asset address.
-- Android 7 to 11: the app's data gets backed up now. The backup rules pointed those versions at
-  a file written for Android 12 and up, so they gave up on the whole backup and your unit and plate
-  setup were never saved. Checked on an Android 9 emulator: backup, clear, restore brings the saved
-  unit back.
-- Android 13 and up: the launcher icon has a monochrome layer, so it follows themed icons.
+  native share bridge. It used to copy the private asset address of the app.
+- Android 7 to 11: app data gets backed up now. The backup rules pointed those versions at a file
+  written for Android 12 and up. They gave up on the whole backup and your unit and plate setup
+  were never saved. Checked on an Android 9 emulator: after a backup, a clear and a restore the
+  saved unit comes back.
+- Android 13 and up: the launcher icon has a monochrome layer and follows themed icons.
 - Library: `load_plates` gets float-noise targets right. `load_plates(350 * 0.7)` is
-  244.99999999999997, and it used to come back as 240 with "can't make it exactly". It loads
-  245 (2x45 and a 10 per side) now, the same as the web app always did, so a caller passing a
-  computed target gets different plates than before. The CLI and the web app aren't affected.
-- The web app's math throws the same errors as the Python library for bad input: a nan or
+  244.99999999999997 and used to come back as 240 with `can't make it exactly`. It now loads 245
+  (2x45 and a 10 per side) like the web app always did. So a caller passing a computed target can
+  get different plates than before. The CLI and the web app are not affected.
+- The math in the web app throws the same errors as the Python library for bad input: a nan or
   infinite weight, total, bodyweight, bar or target, and a plate size of zero or below. A negative
   plate size used to hang `loadPlates`. The web app checks its inputs first, so none of this was
-  reachable from the page. The parity fixtures pin these error messages now, not only results.
+  reachable from the page. The parity fixtures pin these error messages now and not only
+  results. A mark with a quote in it is quoted the same way in both engines.
 
 ## 2.5.1 - 2026-09-27
 
@@ -75,7 +77,8 @@
 - `standards`/`score` gets a "where you stand" line: how a DOTS score compares to
   best-DOTS-per-lifter in OpenPowerlifting, split by sex and raw/equipped (`--equipped` on the
   CLI, a Raw/Equipped toggle on the web Score tab). Backed by a 99-breakpoint percentile table
-  per group, generated alongside the records snapshot, not the full per-lifter distribution.
+  per group (generated alongside the records snapshot) rather than the full per-lifter
+  distribution.
 - Web: first run with no saved unit choice now defaults to kg, except lb in the US, Liberia,
   and Myanmar (read from `navigator.language`'s region).
 - Web: deep links - the URL hash reflects the active tab and its inputs for 1RM, Plates, Score
@@ -85,10 +88,10 @@
 - Web: a rest timer behind a header button - 60/90/120/180/300s presets or a custom value, a
   countdown ring, vibrate + a WebAudio beep at zero, and a Screen Wake Lock while running where
   the browser supports it. Driven by a stored end timestamp so backgrounding the tab can't drift
-  it, and it resumes correctly across a reload.
+  it. It resumes correctly across a reload.
 - Web: fixed a bug where the first load ever pinned the current system light/dark setting into
   storage, so the app stopped following the OS theme after that. Now it only persists an override
-  on an explicit toggle tap, and follows a live system-theme change while no override is stored.
+  on an explicit toggle tap and follows a live system-theme change while no override is stored.
 - Web: added a native-bridge hook (`postMessage` to `window.NativeApp`, a no-op everywhere else)
   for the Android wrapper - theme changes, share, and keep-awake state all go out over it.
 - `warmup` (`warmup_ramp`): a warm-up ramp from the empty bar to a working weight (bar x10,
@@ -123,18 +126,17 @@ forever.
   the women's hammer-throw notes) that a cp1252 console can't encode, so the
   table died partway through on an ordinary query. The CLI now writes UTF-8
   and replaces anything the terminal can't draw.
-- Piping CLI output into `head` or `less`, or hitting Ctrl-C mid-render, dumped
+- Piping CLI output into `head` or `less` or hitting Ctrl-C mid-render dumped
   a BrokenPipeError or KeyboardInterrupt traceback. Both exit quietly now.
 - `import`: one row with a date the parser doesn't recognize used to throw away
-  the whole file. Those rows come through without a date, stay out of the
-  per-day and per-week views, and get counted in a summary line.
-- CI runs on Windows and macOS, not only Linux, which is what the
+  the whole file. Those rows come through without a date and stay out of the
+  per-day and per-week views. They get counted in a summary line.
+- CI runs on Windows and macOS and not only Linux. That is what the
   `OS Independent` classifier has been claiming all along.
-- Web app: the footer links back to the source, the license, and the issue
-  tracker, and a JS-blocked visitor gets an explanation instead of an empty
-  page.
+- Web app: the footer links back to the source, the license and the issue
+  tracker. A JS-blocked visitor gets an explanation instead of an empty page.
 - Web app: the unit toggle, plate setup, bodyweight, sex and open tab survive a
-  reload. Still device-only, still no network calls.
+  reload. Still device-only and still no network calls.
 
 - `1rm`: `--weight nan` crashed with an IndexError, and `--weight inf` printed
   an "inf" consensus. Both are rejected now.
@@ -158,10 +160,10 @@ forever.
   off - the women's classic coefficient table has B > A, so the formula's own
   denominator inverts sign below that point. The IPF's own formula document
   states a domain floor for this (40kg men, 35kg women); bodyweight is now
-  clamped to that floor before evaluating, same treatment Wilks/DOTS already
-  got for their own out-of-range bodyweights. Unreachable for any real adult
-  lifter, but the function had no floor of its own, so a bad unit conversion
-  upstream could've silently returned a nonsense score.
+  clamped to that floor before evaluating (the same treatment Wilks/DOTS
+  already got for their own out-of-range bodyweights). Unreachable for any
+  real adult lifter. But the function had no floor of its own, so a bad unit
+  conversion upstream could've silently returned a nonsense score.
 - New `liftmath import`: reads a Strong or Hevy CSV workout export (format
   auto-detected, or pass `--source`) and reports best estimated 1RM per
   exercise and total tonnage per week - the two things a single logged set
@@ -170,7 +172,7 @@ forever.
   between iOS (comma-delimited, no weight-unit column) and Android
   (semicolon-delimited, with one); Hevy's is comma-delimited and always
   records weight in kg. `--unit` covers both what a unit-less Strong export
-  is assumed to already be in, and what a Hevy export gets converted to.
+  is assumed to already be in and what a Hevy export gets converted to.
 
 69 new Python tests, 30 new JS tests.
 

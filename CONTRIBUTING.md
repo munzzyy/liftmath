@@ -22,7 +22,7 @@ ruff check .
 ```
 
 Both run in CI across Python 3.10-3.14 on Linux, plus the oldest and newest
-on Windows and macOS. Green locally doesn't guarantee green everywhere, but
+on Windows and macOS. Green locally does not guarantee green everywhere, but
 it catches almost everything.
 
 ## The web app is a second engine
@@ -47,11 +47,11 @@ python tools/gen_icons.py            # only if you changed web/icons
 
 `tests/web/app.test.mjs` is the odd one out: instead of testing math it loads
 `web/index.html` and `web/js/app.js` against the small DOM in
-`tests/web/dom.mjs` and checks what the page actually renders. That's where a
-wiring change belongs, and the DOM stub only models what app.js uses, so if
-you reach for a browser API it doesn't have yet you'll need to add it there.
+`tests/web/dom.mjs` and checks what the page actually renders. That is where a
+wiring change belongs. The DOM stub only models what app.js uses, so if you
+reach for a browser API it does not have yet, you will need to add it there.
 
-**Anything in web/'s precache list needs a `CACHE_NAME` bump.** The list is
+**Anything in the web/ precache list needs a `CACHE_NAME` bump.** The list is
 `PRECACHE_URLS` at the top of `web/sw.js`: index.html, the stylesheet, every
 file under `js/`, manifest.json, and the icons. Change one of those without
 bumping `CACHE_NAME` in the same commit and CI fails you, which is the good
@@ -66,29 +66,30 @@ That bar applies to contributions too, not just the existing code.
 standards (Wilks/DOTS/IPF GL and anything like them)** need a citation:
 author, year, and where it was published, in the same style as the docstrings
 already in `onerm.py`, `plates.py`, and `standards.py`. An opinion or "this
-felt more accurate for me" isn't enough on its own, tie it to a source. Add a
+felt more accurate for me" is not enough on its own, tie it to a source. Add a
 hand-checked reference value to the matching test file too
 (`tests/test_onerm.py`, `tests/test_plates.py`, `tests/test_standards.py`)
-alongside the code change. If you're not sure a formula belongs, open an issue
-first and we can figure it out before you write code.
+alongside the code change. If you are not sure a formula belongs,
+[open an issue](https://github.com/munzzyy/liftmath/issues) first and we can
+figure it out before you write code.
 
 **Bug fixes** are always welcome, obviously. Include a failing test that
 your fix makes pass.
 
 **CLI/library ergonomics** (better error messages, the `--json` output,
-etc.) are welcome too as long as they don't add a runtime dependency, that's
-a hard line for this project.
+etc.) are welcome too as long as they do not add a runtime dependency. That
+is a hard line for this project.
 
 ## Before you open a PR
 
 - One feature or fix per PR. Don't mix an unrelated formatting change into
   a formula fix, it makes the diff harder to review and harder to revert if
-  something's wrong.
-- If it's a nontrivial change (new formula, new command, anything that
+  something is wrong.
+- If it is a nontrivial change (new formula, new command, anything that
   changes existing output), open an issue first so we're not both
   surprised by scope.
 - Tests and lint pass locally before you push.
-- Update the README if you're changing user-facing behavior (a new flag, a
+- Update the README if you change user-facing behavior (a new flag, a
   new subcommand, a changed output format).
 
 ## Style
@@ -100,7 +101,7 @@ docstrings) and follow the same shape.
 
 ## License of your contribution
 
-liftmath is GPL-3.0-or-later. Opening a PR means you're offering your change under the
+liftmath is GPL-3.0-or-later. Opening a PR means you offer your change under the
 same license.
 
 ## Reporting a security issue
