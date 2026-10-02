@@ -48,7 +48,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
-from liftmath.plates import load_plates, resolve_bar_weight
+from liftmath.plates import _setup_loader
 
 
 def _epley(w: float, r: float) -> float:
@@ -263,7 +263,8 @@ def _epley_reps_at(one_rm: float, load: float) -> tuple[int, bool]:
 
 def percentage_table(consensus: float, unit: str = "lb", *, bar: float | None = None,
                       plates: tuple[float, ...] | None = None,
-                      preset: str | None = None) -> list[PercentRow]:
+                      preset: str | None = None,
+                      inventory: dict[float, int] | None = None) -> list[PercentRow]:
     """A 100%-down-to-50% (5% steps) table of loads off a 1RM, each rounded to
     what the given plate setup can actually load, with an estimated rep count
     at that load (see `_epley_reps_at`).
@@ -273,22 +274,27 @@ def percentage_table(consensus: float, unit: str = "lb", *, bar: float | None = 
         unit: "lb" or "kg", passed through to `load_plates`.
         bar, plates, preset: the plate setup, same meaning as `load_plates`'s
             own arguments - pass whatever the caller's current setup is.
+        inventory: finite per-side plate counts, same meaning as in
+            `load_plates_from_inventory`. Used with `bar`, in place of
+            `plates` and `preset`.
 
     Raises:
-        ValueError: if consensus isn't a finite number > 0, or anything
-            `load_plates` itself would reject about the plate setup.
+        ValueError: if consensus isn't a finite number > 0, anything
+            `load_plates` or `load_plates_from_inventory` would reject about
+            the plate setup, or an inventory passed together with plates or a
+            preset.
     """
     if not math.isfinite(consensus) or consensus <= 0:
         raise ValueError("consensus must be a finite number > 0")
 
-    bar_weight = resolve_bar_weight(unit, bar, preset)
+    bar_weight, load_at = _setup_loader(unit, bar, plates, preset, inventory)
     rows = []
     for percent in PERCENT_STEPS:
         raw_target = consensus * percent / 100.0
         if raw_target <= bar_weight:
             load, exact = bar_weight, True
         else:
-            pl = load_plates(raw_target, unit=unit, bar=bar, plates=plates, preset=preset)
+            pl = load_at(raw_target)
             load, exact = pl.achievable, pl.exact
         reps, capped = _epley_reps_at(consensus, load)
         rows.append(PercentRow(percent=percent, load=load, exact=exact, reps=reps, reps_capped=capped))

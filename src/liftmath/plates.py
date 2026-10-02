@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import itertools
 import math
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 # Hard caps on the finite-inventory solver. Its search is bounded by the
@@ -402,6 +403,29 @@ def _load_from_totals(
     )
 
 
+def _setup_loader(
+    unit: str,
+    bar: float | None,
+    plates: tuple[float, ...] | None,
+    preset: str | None,
+    inventory: dict[float, int] | None,
+) -> tuple[float, Callable[[float], PlateLoad | InventoryPlateLoad]]:
+    """The bar weight and a target -> plate load function for one plate setup,
+    shared by warmup_ramp and onerm.percentage_table. An inventory is checked
+    and searched once here instead of once per row.
+    """
+    if inventory is None:
+        bar_weight = resolve_bar_weight(unit, bar, preset)
+        return bar_weight, lambda t: load_plates(t, unit=unit, bar=bar, plates=plates, preset=preset)
+    if plates is not None or preset is not None:
+        raise ValueError("an inventory can't be combined with plates or a preset")
+    _check_inventory(inventory)
+    bar_weight = bar if bar is not None else DEFAULT_BAR[unit]
+    _check_bar(bar_weight)
+    totals = _inventory_totals(inventory)
+    return bar_weight, lambda t: _load_from_totals(t, inventory, unit, bar_weight, totals)
+
+
 # (fraction of the working weight, reps) for each ramp step after the empty
 # bar. A common warm-up progression in mainstream strength programming (e.g.
 # Wendler's 5/3/1 warm-up sets, Rippetoe's Starting Strength ramp) - a
@@ -429,29 +453,32 @@ def warmup_ramp(
     bar: float | None = None,
     plates: tuple[float, ...] | None = None,
     preset: str | None = None,
+    inventory: dict[float, int] | None = None,
 ) -> list[WarmupSet]:
     """A warm-up ramp from the empty bar up to (not including) `target`.
 
     Empty bar for 10 reps, then 40%/60%/80% of `target` for 5/3/1 reps, each
-    percentage rounded to what the plate setup can actually load (same
-    unlimited-supply assumption as `load_plates` - a finite `--inventory`
-    isn't supported here). Consecutive steps that round to the same weight
-    are collapsed into one row, since a lifter doesn't warm up twice at an
-    identical weight.
+    percentage rounded down to what the plate setup can actually load.
+    Consecutive steps that round to the same weight are collapsed into one
+    row, since a lifter doesn't warm up twice at an identical weight.
 
     Args:
         target: the working weight the ramp builds up to.
         unit: "lb" or "kg".
         bar, plates, preset: same meaning as `load_plates`'s own arguments.
+        inventory: finite per-side plate counts, same meaning as in
+            `load_plates_from_inventory`. Used with `bar`, in place of
+            `plates` and `preset`.
 
     Raises:
-        ValueError: anything `load_plates` itself would raise for this
-            unit/bar/plates/preset combination or a non-finite/non-positive target.
+        ValueError: anything `load_plates` or `load_plates_from_inventory`
+            would raise for this setup, a non-finite/non-positive target, or
+            an inventory passed together with plates or a preset.
     """
     if not math.isfinite(target) or target <= 0:
         raise ValueError("target must be a finite number > 0")
 
-    bar_weight = resolve_bar_weight(unit, bar, preset)
+    bar_weight, load = _setup_loader(unit, bar, plates, preset, inventory)
     rows: list[WarmupSet] = [WarmupSet(weight=bar_weight, reps=WARMUP_BAR_REPS, exact=True, plates=[])]
 
     for fraction, reps in WARMUP_STEPS:
@@ -459,7 +486,7 @@ def warmup_ramp(
         if step_target <= bar_weight:
             weight, exact, step_plates = bar_weight, True, []
         else:
-            pl = load_plates(step_target, unit=unit, bar=bar, plates=plates, preset=preset)
+            pl = load(step_target)
             weight, exact, step_plates = pl.achievable, pl.exact, pl.plates
         if abs(weight - rows[-1].weight) <= 1e-9:
             continue

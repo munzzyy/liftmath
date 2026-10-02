@@ -368,3 +368,30 @@ def test_warmup_ramp_rejects_non_positive_target():
 def test_warmup_ramp_respects_preset():
     ramp = warmup_ramp(100, unit="kg", preset="womens")
     assert ramp[0].weight == 15
+
+
+def test_warmup_ramp_uses_a_finite_inventory():
+    # One 45 a side on a 35 bar makes 35 or 125 and nothing in between.
+    ramp = warmup_ramp(225, unit="lb", bar=35, inventory={45: 1})
+    assert [r.weight for r in ramp] == [35, 125]
+    assert [r.reps for r in ramp] == [10, 3]
+    assert ramp[1].plates == [(45, 1)]
+    assert ramp[1].exact is False
+
+
+def test_warmup_ramp_inventory_loads_exactly_when_it_can():
+    ramp = warmup_ramp(300, unit="lb", inventory={45: 4, 25: 1, 10: 2, 5: 2, 2.5: 1})
+    assert [r.weight for r in ramp] == [45, 120, 180, 240]
+    assert all(r.exact for r in ramp)
+
+
+def test_warmup_ramp_inventory_rejects_plates_or_preset():
+    with pytest.raises(ValueError, match="can't be combined"):
+        warmup_ramp(225, unit="lb", inventory={45: 1}, plates=(45,))
+    with pytest.raises(ValueError, match="can't be combined"):
+        warmup_ramp(100, unit="kg", inventory={20: 1}, preset="womens")
+
+
+def test_warmup_ramp_checks_the_inventory_even_when_every_step_is_the_bar():
+    with pytest.raises(ValueError, match="plate size"):
+        warmup_ramp(50, unit="lb", inventory={-5: 1})

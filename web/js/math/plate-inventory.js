@@ -20,7 +20,7 @@
 // exact matches and otherwise the closest at-or-below match (ties broken
 // toward fewer total plates).
 
-import { DEFAULT_BAR } from "./plate-loading.js";
+import { DEFAULT_BAR, loadPlates, resolveBarWeight } from "./plate-loading.js";
 import { pyRepr } from "./py-repr.js";
 
 // Hard caps on the search, mirroring plates.py's MAX_PLATES_PER_SIZE /
@@ -253,3 +253,26 @@ function loadFromTotals(target, inventory, unit, barWeight, { sizes, totals }) {
   };
 }
 
+/**
+ * The bar weight and a target -> plate load function for one plate setup,
+ * shared by warmupRamp and percentageTable. An inventory is checked and
+ * searched once here instead of once per row. Mirrors plates.py's _setup_loader.
+ *
+ * @returns {{barWeight:number, load:(target:number) => object}}
+ */
+export function setupLoader(unit, bar, plates, preset, inventory) {
+  if (inventory === null) {
+    return {
+      barWeight: resolveBarWeight(unit, bar, preset),
+      load: (t) => loadPlates(t, { unit, bar, plates, preset }),
+    };
+  }
+  if (plates !== null || preset !== null) {
+    throw new RangeError("an inventory can't be combined with plates or a preset");
+  }
+  checkInventory(inventory);
+  const barWeight = bar !== null ? bar : DEFAULT_BAR[unit];
+  checkBar(barWeight);
+  const search = inventoryTotals(inventory);
+  return { barWeight, load: (t) => loadFromTotals(t, inventory, unit, barWeight, search) };
+}

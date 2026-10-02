@@ -123,8 +123,10 @@ $ liftmath 1rm --weight 225 --reps 5 --rpe 9
 
 Add `--table` for a 100%-to-50% percentage breakdown of the consensus, load rounded to what the
 default plate set can actually load and reps estimated at that load (Epley's inversion - see
-`onerm.py`'s `_epley_reps_at` for why). The web 1RM tab shows the same table; tapping a row sends
-that load straight to Plates.
+`onerm.py`'s `_epley_reps_at` for why). Give it your own setup with the same `--bar`, `--plates`,
+`--preset` or `--inventory` flags `plates` takes. The web 1RM tab shows the same table, rounded to
+whatever the Plates tab is set to, My plates included. Tapping a row sends that load straight to
+Plates.
 
 ### Plates
 
@@ -166,8 +168,18 @@ Warm-up ramp to 225lb (each set rounded down to a loadable weight):
     180.0lb x 1   1x45, 2x10, 1x2.5
 ```
 
-The web Plates tab has the same ramp behind a "Warm-up ramp" toggle. `--inventory`'s finite
-plate counts are not supported here yet (same unlimited-supply assumption as `--plates`).
+`--inventory` works here too, so a home gym with a 35lb bar and one pair of 45s gets the two
+weights it can actually make:
+
+```
+$ liftmath warmup --target 225 --bar 35 --inventory 45x1
+Warm-up ramp to 225lb (each set rounded down to a loadable weight):
+     35.0lb x 10  empty bar
+    125.0lb x 3   1x45
+```
+
+The web Plates tab has the same ramp behind a "Warm-up ramp" toggle, and it uses My plates when
+that is picked.
 
 ### Strength score
 

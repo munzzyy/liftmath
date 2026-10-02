@@ -57,7 +57,11 @@ def cmd_1rm(args: argparse.Namespace) -> int:
     table = None
     if args.table:
         try:
-            table = percentage_table(est.consensus, unit=args.unit)
+            if args.inventory:
+                setup = {"inventory": _parse_inventory_spec(args.inventory)}
+            else:
+                setup = {"plates": args.plates, "preset": args.preset}
+            table = percentage_table(est.consensus, unit=args.unit, bar=args.bar, **setup)
         except ValueError as e:
             print(f"error: {e}", file=sys.stderr)
             return 1
@@ -92,12 +96,27 @@ def cmd_1rm(args: argparse.Namespace) -> int:
 
     if table is not None:
         print(f"\nPercentages of {est.consensus:.1f}{args.unit}, each load rounded down to what your")
-        print("plates can load (default plate set), reps estimated via Epley's inversion:")
+        print(f"plates can load ({_setup_label(args)}), reps estimated via Epley's inversion:")
         print("-" * 34)
         for row in table:
             reps_txt = f"{row.reps}+" if row.reps_capped else f"{row.reps}"
             print(f"  {row.percent:3d}%  {row.load:7.1f}{args.unit}  ~{reps_txt:>3} reps")
     return 0
+
+
+def _setup_label(args: argparse.Namespace) -> str:
+    """How the 1RM table header names the plate setup it rounded to."""
+    if args.inventory:
+        label = "your inventory"
+    elif args.plates is not None:
+        label = "your plates"
+    elif args.preset:
+        label = f"the {args.preset} preset"
+    elif args.bar is None:
+        return "default plate set"
+    else:
+        label = "default plates"
+    return label if args.bar is None else f"{label} on a {args.bar:g}{args.unit} bar"
 
 
 def cmd_plates(args: argparse.Namespace) -> int:
@@ -153,8 +172,11 @@ def cmd_plates(args: argparse.Namespace) -> int:
 
 def cmd_warmup(args: argparse.Namespace) -> int:
     try:
-        ramp = warmup_ramp(args.target, unit=args.unit, bar=args.bar, plates=args.plates,
-                           preset=args.preset)
+        if args.inventory:
+            setup = {"inventory": _parse_inventory_spec(args.inventory)}
+        else:
+            setup = {"plates": args.plates, "preset": args.preset}
+        ramp = warmup_ramp(args.target, unit=args.unit, bar=args.bar, **setup)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -477,7 +499,15 @@ def build_parser() -> argparse.ArgumentParser:
                              "alternative to --rpe")
     s.add_argument("--table", action="store_true",
                    help="also print a 100%%-to-50%% percentage table off the consensus 1RM, "
-                        "loads rounded to the default plate set")
+                        "loads rounded to the default plate set or the one given below")
+    table_setup = s.add_argument_group("plate setup for --table (same as the plates command)")
+    table_setup.add_argument("--bar", type=float, help="bar weight (default 20kg / 45lb)")
+    table_setup.add_argument("--plates", type=float, nargs="*",
+                             help="available plate denominations (per side)")
+    table_setup.add_argument("--preset", choices=sorted(PRESETS), help="named non-standard setup (kg-only)")
+    table_setup.add_argument("--inventory", metavar="SPEC",
+                             help="finite per-side plate counts, as 'SIZExCOUNT,...' - overrides "
+                                  "--plates/--preset")
     s.set_defaults(func=cmd_1rm)
 
     s = sub.add_parser("plates", help="plate-loading math", parents=[json_parent])
@@ -502,6 +532,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--plates", type=float, nargs="*", help="available plate denominations (per side)")
     s.add_argument("--preset", choices=sorted(PRESETS),
                    help="named non-standard setup (kg-only), same as `plates --preset`")
+    s.add_argument("--inventory", metavar="SPEC",
+                   help="finite per-side plate counts, same as `plates --inventory` - overrides "
+                        "--plates/--preset")
     s.set_defaults(func=cmd_warmup)
 
     s = sub.add_parser("standards", help="relative-strength scoring: Wilks/DOTS/IPF GL",

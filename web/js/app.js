@@ -476,18 +476,15 @@ function renderOneRm() {
   }
 
   let table = null;
+  let tableHint = "";
   try {
-    table = (platesMode === "womens" || platesMode === "metric-no-45") && unit === "kg"
-      ? percentageTable(est.consensus, "kg", { preset: platesMode })
-      : percentageTable(est.consensus, unit);
+    ({ table, hint: tableHint } = oneRmTable(est.consensus));
   } catch {
-    // A kg-only preset selected while the global unit is lb, or any other
-    // plate-setup mismatch - skip the table rather than crash the 1RM result
-    // it's attached to; the formula breakdown above still rendered fine.
+    // Skip the table rather than lose the 1RM result above it.
     table = null;
   }
   if (table) {
-    html += `<p class="hint">Loads are rounded down to what your plates can make. Tap a row to load it on Plates.</p>`;
+    html += `<p class="hint">${tableHint} Tap a row to load it on Plates.</p>`;
     html += `<table class="result-table" id="onerm-percent-table"><thead><tr><th>%</th><th>Load</th><th>~Reps</th></tr></thead><tbody>`;
     for (const row of table) {
       const repsTxt = row.repsCapped ? `${row.reps}+` : `${row.reps}`;
@@ -514,6 +511,34 @@ function renderOneRm() {
       });
     });
   }
+}
+
+/**
+ * The 1RM percentage table, rounded to whatever Plates is set up with. A
+ * setup that can't apply here (a kg-only preset in lb, or My plates while
+ * its fields don't parse) falls back to the default plates, and the hint
+ * says so.
+ */
+function oneRmTable(consensus) {
+  const yours = "Loads are rounded down to what your plates can make.";
+  const fallback = (why) => ({
+    table: percentageTable(consensus, unit),
+    hint: `Loads are rounded down to the default ${unit} plates ${why}.`,
+  });
+  if (platesMode === "my-plates") {
+    try {
+      const bar = parseFloat($("plates-inventory-bar").value);
+      const inventory = parseInventorySpec($("plates-inventory-spec").value);
+      return { table: percentageTable(consensus, unit, { bar, inventory }), hint: yours };
+    } catch {
+      return fallback("until My plates on the Plates tab is filled in");
+    }
+  }
+  if (platesMode === "womens" || platesMode === "metric-no-45") {
+    if (unit !== "kg") return fallback("because that bar setup is kg only");
+    return { table: percentageTable(consensus, "kg", { preset: platesMode }), hint: yours };
+  }
+  return { table: percentageTable(consensus, unit), hint: yours };
 }
 
 /** Send a load from the 1RM percentage table to the Plates tab and switch to it. */
@@ -560,6 +585,7 @@ const selectPlatesPreset = wireChipGroup("plates-preset-group", "preset", (value
   $("plates-inventory-fields").hidden = value !== "my-plates";
   savePref("plates-preset", value);
   renderPlates();
+  renderOneRm();
 });
 
 function renderPlates() {
@@ -641,15 +667,17 @@ function renderWarmup(target, displayUnit) {
     return;
   }
 
-  // The finite my-plates inventory isn't supported by warmupRamp (same
-  // unlimited-supply assumption as the percentage table on the 1RM tab) -
-  // fall back to the default plate set for the ramp in that mode.
-  const opts = platesMode === "womens" || platesMode === "metric-no-45"
-    ? { unit: "kg", preset: platesMode }
-    : { unit };
-
   let ramp;
   try {
+    let opts;
+    if (platesMode === "my-plates") {
+      const bar = parseFloat($("plates-inventory-bar").value);
+      opts = { unit, bar, inventory: parseInventorySpec($("plates-inventory-spec").value) };
+    } else if (platesMode === "womens" || platesMode === "metric-no-45") {
+      opts = { unit: "kg", preset: platesMode };
+    } else {
+      opts = { unit };
+    }
     ramp = warmupRamp(target, opts);
   } catch (err) {
     warmupEl.hidden = false;
@@ -678,6 +706,8 @@ $("plates-warmup-toggle").addEventListener("click", () => {
 ["plates-target", "plates-inventory-bar", "plates-inventory-spec"].forEach((id) =>
   $(id).addEventListener("input", () => { renderPlates(); updateHashForActiveTab(); })
 );
+// The 1RM table rounds to My plates too.
+for (const id of ["plates-inventory-bar", "plates-inventory-spec"]) $(id).addEventListener("input", renderOneRm);
 
 // ---------------------------------------------------------------------------
 // Strength score

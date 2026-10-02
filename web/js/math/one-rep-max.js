@@ -9,7 +9,7 @@
 // RIR = 10 - RPE; effective reps = reps performed + RIR.
 
 import { pyRound } from "./py-round.js";
-import { loadPlates, resolveBarWeight } from "./plate-loading.js";
+import { setupLoader } from "./plate-inventory.js";
 
 function epley(w, r) {
   return w * (1 + r / 30.0);
@@ -182,14 +182,20 @@ function epleyRepsAt(oneRm, load) {
  *
  * @param {number} consensus - the 1RM to build the table from.
  * @param {string} [unit="lb"]
- * @param {{bar?:number, plates?:number[], preset?:string}} [opts]
+ * @param {{bar?:number, plates?:number[], preset?:string, inventory?:Object<string, number>}} [opts]
+ *   `inventory` is finite per-side plate counts as in loadPlatesFromInventory,
+ *   used with `bar` in place of `plates` and `preset`.
  * @returns {{percent:number, load:number, exact:boolean, reps:number, repsCapped:boolean}[]}
  */
-export function percentageTable(consensus, unit = "lb", { bar = null, plates = null, preset = null } = {}) {
+export function percentageTable(
+  consensus,
+  unit = "lb",
+  { bar = null, plates = null, preset = null, inventory = null } = {}
+) {
   if (!(consensus > 0) || !Number.isFinite(consensus)) {
     throw new RangeError("consensus must be a finite number > 0");
   }
-  const barWeight = resolveBarWeight(unit, bar, preset);
+  const { barWeight, load: loadAt } = setupLoader(unit, bar, plates, preset, inventory);
   return PERCENT_STEPS.map((percent) => {
     const rawTarget = (consensus * percent) / 100.0;
     let load, exact;
@@ -197,7 +203,7 @@ export function percentageTable(consensus, unit = "lb", { bar = null, plates = n
       load = barWeight;
       exact = true;
     } else {
-      const pl = loadPlates(rawTarget, { unit, bar, plates, preset });
+      const pl = loadAt(rawTarget);
       load = pl.achievable;
       exact = pl.exact;
     }

@@ -284,6 +284,189 @@
   {
     "args": {
       "opts": {
+        "bar": 35,
+        "inventory": {
+          "45": 1
+        },
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "expected": [
+      {
+        "exact": true,
+        "plates": [],
+        "reps": 10,
+        "weight": 35
+      },
+      {
+        "exact": false,
+        "plates": [
+          [
+            45,
+            1
+          ]
+        ],
+        "reps": 3,
+        "weight": 125.0
+      }
+    ],
+    "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
+        "inventory": {
+          "2.5": 1,
+          "5": 2,
+          "10": 2,
+          "25": 1,
+          "45": 4
+        },
+        "unit": "lb"
+      },
+      "target": 315
+    },
+    "expected": [
+      {
+        "exact": true,
+        "plates": [],
+        "reps": 10,
+        "weight": 45
+      },
+      {
+        "exact": false,
+        "plates": [
+          [
+            25,
+            1
+          ],
+          [
+            10,
+            1
+          ],
+          [
+            5,
+            1
+          ]
+        ],
+        "reps": 5,
+        "weight": 125.0
+      },
+      {
+        "exact": false,
+        "plates": [
+          [
+            45,
+            1
+          ],
+          [
+            25,
+            1
+          ]
+        ],
+        "reps": 3,
+        "weight": 185.0
+      },
+      {
+        "exact": false,
+        "plates": [
+          [
+            45,
+            2
+          ],
+          [
+            10,
+            1
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 1,
+        "weight": 250.0
+      }
+    ],
+    "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
+        "bar": 15,
+        "inventory": {
+          "1.25": 1,
+          "2.5": 1,
+          "5": 1,
+          "10": 1,
+          "20": 1
+        },
+        "unit": "kg"
+      },
+      "target": 100
+    },
+    "expected": [
+      {
+        "exact": true,
+        "plates": [],
+        "reps": 10,
+        "weight": 15
+      },
+      {
+        "exact": true,
+        "plates": [
+          [
+            10,
+            1
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 5,
+        "weight": 40.0
+      },
+      {
+        "exact": true,
+        "plates": [
+          [
+            20,
+            1
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 3,
+        "weight": 60.0
+      },
+      {
+        "exact": true,
+        "plates": [
+          [
+            20,
+            1
+          ],
+          [
+            10,
+            1
+          ],
+          [
+            2.5,
+            1
+          ]
+        ],
+        "reps": 1,
+        "weight": 80.0
+      }
+    ],
+    "fn": "warmupRamp"
+  },
+  {
+    "args": {
+      "opts": {
         "unit": "lb"
       },
       "target": 0
@@ -359,5 +542,77 @@
     },
     "fn": "warmupRamp",
     "raises": "plate denominations must be finite numbers > 0, got -5"
+  },
+  {
+    "args": {
+      "opts": {
+        "inventory": {
+          "45": 1
+        },
+        "plates": [
+          45
+        ],
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "warmupRamp",
+    "raises": "an inventory can't be combined with plates or a preset"
+  },
+  {
+    "args": {
+      "opts": {
+        "inventory": {
+          "20": 1
+        },
+        "preset": "womens",
+        "unit": "kg"
+      },
+      "target": 100
+    },
+    "fn": "warmupRamp",
+    "raises": "an inventory can't be combined with plates or a preset"
+  },
+  {
+    "args": {
+      "opts": {
+        "inventory": {
+          "45": 0
+        },
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "warmupRamp",
+    "raises": "plate count must be > 0, got 0 for size 45"
+  },
+  {
+    "args": {
+      "opts": {
+        "inventory": {
+          "-5": 1
+        },
+        "unit": "lb"
+      },
+      "target": 50
+    },
+    "fn": "warmupRamp",
+    "raises": "plate size must be a finite number > 0, got -5"
+  },
+  {
+    "args": {
+      "opts": {
+        "bar": {
+          "$num": "NaN"
+        },
+        "inventory": {
+          "45": 1
+        },
+        "unit": "lb"
+      },
+      "target": 225
+    },
+    "fn": "warmupRamp",
+    "raises": "bar weight must be a finite number > 0, got nan"
   }
 ]

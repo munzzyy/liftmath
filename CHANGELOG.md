@@ -59,6 +59,16 @@
   plate size used to hang `loadPlates`. The web app checks its inputs first, so none of this was
   reachable from the page. The parity fixtures pin these error messages now and not only
   results. A mark with a quote in it is quoted the same way in both engines.
+- The 1RM percentage table and the warm-up ramp use your own plates. On the web both follow
+  whatever the Plates tab is set to, My plates included. They used to round to the default
+  plates even with My plates picked, so a 35 lb bar with one 45 a side could show loads like
+  305 lb that those plates can't make. With a kg-only bar setup picked while the app is in lb,
+  the table still uses the default lb plates, and its hint now says so.
+- CLI: `1rm --table` takes `--bar`, `--plates`, `--preset` and `--inventory`, and the table header
+  names the setup it used. `warmup` takes `--inventory` too. In both, `--inventory` wins over
+  `--plates` and `--preset` the way it does in `plates`.
+- Library: `percentage_table` and `warmup_ramp` take an `inventory` keyword (with `bar`). Passing
+  it together with `plates` or `preset` raises ValueError.
 - The finite-inventory solver merges combinations that reach the same total as it goes. A
   6-size inventory with 8 of each took about half a second per solve in Python and now takes
   a few milliseconds. The answers are the same. When two combinations tie on total and plate

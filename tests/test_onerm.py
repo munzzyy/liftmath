@@ -202,3 +202,22 @@ def test_percentage_table_rejects_non_positive_consensus():
         percentage_table(0, unit="lb")
     with pytest.raises(ValueError):
         percentage_table(-5, unit="lb")
+
+
+def test_percentage_table_rounds_to_a_finite_inventory():
+    rows = percentage_table(333, unit="lb", bar=35, inventory={45: 1})
+    assert {r.load for r in rows} <= {35, 125}
+
+
+def test_percentage_table_inventory_rounds_down_with_every_plate_it_has():
+    rows = percentage_table(405, unit="lb", inventory={45: 4, 25: 1, 10: 2, 5: 2, 2.5: 1})
+    # 95% is 384.75: 167.5 a side (3x45, 25, 5, 2.5) loads 380, and it takes the 2.5 to get there.
+    assert [r.load for r in rows] == [405, 380, 360, 340, 320, 300, 280, 260, 240, 220, 200]
+    assert rows[0].exact is True
+
+
+def test_percentage_table_inventory_rejects_plates_or_preset():
+    with pytest.raises(ValueError, match="can't be combined"):
+        percentage_table(300, unit="lb", inventory={45: 2}, plates=(45,))
+    with pytest.raises(ValueError, match="can't be combined"):
+        percentage_table(300, unit="kg", inventory={20: 2}, preset="womens")

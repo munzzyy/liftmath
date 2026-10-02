@@ -1228,6 +1228,283 @@
   },
   {
     "args": {
+      "bar": 35,
+      "consensus": 333,
+      "inventory": {
+        "45": 1
+      },
+      "unit": "lb"
+    },
+    "expected": [
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 100,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 95,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 90,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 85,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 80,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 75,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 70,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 65,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 60,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 55,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 50,
+        "reps": 12,
+        "repsCapped": true
+      }
+    ],
+    "fn": "percentageTable"
+  },
+  {
+    "args": {
+      "consensus": 405,
+      "inventory": {
+        "2.5": 1,
+        "5": 2,
+        "10": 2,
+        "25": 1,
+        "45": 4
+      },
+      "unit": "lb"
+    },
+    "expected": [
+      {
+        "exact": true,
+        "load": 405.0,
+        "percent": 100,
+        "reps": 1,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 380.0,
+        "percent": 95,
+        "reps": 2,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 360.0,
+        "percent": 90,
+        "reps": 4,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 340.0,
+        "percent": 85,
+        "reps": 6,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 320.0,
+        "percent": 80,
+        "reps": 8,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 300.0,
+        "percent": 75,
+        "reps": 11,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 280.0,
+        "percent": 70,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 260.0,
+        "percent": 65,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 240.0,
+        "percent": 60,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 220.0,
+        "percent": 55,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 200.0,
+        "percent": 50,
+        "reps": 12,
+        "repsCapped": true
+      }
+    ],
+    "fn": "percentageTable"
+  },
+  {
+    "args": {
+      "bar": 15,
+      "consensus": 140,
+      "inventory": {
+        "1.25": 1,
+        "2.5": 1,
+        "5": 1,
+        "10": 1,
+        "20": 2
+      },
+      "unit": "kg"
+    },
+    "expected": [
+      {
+        "exact": false,
+        "load": 132.5,
+        "percent": 100,
+        "reps": 2,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 132.5,
+        "percent": 95,
+        "reps": 2,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 125.0,
+        "percent": 90,
+        "reps": 4,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 117.5,
+        "percent": 85,
+        "reps": 6,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 110.0,
+        "percent": 80,
+        "reps": 8,
+        "repsCapped": false
+      },
+      {
+        "exact": true,
+        "load": 105.0,
+        "percent": 75,
+        "reps": 10,
+        "repsCapped": false
+      },
+      {
+        "exact": false,
+        "load": 97.5,
+        "percent": 70,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 90.0,
+        "percent": 65,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 82.5,
+        "percent": 60,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": false,
+        "load": 75.0,
+        "percent": 55,
+        "reps": 12,
+        "repsCapped": true
+      },
+      {
+        "exact": true,
+        "load": 70.0,
+        "percent": 50,
+        "reps": 12,
+        "repsCapped": true
+      }
+    ],
+    "fn": "percentageTable"
+  },
+  {
+    "args": {
       "consensus": 0,
       "unit": "lb"
     },
@@ -1279,5 +1556,79 @@
     },
     "fn": "percentageTable",
     "raises": "preset 'womens' is a kg-only setup; the unit must be kg"
+  },
+  {
+    "args": {
+      "consensus": 300,
+      "inventory": {
+        "45": 2
+      },
+      "plates": [
+        45,
+        25
+      ],
+      "unit": "lb"
+    },
+    "fn": "percentageTable",
+    "raises": "an inventory can't be combined with plates or a preset"
+  },
+  {
+    "args": {
+      "consensus": 300,
+      "inventory": {
+        "20": 2
+      },
+      "preset": "womens",
+      "unit": "kg"
+    },
+    "fn": "percentageTable",
+    "raises": "an inventory can't be combined with plates or a preset"
+  },
+  {
+    "args": {
+      "consensus": 300,
+      "inventory": {},
+      "unit": "lb"
+    },
+    "fn": "percentageTable",
+    "raises": "inventory must have at least one plate size"
+  },
+  {
+    "args": {
+      "consensus": 300,
+      "inventory": {
+        "45": 0
+      },
+      "unit": "lb"
+    },
+    "fn": "percentageTable",
+    "raises": "plate count must be > 0, got 0 for size 45"
+  },
+  {
+    "args": {
+      "bar": 0,
+      "consensus": 300,
+      "inventory": {
+        "45": 2
+      },
+      "unit": "lb"
+    },
+    "fn": "percentageTable",
+    "raises": "bar weight must be a finite number > 0, got 0"
+  },
+  {
+    "args": {
+      "consensus": 300,
+      "inventory": {
+        "5": 50,
+        "10": 50,
+        "25": 50,
+        "35": 50,
+        "45": 50
+      },
+      "unit": "lb"
+    },
+    "fn": "percentageTable",
+    "raises": "inventory is too big to search (345025251 combinations, cap 5000000) - drop some plate sizes or counts"
   }
 ]

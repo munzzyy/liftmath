@@ -149,6 +149,10 @@ def gen_percentage_table() -> list[dict]:
     for consensus, unit, kwargs in [
         (300, "lb", {}), (100, "lb", {}), (50, "lb", {}), (140, "kg", {}),
         (225, "lb", {"preset": None}),
+        # finite inventories: a one-45 home gym, a full one, and a kg one on a 15kg bar
+        (333, "lb", {"bar": 35, "inventory": {45: 1}}),
+        (405, "lb", {"inventory": {45: 4, 25: 1, 10: 2, 5: 2, 2.5: 1}}),
+        (140, "kg", {"bar": 15, "inventory": {20: 2, 10: 1, 5: 1, 2.5: 1, 1.25: 1}}),
     ]:
         cases.append({
             "fn": "percentageTable",
@@ -158,10 +162,16 @@ def gen_percentage_table() -> list[dict]:
     for consensus, unit, kwargs in [
         (0, "lb", {}), (-1, "lb", {}), (math.nan, "lb", {}), (math.inf, "kg", {}),
         (300, "kg", {"preset": "olympic"}), (300, "lb", {"preset": "womens"}),
+        (300, "lb", {"inventory": {45: 2}, "plates": [45, 25]}),
+        (300, "kg", {"inventory": {20: 2}, "preset": "womens"}),
+        (300, "lb", {"inventory": {}}), (300, "lb", {"inventory": {45: 0}}),
+        (300, "lb", {"inventory": {45: 2}, "bar": 0}),
+        (300, "lb", {"inventory": {s: 50 for s in (45, 35, 25, 10, 5)}}),
     ]:
+        call_kwargs = {**kwargs, "plates": tuple(kwargs["plates"])} if "plates" in kwargs else kwargs
         cases.append(raises(
             "percentageTable", {"consensus": consensus, "unit": unit, **kwargs},
-            lambda consensus=consensus, unit=unit, kwargs=kwargs:
+            lambda consensus=consensus, unit=unit, kwargs=call_kwargs:
                 onerm.percentage_table(consensus, unit=unit, **kwargs),
         ))
     return cases
@@ -251,9 +261,25 @@ def gen_warmup() -> list[dict]:
         "expected": [dump(row) for row in plates.warmup_ramp(100, unit="kg", preset="womens")],
     })
     for target, opts in [
+        (225, {"unit": "lb", "bar": 35, "inventory": {45: 1}}),
+        (315, {"unit": "lb", "inventory": {45: 4, 25: 1, 10: 2, 5: 2, 2.5: 1}}),
+        (100, {"unit": "kg", "bar": 15, "inventory": {20: 1, 10: 1, 5: 1, 2.5: 1, 1.25: 1}}),
+    ]:
+        cases.append({
+            "fn": "warmupRamp",
+            "args": {"target": target, "opts": opts},
+            "expected": [dump(row) for row in plates.warmup_ramp(target, **opts)],
+        })
+    for target, opts in [
         (0, {"unit": "lb"}), (-225, {"unit": "lb"}), (math.nan, {"unit": "lb"}), (math.inf, {"unit": "kg"}),
         (100, {"unit": "kg", "preset": "olympic"}), (100, {"unit": "lb", "preset": "womens"}),
         (225, {"unit": "lb", "plates": [-5]}),
+        (225, {"unit": "lb", "inventory": {45: 1}, "plates": [45]}),
+        (100, {"unit": "kg", "inventory": {20: 1}, "preset": "womens"}),
+        (225, {"unit": "lb", "inventory": {45: 0}}),
+        # every step is under the bar, and the inventory is still checked
+        (50, {"unit": "lb", "inventory": {-5: 1}}),
+        (225, {"unit": "lb", "inventory": {45: 1}, "bar": math.nan}),
     ]:
         kwargs = {**opts, "plates": tuple(opts["plates"])} if "plates" in opts else opts
         cases.append(raises("warmupRamp", {"target": target, "opts": opts},

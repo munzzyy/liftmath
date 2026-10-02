@@ -207,6 +207,34 @@ test("the my-plates preset reveals the inventory fields and uses them", async ()
   assert.match(app.text("plates-results"), /Short/);
 });
 
+test("My plates also sets the 1RM table and the warm-up ramp", async () => {
+  const app = await loadApp({ language: "en-US" });
+  app.chip("plates-preset-group", "preset", "my-plates").click();
+  app.type("plates-inventory-bar", 35);
+  app.type("plates-inventory-spec", "45x1");
+  app.type("onerm-weight", 315);
+  app.type("onerm-reps", 3);
+
+  const loads = app.$("onerm-results").querySelectorAll(".onerm-percent-row").map((row) => row.dataset.load);
+  assert.equal(loads.length, 11);
+  assert.deepEqual([...new Set(loads)].filter((load) => load !== "35" && load !== "125"), []);
+  assert.match(app.text("onerm-results"), /what your plates can make/);
+
+  app.type("plates-target", 225);
+  app.$("plates-warmup-toggle").click();
+  const firstRow = /<tr><td class="num">([^<]*)<\/td>/.exec(app.text("plates-warmup-results"));
+  assert.equal(firstRow[1], "35 lb");
+});
+
+test("a kg-only preset in lb mode rounds the 1RM table to the default plates and says so", async () => {
+  const app = await loadApp({ language: "en-US" });
+  app.chip("plates-preset-group", "preset", "womens").click();
+  const html = app.text("onerm-results");
+  assert.match(html, /id="onerm-percent-table"/);
+  assert.match(html, /default lb plates because that bar setup is kg only/);
+  assert.doesNotMatch(html, /your plates/);
+});
+
 test("the score result shows where the DOTS stands against OpenPowerlifting", async () => {
   const app = await loadApp();
   app.$("tab-btn-score").click();

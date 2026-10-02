@@ -66,6 +66,39 @@ def test_1rm_inf_weight_errors(capsys):
     assert "error" in err
 
 
+def _table_loads(out):
+    return {line.split()[1] for line in out.splitlines() if line.strip().endswith("reps")
+            and line.strip().split()[0].endswith("%")}
+
+
+def test_1rm_table_default_header(capsys):
+    code, out, _ = run(capsys, "1rm", "--weight", "315", "--reps", "3", "--table")
+    assert code == 0
+    assert "(default plate set)" in out
+
+
+def test_1rm_table_uses_an_inventory(capsys):
+    code, out, _ = run(capsys, "1rm", "--weight", "315", "--reps", "3", "--table",
+                       "--bar", "35", "--inventory", "45x1")
+    assert code == 0
+    assert _table_loads(out) <= {"35.0lb", "125.0lb"}
+    assert "(default plate set)" not in out
+    assert "(your inventory on a 35lb bar)" in out
+
+
+def test_1rm_table_uses_a_preset(capsys):
+    code, out, _ = run(capsys, "1rm", "--weight", "100", "--reps", "3", "--unit", "kg", "--table",
+                       "--preset", "womens")
+    assert code == 0
+    assert "(the womens preset)" in out
+
+
+def test_1rm_table_bad_inventory_errors(capsys):
+    code, _, err = run(capsys, "1rm", "--weight", "315", "--reps", "3", "--table", "--inventory", "45x0")
+    assert code == 1
+    assert "error" in err
+
+
 # --- plates ---
 
 def test_plates_default(capsys):
@@ -134,6 +167,24 @@ def test_plates_inventory_huge_count_errors_instead_of_hanging(capsys):
     code, _, err = run(capsys, "plates", "--target", "405", "--inventory", "45x100000000")
     assert code == 1
     assert "error" in err
+
+
+# --- warmup ---
+
+def test_warmup_inventory(capsys):
+    code, out, _ = run(capsys, "warmup", "--target", "225", "--bar", "35", "--inventory", "45x1")
+    assert code == 0
+    rows = out.splitlines()[1:]
+    assert len(rows) == 2
+    assert rows[0].split()[0] == "35.0lb"
+    assert rows[1].split()[0] == "125.0lb"
+
+
+def test_warmup_inventory_overrides_plates_like_the_plates_command(capsys):
+    code, out, _ = run(capsys, "warmup", "--target", "225", "--bar", "35", "--inventory", "45x1",
+                       "--plates", "25")
+    assert code == 0
+    assert [line.split()[0] for line in out.splitlines()[1:]] == ["35.0lb", "125.0lb"]
 
 
 # --- standards ---
