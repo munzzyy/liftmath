@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
         const val START_URL = "$ORIGIN/index.html"
         const val MAX_SHARE_CHARS = 4000
 
-        // The page's JavaScript uses ?? (Chrome 80). Flex gap needs 84, but without it rows only sit closer.
+        // The page's JavaScript uses ?? (Chrome 80). Below 84 and 86 it only loses flex gap and the custom focus ring.
         const val MIN_WEBVIEW = 80
     }
 

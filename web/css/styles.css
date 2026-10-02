@@ -446,12 +446,13 @@ table.result-table td.num {
   cursor: pointer;
 }
 
-.onerm-percent-row:hover,
-.onerm-percent-row:focus-visible {
+/* Apart from :hover, since a WebView without :focus-visible drops a whole selector list. */
+.onerm-percent-row:hover {
   background: var(--color-surface-alt);
 }
 
 .onerm-percent-row:focus-visible {
+  background: var(--color-surface-alt);
   outline: 2px solid var(--color-focus);
   outline-offset: -2px;
 }

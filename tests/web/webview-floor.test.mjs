@@ -1,4 +1,4 @@
-// Everything the page ships has to run on MainActivity's MIN_WEBVIEW; a newer feature means raising it on purpose.
+// Everything the page ships has to run on MainActivity's MIN_WEBVIEW, or fall back cleanly; anything else means raising it on purpose.
 
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
@@ -24,7 +24,10 @@ const JS_FEATURES = [
   { name: "toSorted / toReversed / toSpliced / with", chrome: 110, re: /\.(toSorted|toReversed|toSpliced)\(/ },
 ];
 
+// fallsBack: an older WebView skips it and the page still works, it only looks plainer.
 const CSS_FEATURES = [
+  { name: "flex gap", chrome: 84, re: /(^|[\s;{])gap\s*:/m, fallsBack: true },
+  { name: ":focus-visible", chrome: 86, re: /:focus-visible\b/, fallsBack: true },
   { name: "inset shorthand", chrome: 87, re: /(^|[\s;{])inset\s*:/m },
   { name: "aspect-ratio", chrome: 88, re: /\baspect-ratio\s*:/ },
   { name: ":is() / :where()", chrome: 88, re: /:(is|where)\(/ },
@@ -59,7 +62,7 @@ function usedOverFloor(files, features, floor) {
   for (const file of files) {
     const source = stripComments(readFileSync(file, "utf8"));
     for (const feature of features) {
-      if (feature.chrome > floor && feature.re.test(source)) {
+      if (feature.chrome > floor && !feature.fallsBack && feature.re.test(source)) {
         problems.push(`${path.relative(ROOT, file)} uses ${feature.name} (Chrome ${feature.chrome})`);
       }
     }
@@ -77,4 +80,11 @@ test("the stylesheet works on the Android app's minimum WebView", () => {
   const floor = minWebView();
   const files = [path.join(ROOT, "web", "css", "styles.css")];
   assert.deepEqual(usedOverFloor(files, CSS_FEATURES, floor), [], `MIN_WEBVIEW is ${floor}`);
+});
+
+test(":focus-visible never shares a selector list, so a WebView without it keeps the rest of the rule", () => {
+  const css = readFileSync(path.join(ROOT, "web", "css", "styles.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const selectors = css.split("{").slice(0, -1).map((chunk) => chunk.slice(chunk.search(/[^};]*$/)).trim());
+  const mixed = selectors.filter((selector) => selector.includes(":focus-visible") && selector.includes(","));
+  assert.deepEqual(mixed, []);
 });
