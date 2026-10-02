@@ -14,20 +14,19 @@
 // actually exact combination (20+20=40) is invisible to a greedy scan because
 // it never revisits the choice to take the 25. Since real plate inventories
 // are small (a handful of distinct denominations, single-digit counts each),
-// this instead does an exhaustive search over every combination of "how many
-// of each denomination to use" (bounded by that denomination's available
-// count) and picks the closest total to the per-side target, preferring
+// this instead searches every combination of "how many of each denomination
+// to use" (bounded by that denomination's available count, see
+// inventoryTotals) and picks the closest total to the per-side target, preferring
 // exact matches and otherwise the closest at-or-below match (ties broken
 // toward fewer total plates).
 
 import { DEFAULT_BAR } from "./plate-loading.js";
 import { pyRepr } from "./py-repr.js";
 
-// Hard caps on the exhaustive search, mirroring plates.py's
-// MAX_PLATES_PER_SIZE / MAX_SEARCH_COMBINATIONS: the solver enumerates the
-// product of (count + 1) over every plate size, so unbounded counts freeze
-// the tab. 99 plates of one size per SIDE is already beyond any real rack,
-// and 5M combinations enumerate in well under a second; realistic
+// Hard caps on the search, mirroring plates.py's MAX_PLATES_PER_SIZE /
+// MAX_SEARCH_COMBINATIONS: the search is bounded by the product of
+// (count + 1) over every plate size, so unbounded counts freeze the tab. 99
+// plates of one size per SIDE is already beyond any real rack; realistic
 // inventories (a handful of sizes, single-digit counts) don't come near
 // either cap.
 export const MAX_PLATES_PER_SIZE = 99;
@@ -100,6 +99,20 @@ export function parseInventorySpec(spec) {
 export function loadPlatesFromInventory(target, inventory, opts = {}) {
   const { unit = "lb", bar = null } = opts;
 
+  checkInventory(inventory);
+  const barWeight = bar !== null ? bar : DEFAULT_BAR[unit];
+  checkBar(barWeight);
+  if (!Number.isFinite(target)) {
+    throw new RangeError(`target must be a finite number, got ${pyRepr(target)}`);
+  }
+  if (target < barWeight) {
+    throw new RangeError(`target ${target}${unit} is below the bar (${barWeight}${unit})`);
+  }
+
+  return loadFromTotals(target, inventory, unit, barWeight, inventoryTotals(inventory));
+}
+
+function checkInventory(inventory) {
   const sizeEntries = Object.entries(inventory).map(([s, c]) => [parseFloat(s), c]);
   if (sizeEntries.length === 0) {
     throw new RangeError("inventory must have at least one plate size");
@@ -117,26 +130,36 @@ export function loadPlatesFromInventory(target, inventory, opts = {}) {
       );
     }
   }
+}
 
-  const barWeight = bar !== null ? bar : DEFAULT_BAR[unit];
+function checkBar(barWeight) {
   if (!Number.isFinite(barWeight) || barWeight <= 0) {
     throw new RangeError(`bar weight must be a finite number > 0, got ${pyRepr(barWeight)}`);
   }
-  if (!Number.isFinite(target)) {
-    throw new RangeError(`target must be a finite number, got ${pyRepr(target)}`);
-  }
-  if (target < barWeight) {
-    throw new RangeError(`target ${target}${unit} is below the bar (${barWeight}${unit})`);
-  }
+}
 
-  const perSide = (target - barWeight) / 2.0;
+/** Python's tuple order on two equal-length count lists: fewer of the larger plates first. */
+function lexLess(a, b) {
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return a[i] < b[i];
+  }
+  return false;
+}
 
+/**
+ * Every per-side total `inventory` can build, smallest first, each with the
+ * combination that builds it from the fewest plates. Mirrors plates.py's
+ * _inventory_totals, which explains the merging that keeps this fast.
+ *
+ * @returns {{sizes:number[], totals:{total:number, combo:number[]}[]}}
+ * @throws {RangeError} if the inventory is over MAX_SEARCH_COMBINATIONS.
+ */
+function inventoryTotals(inventory) {
+  const sizeEntries = Object.entries(inventory).map(([s, c]) => [parseFloat(s), c]);
   const sizes = sizeEntries.map(([s]) => s).sort((a, b) => b - a);
   const invBySize = new Map(sizeEntries);
   const counts = sizes.map((s) => invBySize.get(s));
 
-  // The odometer below visits the product of (count + 1) over every size -
-  // refuse anything that would freeze the tab instead of hanging.
   let combinations = 1;
   for (const c of counts) combinations *= c + 1;
   if (combinations > MAX_SEARCH_COMBINATIONS) {
@@ -146,41 +169,63 @@ export function loadPlatesFromInventory(target, inventory, opts = {}) {
     );
   }
 
-  let bestCombo = sizes.map(() => 0);
-  let bestTotal = 0.0;
-  let bestDiff = perSide; // distance below target; start as "use nothing" (diff = perSide)
-  let bestOver = null; // smallest total that's ABOVE perSide, if any combo exceeds it
-
-  // Exhaustive search over every achievable "how many of each size" combo,
-  // via an odometer-style counter (bounded and small in practice - real plate
-  // inventories have a handful of denominations with single-digit counts).
-  const combo = counts.map(() => 0);
-  while (true) {
-    let total = 0;
-    for (let i = 0; i < sizes.length; i++) total += combo[i] * sizes[i];
-
-    if (total > perSide + 1e-9) {
-      if (bestOver === null || total < bestOver) bestOver = total;
-    } else {
-      const diff = perSide - total;
-      const comboSum = combo.reduce((a, b) => a + b, 0);
-      const bestComboSum = bestCombo.reduce((a, b) => a + b, 0);
-      if (diff < bestDiff - 1e-9 || (Math.abs(diff - bestDiff) <= 1e-9 && comboSum < bestComboSum)) {
-        bestDiff = diff;
-        bestTotal = total;
-        bestCombo = combo.slice();
+  let best = new Map([[0, { used: 0, combo: [] }]]);
+  sizes.forEach((size, i) => {
+    const grown = new Map();
+    for (const [total, { used, combo }] of best) {
+      for (let n = 0; n <= counts[i]; n++) {
+        const key = total + n * size;
+        const seen = grown.get(key);
+        const nextUsed = used + n;
+        const nextCombo = [...combo, n];
+        if (
+          seen === undefined ||
+          nextUsed < seen.used ||
+          (nextUsed === seen.used && lexLess(nextCombo, seen.combo))
+        ) {
+          grown.set(key, { used: nextUsed, combo: nextCombo });
+        }
       }
     }
+    best = grown;
+  });
 
-    // increment the odometer
-    let i = 0;
-    while (i < counts.length) {
-      combo[i]++;
-      if (combo[i] <= counts[i]) break;
-      combo[i] = 0;
-      i++;
+  const totals = [...best.values()].map(({ combo }) => {
+    let total = 0;
+    for (let i = 0; i < sizes.length; i++) total += combo[i] * sizes[i];
+    return { total, combo };
+  });
+  totals.sort((a, b) => a.total - b.total || (lexLess(a.combo, b.combo) ? -1 : 1));
+  return { sizes, totals };
+}
+
+/**
+ * Pick the best of inventoryTotals for one target: the heaviest total at or
+ * below the per-side target, fewer plates on a tie within 1e-9. Mirrors
+ * plates.py's _load_from_totals.
+ */
+function loadFromTotals(target, inventory, unit, barWeight, { sizes, totals }) {
+  const perSide = (target - barWeight) / 2.0;
+  const plateCount = (combo) => combo.reduce((a, b) => a + b, 0);
+
+  let bestCombo = sizes.map(() => 0);
+  let bestTotal = 0.0;
+  let bestDiff = perSide;
+  let bestOver = null;
+  for (const { total, combo } of totals) {
+    if (total > perSide + 1e-9) {
+      bestOver = total;
+      break;
     }
-    if (i === counts.length) break; // wrapped past the last digit: enumeration done
+    const diff = perSide - total;
+    if (
+      diff < bestDiff - 1e-9 ||
+      (Math.abs(diff - bestDiff) <= 1e-9 && plateCount(combo) < plateCount(bestCombo))
+    ) {
+      bestDiff = diff;
+      bestTotal = total;
+      bestCombo = combo;
+    }
   }
 
   const loaded = [];
@@ -207,3 +252,4 @@ export function loadPlatesFromInventory(target, inventory, opts = {}) {
     },
   };
 }
+

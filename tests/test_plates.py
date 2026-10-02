@@ -299,6 +299,12 @@ def test_inventory_ties_prefer_fewer_total_plates():
     assert result.exact is True
 
 
+def test_inventory_tie_on_plate_count_takes_fewer_of_the_larger_plates():
+    # 85 a side is 45+20+20 or 35+35+15, three plates either way.
+    result = load_plates_from_inventory(215, {45: 2, 35: 2, 20: 2, 15: 2}, unit="lb", bar=45)
+    assert result.plates == [(35, 2), (15, 1)]
+
+
 def test_inventory_rejects_count_over_per_size_cap():
     # `--inventory 45x100000000` used to enumerate every combination and hang
     # until killed - the count cap refuses it up front instead.

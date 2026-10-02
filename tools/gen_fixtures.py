@@ -296,6 +296,13 @@ def gen_plate_inventory() -> list[dict]:
         "args": {"target": 160, "inventory": inv_counterexample, "opts": {"unit": "lb", "bar": 80}},
         "expected": dump(plates.load_plates_from_inventory(160, inv_counterexample, unit="lb", bar=80)),
     })
+    # 85 a side is 45+20+20 or 35+35+15, three plates either way: fewer of the larger plates wins
+    inv_tie = {45: 2, 35: 2, 20: 2, 15: 2}
+    cases.append({
+        "fn": "loadPlatesFromInventory",
+        "args": {"target": 215, "inventory": inv_tie, "opts": {"unit": "lb", "bar": 45}},
+        "expected": dump(plates.load_plates_from_inventory(215, inv_tie, unit="lb", bar=45)),
+    })
     # kg case
     inv_kg = {20: 2, 10: 1}
     cases.append({

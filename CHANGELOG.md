@@ -59,6 +59,10 @@
   plate size used to hang `loadPlates`. The web app checks its inputs first, so none of this was
   reachable from the page. The parity fixtures pin these error messages now and not only
   results. A mark with a quote in it is quoted the same way in both engines.
+- The finite-inventory solver merges combinations that reach the same total as it goes. A
+  6-size inventory with 8 of each took about half a second per solve in Python and now takes
+  a few milliseconds. The answers are the same. When two combinations tie on total and plate
+  count, the web app now picks the same one as Python, the one with fewer of the larger plates.
 
 ## 2.5.1 - 2026-09-27
 

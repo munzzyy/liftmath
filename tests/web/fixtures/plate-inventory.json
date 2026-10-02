@@ -252,6 +252,49 @@
   {
     "args": {
       "inventory": {
+        "15": 2,
+        "20": 2,
+        "35": 2,
+        "45": 2
+      },
+      "opts": {
+        "bar": 45,
+        "unit": "lb"
+      },
+      "target": 215
+    },
+    "expected": {
+      "achievable": 215.0,
+      "bar": 45,
+      "exact": true,
+      "inventory": {
+        "15": 2,
+        "20": 2,
+        "35": 2,
+        "45": 2
+      },
+      "nearestAbove": 225,
+      "nearestBelow": null,
+      "perSide": 85.0,
+      "plates": [
+        [
+          35,
+          2
+        ],
+        [
+          15,
+          1
+        ]
+      ],
+      "shortfall": 0.0,
+      "target": 215,
+      "unit": "lb"
+    },
+    "fn": "loadPlatesFromInventory"
+  },
+  {
+    "args": {
+      "inventory": {
         "10": 1,
         "20": 2
       },

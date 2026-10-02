@@ -17,13 +17,12 @@ import itertools
 import math
 from dataclasses import dataclass, field
 
-# Hard caps on the finite-inventory solver. Its exhaustive search enumerates
-# the product of (count + 1) over every plate size (see
+# Hard caps on the finite-inventory solver. Its search is bounded by the
+# product of (count + 1) over every plate size (see
 # load_plates_from_inventory's docstring for why greedy can't be used), so
-# unbounded counts turn a sub-second solve into a hang - `--inventory
-# 45x100000000` used to spin until killed. 99 plates of one size per SIDE is
-# already beyond any real rack, and 5M combinations enumerate in well under a
-# second; realistic inventories (a handful of sizes, single-digit counts)
+# unbounded counts turn a solve into a hang - `--inventory 45x100000000` used
+# to spin until killed. 99 plates of one size per SIDE is already beyond any
+# real rack; realistic inventories (a handful of sizes, single-digit counts)
 # don't come near either cap.
 MAX_PLATES_PER_SIZE = 99
 MAX_SEARCH_COMBINATIONS = 5_000_000
@@ -260,9 +259,9 @@ def load_plates_from_inventory(
     exact combination (20+20=40) is invisible to a greedy scan because it
     never revisits the choice to take the 25. Since real plate inventories are
     small (a handful of distinct denominations, single-digit counts each),
-    this instead does an exhaustive search over every combination of "how
-    many of each denomination to use" (bounded by that denomination's
-    available count) and picks the closest total to the per-side target,
+    this instead searches every combination of "how many of each
+    denomination to use" (bounded by that denomination's available count,
+    see `_inventory_totals`) and picks the closest total to the per-side target,
     preferring exact matches and otherwise the closest at-or-below match
     (ties broken toward fewer total plates). This is the textbook
     bounded-knapsack tradeoff (greedy is fast but only optimal for "canonical"
@@ -287,6 +286,19 @@ def load_plates_from_inventory(
             MAX_PLATES_PER_SIZE, or more than MAX_SEARCH_COMBINATIONS
             combinations overall).
     """
+    _check_inventory(inventory)
+
+    bar_weight = bar if bar is not None else DEFAULT_BAR[unit]
+    _check_bar(bar_weight)
+    if not math.isfinite(target):
+        raise ValueError(f"target must be a finite number, got {target}")
+    if target < bar_weight:
+        raise ValueError(f"target {target}{unit} is below the bar ({bar_weight}{unit})")
+
+    return _load_from_totals(target, inventory, unit, bar_weight, _inventory_totals(inventory))
+
+
+def _check_inventory(inventory: dict[float, int]) -> None:
     if not inventory:
         raise ValueError("inventory must have at least one plate size")
     for size, count in inventory.items():
@@ -299,45 +311,73 @@ def load_plates_from_inventory(
                 f"plate count must be <= {MAX_PLATES_PER_SIZE} per size, got {count} for size {size}"
             )
 
-    bar_weight = bar if bar is not None else DEFAULT_BAR[unit]
+
+def _check_bar(bar_weight: float) -> None:
     if not math.isfinite(bar_weight) or bar_weight <= 0:
         raise ValueError(f"bar weight must be a finite number > 0, got {bar_weight}")
-    if not math.isfinite(target):
-        raise ValueError(f"target must be a finite number, got {target}")
-    if target < bar_weight:
-        raise ValueError(f"target {target}{unit} is below the bar ({bar_weight}{unit})")
 
-    per_side = (target - bar_weight) / 2.0
 
+def _inventory_totals(inventory: dict[float, int]) -> list[tuple[float, tuple[int, ...]]]:
+    """Every per-side total `inventory` can build, smallest first, each with
+    the combination that builds it from the fewest plates.
+
+    A combination is a count per plate size, largest size first. On a tie in
+    plate count the one with fewer of the larger plates wins, which is plain
+    tuple order.
+
+    Combinations that reach the same total are merged after each plate size,
+    keeping the better one. Both would grow the same way from there, so
+    nothing is lost, and the work stays near (distinct totals) x (count + 1)
+    per size instead of the full product of counts.
+
+    Raises:
+        ValueError: if the product of (count + 1) over every size is over
+            MAX_SEARCH_COMBINATIONS.
+    """
     sizes = sorted(inventory, reverse=True)
-    counts = [inventory[s] for s in sizes]
-
-    # The exhaustive search below visits the product of (count + 1) over every
-    # size - refuse anything that would take real time instead of hanging.
     combinations = 1
-    for c in counts:
-        combinations *= c + 1
+    for s in sizes:
+        combinations *= inventory[s] + 1
     if combinations > MAX_SEARCH_COMBINATIONS:
         raise ValueError(
             f"inventory is too big to search ({combinations} combinations, cap {MAX_SEARCH_COMBINATIONS})"
             " - drop some plate sizes or counts"
         )
 
+    best: dict[float, tuple[int, tuple[int, ...]]] = {0: (0, ())}
+    for size in sizes:
+        grown: dict[float, tuple[int, tuple[int, ...]]] = {}
+        for total, (used, combo) in best.items():
+            for n in range(inventory[size] + 1):
+                key = total + n * size
+                candidate = (used + n, combo + (n,))
+                if key not in grown or candidate < grown[key]:
+                    grown[key] = candidate
+        best = grown
+    # sum() again, not the running total: on 3.12+ sum() is compensated and can differ in the last bit.
+    return sorted((sum(n * s for n, s in zip(combo, sizes)), combo) for _, combo in best.values())
+
+
+def _load_from_totals(
+    target: float,
+    inventory: dict[float, int],
+    unit: str,
+    bar_weight: float,
+    totals: list[tuple[float, tuple[int, ...]]],
+) -> InventoryPlateLoad:
+    """Pick the best of `_inventory_totals` for one target: the heaviest total
+    at or below the per-side target, fewer plates on a tie within 1e-9."""
+    per_side = (target - bar_weight) / 2.0
+    sizes = sorted(inventory, reverse=True)
+
     best_combo: tuple[int, ...] = tuple(0 for _ in sizes)
     best_total = 0.0
-    best_diff = per_side  # distance below target; start as "use nothing" (diff = per_side)
-    best_over: float | None = None  # smallest total that's ABOVE per_side, if any combo exceeds it
-
-    # Exhaustive search over every achievable "how many of each size" combination.
-    # Bounded and small in practice (real plate inventories have a handful of
-    # denominations with single-digit counts), so the product of (count+1)
-    # terms stays cheap - see the docstring above for why greedy can't be used.
-    for combo in itertools.product(*(range(c + 1) for c in counts)):
-        total = sum(n * s for n, s in zip(combo, sizes))
+    best_diff = per_side
+    best_over: float | None = None
+    for total, combo in totals:
         if total > per_side + 1e-9:
-            if best_over is None or total < best_over:
-                best_over = total
-            continue
+            best_over = total
+            break
         diff = per_side - total
         if diff < best_diff - 1e-9 or (
             abs(diff - best_diff) <= 1e-9 and sum(combo) < sum(best_combo)
