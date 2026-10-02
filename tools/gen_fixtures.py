@@ -425,6 +425,9 @@ def gen_records() -> list[dict]:
     # junk, and a comma that reads as a thousands separator (combined-event points)
     for text in ["abc", "9,126", "1,234,567", "4:", "1:2:3:4", "nan", "", "4:-1"]:
         cases.append(raises("parseMark", {"text": text}, lambda text=text: records.parse_mark(text)))
+    # the message quotes the mark the way Python's repr() does
+    for text in ["4'12", '4"12', "4'1\"2", "a\\b", "\tx", "x\u00a0", "4:12\u200b"]:
+        cases.append(raises("parseMark", {"text": text}, lambda text=text: records.parse_mark(text)))
     for seconds in [9.58, 59.994, 100.91, 206.0, 7235, 3599.996]:
         cases.append({
             "fn": "formatSeconds",
@@ -495,6 +498,10 @@ def gen_records() -> list[dict]:
             "args": {"record": dump(rec), "mark": mark, "displayUnit": display_unit},
             "expected": records.compare_value(rec, mark, display_unit),
         })
+    for rec in dl[:1] + keg[:1]:
+        for mark in ["abc", "", "nan", "inf", "4'12"]:
+            cases.append(raises("compareValue", {"record": dump(rec), "mark": mark, "displayUnit": "lb"},
+                                lambda rec=rec, mark=mark: records.compare_value(rec, mark, "lb")))
     return cases
 
 

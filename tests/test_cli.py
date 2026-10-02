@@ -348,6 +348,15 @@ def test_records_typo_compare_errors_instead_of_vanishing(capsys):
     assert err == "error: can't parse mark 'abc'\n"
 
 
+@pytest.mark.parametrize("mark", ["abc", "500,5"])
+def test_records_junk_compare_against_weight_records(capsys, mark):
+    code, out, err = run(capsys, "records", "--sport", "powerlifting", "--lift", "deadlift",
+                         "--sex", "male", "--bodyweight", "220", "--equip", "raw", "--compare", mark)
+    assert code == 1
+    assert out == ""
+    assert err == f"error: can't parse weight {mark!r}\n"
+
+
 def test_records_compare_only_has_to_read_against_some_rows(capsys):
     # Grip mixes kg lifts with timed holds in seconds. "4:12" isn't a weight,
     # but it is a time, so the holds get a comparison and the lifts don't.

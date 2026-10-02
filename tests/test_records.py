@@ -274,6 +274,15 @@ def test_compare_value_rejects_non_finite():
             compare_value(dl, bad, "lb")   # weight record -> float() branch
 
 
+@pytest.mark.parametrize("bad", ["abc", "500,5", "", "4'12"])
+def test_compare_value_junk_weight_message(bad):
+    dl = search_records(sport="powerlifting", lift="deadlift", sex="male",
+                        weight_class="100", equipment="raw")[0]
+    with pytest.raises(ValueError) as exc:
+        compare_value(dl, bad, "lb")
+    assert str(exc.value) == f"can't parse weight {bad!r}"
+
+
 # --- track & field ---
 
 def test_track_levels_present_and_direction_consistent():

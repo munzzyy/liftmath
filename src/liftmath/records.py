@@ -370,7 +370,10 @@ def compare_value(record: Record, mark: str, display_unit: str) -> float:
     non-finite input, so a caller can treat "no usable comparison" as one case.
     """
     if record.unit == "kg":
-        weight = float(mark)
+        try:
+            weight = float(mark)
+        except ValueError:
+            raise ValueError(f"can't parse weight {mark!r}") from None
         if not math.isfinite(weight):
             raise ValueError(f"can't parse weight {mark!r}")
         return lbs_to_kg(weight) if display_unit == "lb" else weight

@@ -330,6 +330,55 @@
   },
   {
     "args": {
+      "text": "4'12"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark \"4'12\""
+  },
+  {
+    "args": {
+      "text": "4\"12"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark '4\"12'"
+  },
+  {
+    "args": {
+      "text": "4'1\"2"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark '4\\'1\"2'"
+  },
+  {
+    "args": {
+      "text": "a\\b"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark 'a\\\\b'"
+  },
+  {
+    "args": {
+      "text": "\tx"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark '\\tx'"
+  },
+  {
+    "args": {
+      "text": "x\u00a0"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark 'x\\xa0'"
+  },
+  {
+    "args": {
+      "text": "4:12\u200b"
+    },
+    "fn": "parseMark",
+    "raises": "can't parse mark '4:12\\u200b'"
+  },
+  {
+    "args": {
       "seconds": 9.58
     },
     "expected": "9.58",
@@ -2444,5 +2493,355 @@
     },
     "expected": 9.7,
     "fn": "compareValue"
+  },
+  {
+    "args": {
+      "displayUnit": "lb",
+      "mark": "abc",
+      "record": {
+        "athlete": "Krzysztof Wierzbicki",
+        "bodyweightKg": 97.9,
+        "competition": "Siberian Championships",
+        "confidence": null,
+        "country": "Poland",
+        "date": "2020-03-08",
+        "direction": "higher",
+        "display": null,
+        "dots": null,
+        "equipment": "raw",
+        "federation": "NAP",
+        "goodlift": null,
+        "level": null,
+        "lift": "deadlift",
+        "liftDisplay": "Deadlift",
+        "meetCountry": "Russia",
+        "notes": null,
+        "scheme": "traditional",
+        "scope": "all-time",
+        "sex": "M",
+        "source": null,
+        "sport": "powerlifting",
+        "unit": "kg",
+        "value": 433.5,
+        "weightClass": "100"
+      }
+    },
+    "fn": "compareValue",
+    "raises": "can't parse weight 'abc'"
+  },
+  {
+    "args": {
+      "displayUnit": "lb",
+      "mark": "",
+      "record": {
+        "athlete": "Krzysztof Wierzbicki",
+        "bodyweightKg": 97.9,
+        "competition": "Siberian Championships",
+        "confidence": null,
+        "country": "Poland",
+        "date": "2020-03-08",
+        "direction": "higher",
+        "display": null,
+        "dots": null,
+        "equipment": "raw",
+        "federation": "NAP",
+        "goodlift": null,
+        "level": null,
+        "lift": "deadlift",
+        "liftDisplay": "Deadlift",
+        "meetCountry": "Russia",
+        "notes": null,
+        "scheme": "traditional",
+        "scope": "all-time",
+        "sex": "M",
+        "source": null,
+        "sport": "powerlifting",
+        "unit": "kg",
+        "value": 433.5,
+        "weightClass": "100"
+      }
+    },
+    "fn": "compareValue",
+    "raises": "can't parse weight ''"
+  },
+  {
+    "args": {
+      "displayUnit": "lb",
+      "mark": "nan",
+      "record": {
+        "athlete": "Krzysztof Wierzbicki",
+        "bodyweightKg": 97.9,
+        "competition": "Siberian Championships",
+        "confidence": null,
+        "country": "Poland",
+        "date": "2020-03-08",
+        "direction": "higher",
+        "display": null,
+        "dots": null,
+        "equipment": "raw",
+        "federation": "NAP",
+        "goodlift": null,
+        "level": null,
+        "lift": "deadlift",
+        "liftDisplay": "Deadlift",
+        "meetCountry": "Russia",
+        "notes": null,
+        "scheme": "traditional",
+        "scope": "all-time",
+        "sex": "M",
+        "source": null,
+        "sport": "powerlifting",
+        "unit": "kg",
+        "value": 433.5,
+        "weightClass": "100"
+      }
+    },
+    "fn": "compareValue",
+    "raises": "can't parse weight 'nan'"
+  },
+  {
+    "args": {
+      "displayUnit": "lb",
+      "mark": "inf",
+      "record": {
+        "athlete": "Krzysztof Wierzbicki",
+        "bodyweightKg": 97.9,
+        "competition": "Siberian Championships",
+        "confidence": null,
+        "country": "Poland",
+        "date": "2020-03-08",
+        "direction": "higher",
+        "display": null,
+        "dots": null,
+        "equipment": "raw",
+        "federation": "NAP",
+        "goodlift": null,
+        "level": null,
+        "lift": "deadlift",
+        "liftDisplay": "Deadlift",
+        "meetCountry": "Russia",
+        "notes": null,
+        "scheme": "traditional",
+        "scope": "all-time",
+        "sex": "M",
+        "source": null,
+        "sport": "powerlifting",
+        "unit": "kg",
+        "value": 433.5,
+        "weightClass": "100"
+      }
+    },
+    "fn": "compareValue",
+    "raises": "can't parse weight 'inf'"
+  },
+  {
+    "args": {
+      "displayUnit": "lb",
+      "mark": "4'12",
+      "record": {
+        "athlete": "Krzysztof Wierzbicki",
+        "bodyweightKg": 97.9,
+        "competition": "Siberian Championships",
+        "confidence": null,
+        "country": "Poland",
+        "date": "2020-03-08",
+        "direction": "higher",
+        "display": null,
+        "dots": null,
+        "equipment": "raw",
+        "federation": "NAP",
+        "goodlift": null,
+        "level": null,
+        "lift": "deadlift",
+        "liftDisplay": "Deadlift",
+        "meetCountry": "Russia",
+        "notes": null,
+        "scheme": "traditional",
+        "scope": "all-time",
+        "sex": "M",
+        "source": null,
+        "sport": "powerlifting",
+        "unit": "kg",
+        "value": 433.5,
+        "weightClass": "100"
+      }
+    },
+    "fn": "compareValue",
+    "raises": "can't parse weight \"4'12\""
+  },
+  {
+    "args": {
+      "displayUnit": "lb",
+      "mark": "abc",
+      "record": {
+        "athlete": "Hafthor Julius Bjornsson",
+        "bodyweightKg": null,
+        "competition": "2024 Strongest Man on Earth, Loveland, Colorado",
+        "confidence": "high",
+        "country": "Iceland",
+        "date": "2024-08-17",
+        "direction": "higher",
+        "display": null,
+        "dots": null,
+        "equipment": null,
+        "federation": "Strongest Man on Earth",
+        "goodlift": null,
+        "level": null,
+        "lift": "keg-toss",
+        "liftDisplay": "Keg Toss (15 kg keg, height over bar)",
+        "meetCountry": null,
+        "notes": "Vertical clearance over a bar, not horizontal distance. Broke the 7.76 shared by Derwinsky, Stoltman, and Hooper.",
+        "scheme": null,
+        "scope": "official",
+        "sex": "M",
+        "source": "https://fitnessvolt.com/hafthor-bjornsson-keg-toss-world-record-2024-strongest-man-on-earth/",
+        "sport": "strongman",
+        "unit": "m",
+        "value": 7.77,
+        "weightClass": null
+      }
+    },
+    "fn": "compareValue",
+    "raises": "can't parse mark 'abc'"
+  },
+  {
+    "args": {
+      "displayUnit": "lb",
+      "mark": "",
+      "record": {
+        "athlete": "Hafthor Julius Bjornsson",
+        "bodyweightKg": null,
+        "competition": "2024 Strongest Man on Earth, Loveland, Colorado",
+        "confidence": "high",
+        "country": "Iceland",
+        "date": "2024-08-17",
+        "direction": "higher",
+        "display": null,
+        "dots": null,
+        "equipment": null,
+        "federation": "Strongest Man on Earth",
+        "goodlift": null,
+        "level": null,
+        "lift": "keg-toss",
+        "liftDisplay": "Keg Toss (15 kg keg, height over bar)",
+        "meetCountry": null,
+        "notes": "Vertical clearance over a bar, not horizontal distance. Broke the 7.76 shared by Derwinsky, Stoltman, and Hooper.",
+        "scheme": null,
+        "scope": "official",
+        "sex": "M",
+        "source": "https://fitnessvolt.com/hafthor-bjornsson-keg-toss-world-record-2024-strongest-man-on-earth/",
+        "sport": "strongman",
+        "unit": "m",
+        "value": 7.77,
+        "weightClass": null
+      }
+    },
+    "fn": "compareValue",
+    "raises": "empty mark"
+  },
+  {
+    "args": {
+      "displayUnit": "lb",
+      "mark": "nan",
+      "record": {
+        "athlete": "Hafthor Julius Bjornsson",
+        "bodyweightKg": null,
+        "competition": "2024 Strongest Man on Earth, Loveland, Colorado",
+        "confidence": "high",
+        "country": "Iceland",
+        "date": "2024-08-17",
+        "direction": "higher",
+        "display": null,
+        "dots": null,
+        "equipment": null,
+        "federation": "Strongest Man on Earth",
+        "goodlift": null,
+        "level": null,
+        "lift": "keg-toss",
+        "liftDisplay": "Keg Toss (15 kg keg, height over bar)",
+        "meetCountry": null,
+        "notes": "Vertical clearance over a bar, not horizontal distance. Broke the 7.76 shared by Derwinsky, Stoltman, and Hooper.",
+        "scheme": null,
+        "scope": "official",
+        "sex": "M",
+        "source": "https://fitnessvolt.com/hafthor-bjornsson-keg-toss-world-record-2024-strongest-man-on-earth/",
+        "sport": "strongman",
+        "unit": "m",
+        "value": 7.77,
+        "weightClass": null
+      }
+    },
+    "fn": "compareValue",
+    "raises": "can't parse mark 'nan'"
+  },
+  {
+    "args": {
+      "displayUnit": "lb",
+      "mark": "inf",
+      "record": {
+        "athlete": "Hafthor Julius Bjornsson",
+        "bodyweightKg": null,
+        "competition": "2024 Strongest Man on Earth, Loveland, Colorado",
+        "confidence": "high",
+        "country": "Iceland",
+        "date": "2024-08-17",
+        "direction": "higher",
+        "display": null,
+        "dots": null,
+        "equipment": null,
+        "federation": "Strongest Man on Earth",
+        "goodlift": null,
+        "level": null,
+        "lift": "keg-toss",
+        "liftDisplay": "Keg Toss (15 kg keg, height over bar)",
+        "meetCountry": null,
+        "notes": "Vertical clearance over a bar, not horizontal distance. Broke the 7.76 shared by Derwinsky, Stoltman, and Hooper.",
+        "scheme": null,
+        "scope": "official",
+        "sex": "M",
+        "source": "https://fitnessvolt.com/hafthor-bjornsson-keg-toss-world-record-2024-strongest-man-on-earth/",
+        "sport": "strongman",
+        "unit": "m",
+        "value": 7.77,
+        "weightClass": null
+      }
+    },
+    "fn": "compareValue",
+    "raises": "can't parse mark 'inf'"
+  },
+  {
+    "args": {
+      "displayUnit": "lb",
+      "mark": "4'12",
+      "record": {
+        "athlete": "Hafthor Julius Bjornsson",
+        "bodyweightKg": null,
+        "competition": "2024 Strongest Man on Earth, Loveland, Colorado",
+        "confidence": "high",
+        "country": "Iceland",
+        "date": "2024-08-17",
+        "direction": "higher",
+        "display": null,
+        "dots": null,
+        "equipment": null,
+        "federation": "Strongest Man on Earth",
+        "goodlift": null,
+        "level": null,
+        "lift": "keg-toss",
+        "liftDisplay": "Keg Toss (15 kg keg, height over bar)",
+        "meetCountry": null,
+        "notes": "Vertical clearance over a bar, not horizontal distance. Broke the 7.76 shared by Derwinsky, Stoltman, and Hooper.",
+        "scheme": null,
+        "scope": "official",
+        "sex": "M",
+        "source": "https://fitnessvolt.com/hafthor-bjornsson-keg-toss-world-record-2024-strongest-man-on-earth/",
+        "sport": "strongman",
+        "unit": "m",
+        "value": 7.77,
+        "weightClass": null
+      }
+    },
+    "fn": "compareValue",
+    "raises": "can't parse mark \"4'12\""
   }
 ]

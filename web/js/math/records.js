@@ -6,6 +6,7 @@
 // what "record" means per sport (computed vs curated) and the caveats.
 
 import { DATASET } from "../records-data.js";
+import { pyRepr } from "./py-repr.js";
 import { pyRound } from "./py-round.js";
 import { lbsToKg } from "./unit-convert.js";
 
@@ -65,7 +66,7 @@ const THOUSANDS_COMMA = /,\d{3}$/;
 export function parseMark(text) {
   const cleaned = String(text).trim().replace(/s$/, "");
   if (!cleaned) throw new Error("empty mark");
-  const junk = `can't parse mark '${text}'`;
+  const junk = `can't parse mark ${pyRepr(String(text))}`;
   if (THOUSANDS_COMMA.test(cleaned)) throw new Error(junk);
   const parts = cleaned.replace(/,/g, ".").split(":");
   if (parts.length > 3) throw new Error(junk);
@@ -226,7 +227,7 @@ export function compareValue(record, mark, displayUnit) {
   if (record.unit === "kg") {
     const weight = Number(String(mark).trim());
     if (!Number.isFinite(weight) || String(mark).trim() === "") {
-      throw new Error(`can't parse weight ${mark}`);
+      throw new Error(`can't parse weight ${pyRepr(String(mark))}`);
     }
     return displayUnit === "lb" ? lbsToKg(weight) : weight;
   }
