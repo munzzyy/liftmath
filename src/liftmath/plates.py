@@ -15,8 +15,10 @@ from __future__ import annotations
 
 import itertools
 import math
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
+from functools import reduce
+from operator import add, mul
 
 # Hard caps on the finite-inventory solver. Its search is bounded by the
 # product of (count + 1) over every plate size (see
@@ -27,6 +29,8 @@ from dataclasses import dataclass, field
 # don't come near either cap.
 MAX_PLATES_PER_SIZE = 99
 MAX_SEARCH_COMBINATIONS = 5_000_000
+# Past this many steps the plate sizes share no step to merge on (see _inventory_entries).
+MAX_MERGE_STEPS = 200_000
 
 DEFAULT_PLATES = {
     "kg": (25, 20, 15, 10, 5, 2.5, 1.25),
@@ -262,12 +266,13 @@ def load_plates_from_inventory(
     small (a handful of distinct denominations, single-digit counts each),
     this instead searches every combination of "how many of each
     denomination to use" (bounded by that denomination's available count,
-    see `_inventory_totals`) and picks the closest total to the per-side target,
+    see `_inventory_entries`) and picks the closest total to the per-side target,
     preferring exact matches and otherwise the closest at-or-below match
-    (ties broken toward fewer total plates). This is the textbook
-    bounded-knapsack tradeoff (greedy is fast but only optimal for "canonical"
-    coin systems; arbitrary finite multisets need exhaustive/DP search) -
-    documented here rather than silently shipping a wrong-but-fast answer.
+    (ties broken toward fewer total plates, then fewer of the larger plates).
+    This is the textbook bounded-knapsack tradeoff (greedy is fast but only
+    optimal for "canonical" coin systems; arbitrary finite multisets need
+    exhaustive/DP search) - documented here rather than silently shipping a
+    wrong-but-fast answer.
 
     Args:
         target: desired total barbell weight.
@@ -296,7 +301,7 @@ def load_plates_from_inventory(
     if target < bar_weight:
         raise ValueError(f"target {target}{unit} is below the bar ({bar_weight}{unit})")
 
-    return _load_from_totals(target, inventory, unit, bar_weight, _inventory_totals(inventory))
+    return _pick_from(target, inventory, unit, bar_weight, _inventory_entries(inventory)())
 
 
 def _check_inventory(inventory: dict[float, int]) -> None:
@@ -318,18 +323,24 @@ def _check_bar(bar_weight: float) -> None:
         raise ValueError(f"bar weight must be a finite number > 0, got {bar_weight}")
 
 
-def _inventory_totals(inventory: dict[float, int]) -> list[tuple[float, tuple[int, ...]]]:
-    """Every per-side total `inventory` can build, smallest first, each with
-    the combination that builds it from the fewest plates.
+def _inventory_entries(
+    inventory: dict[float, int],
+) -> Callable[[], Iterable[tuple[float, tuple[int, ...]]]]:
+    """What `_pick_from` scans for this inventory: a function that hands back
+    every per-side total it can build, each with a combination that builds it.
 
-    A combination is a count per plate size, largest size first. On a tie in
-    plate count the one with fewer of the larger plates wins, which is plain
-    tuple order.
+    A combination is a count per plate size, largest size first. Totals are
+    added left to right in plain float arithmetic, which is how the web app
+    adds them too. sum() would not match it, since on 3.12+ it is compensated.
 
-    Combinations that reach the same total are merged after each plate size,
-    keeping the better one. Both would grow the same way from there, so
-    nothing is lost, and the work stays near (distinct totals) x (count + 1)
-    per size instead of the full product of counts.
+    The search adds one plate size at a time and merges combinations that
+    reach the same total, keeping the one `_pick_from` would take: the fewest
+    plates, then the fewest of the larger plates (plain tuple order). Both
+    grow the same way from there, so nothing is lost. Real plates share a
+    step (45, 25 and 2.5 are all multiples of 2.5), which leaves a few hundred
+    totals. Sizes like 45.123457 and 25.345679 share none and leave nothing
+    to merge, so past MAX_MERGE_STEPS this gives up and hands back every
+    combination one at a time instead, which keeps memory flat.
 
     Raises:
         ValueError: if the product of (count + 1) over every size is over
@@ -346,7 +357,11 @@ def _inventory_totals(inventory: dict[float, int]) -> list[tuple[float, tuple[in
         )
 
     best: dict[float, tuple[int, tuple[int, ...]]] = {0: (0, ())}
+    steps = 0
     for size in sizes:
+        steps += len(best) * (inventory[size] + 1)
+        if steps > MAX_MERGE_STEPS:
+            return lambda: _every_combination(inventory, sizes)
         grown: dict[float, tuple[int, tuple[int, ...]]] = {}
         for total, (used, combo) in best.items():
             for n in range(inventory[size] + 1):
@@ -355,19 +370,29 @@ def _inventory_totals(inventory: dict[float, int]) -> list[tuple[float, tuple[in
                 if key not in grown or candidate < grown[key]:
                     grown[key] = candidate
         best = grown
-    # sum() again, not the running total: on 3.12+ sum() is compensated and can differ in the last bit.
-    return sorted((sum(n * s for n, s in zip(combo, sizes)), combo) for _, combo in best.values())
+    totals = sorted((total, combo) for total, (_, combo) in best.items())
+    return lambda: totals
 
 
-def _load_from_totals(
+def _every_combination(
+    inventory: dict[float, int], sizes: list[float]
+) -> Iterator[tuple[float, tuple[int, ...]]]:
+    for combo in itertools.product(*(range(inventory[s] + 1) for s in sizes)):
+        yield reduce(add, map(mul, combo, sizes), 0), combo
+
+
+def _pick_from(
     target: float,
     inventory: dict[float, int],
     unit: str,
     bar_weight: float,
-    totals: list[tuple[float, tuple[int, ...]]],
+    entries: Iterable[tuple[float, tuple[int, ...]]],
 ) -> InventoryPlateLoad:
-    """Pick the best of `_inventory_totals` for one target: the heaviest total
-    at or below the per-side target, fewer plates on a tie within 1e-9."""
+    """The best of `_inventory_entries` for one target: the heaviest total at
+    or below the per-side target. Totals within 1e-9 of each other count as
+    the same weight, and among those it takes the fewest plates, then the
+    fewest of the larger plates, so the answer doesn't hang on float noise or
+    on the order the entries come in."""
     per_side = (target - bar_weight) / 2.0
     sizes = sorted(inventory, reverse=True)
 
@@ -375,13 +400,14 @@ def _load_from_totals(
     best_total = 0.0
     best_diff = per_side
     best_over: float | None = None
-    for total, combo in totals:
+    for total, combo in entries:
         if total > per_side + 1e-9:
-            best_over = total
-            break
+            if best_over is None or total < best_over:
+                best_over = total
+            continue
         diff = per_side - total
         if diff < best_diff - 1e-9 or (
-            abs(diff - best_diff) <= 1e-9 and sum(combo) < sum(best_combo)
+            abs(diff - best_diff) <= 1e-9 and (sum(combo), combo) < (sum(best_combo), best_combo)
         ):
             best_diff = diff
             best_total = total
@@ -422,8 +448,8 @@ def _setup_loader(
     _check_inventory(inventory)
     bar_weight = bar if bar is not None else DEFAULT_BAR[unit]
     _check_bar(bar_weight)
-    totals = _inventory_totals(inventory)
-    return bar_weight, lambda t: _load_from_totals(t, inventory, unit, bar_weight, totals)
+    entries = _inventory_entries(inventory)
+    return bar_weight, lambda t: _pick_from(t, inventory, unit, bar_weight, entries())
 
 
 # (fraction of the working weight, reps) for each ramp step after the empty

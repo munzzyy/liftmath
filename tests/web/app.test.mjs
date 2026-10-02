@@ -235,6 +235,18 @@ test("a kg-only preset in lb mode rounds the 1RM table to the default plates and
   assert.doesNotMatch(html, /your plates/);
 });
 
+test("My plates that are filled in but rejected fall back without calling them unfilled", async () => {
+  const app = await loadApp({ language: "en-US" });
+  app.chip("plates-preset-group", "preset", "my-plates").click();
+  app.type("plates-inventory-spec", "45x99,35x99,25x99,10x99");
+  app.type("onerm-weight", 315);
+  app.type("onerm-reps", 3);
+  assert.match(app.text("plates-results"), /too big to search/);
+  const html = app.text("onerm-results");
+  assert.match(html, /default lb plates because the My plates setup on the Plates tab can't be used/);
+  assert.doesNotMatch(html, /filled in/);
+});
+
 test("the score result shows where the DOTS stands against OpenPowerlifting", async () => {
   const app = await loadApp();
   app.$("tab-btn-score").click();

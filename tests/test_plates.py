@@ -1,7 +1,9 @@
 import pytest
 
+from liftmath import plates
 from liftmath.plates import (
     MAX_PLATES_PER_SIZE,
+    _inventory_entries,
     _parse_inventory_spec,
     load_plates,
     load_plates_from_inventory,
@@ -303,6 +305,43 @@ def test_inventory_tie_on_plate_count_takes_fewer_of_the_larger_plates():
     # 85 a side is 45+20+20 or 35+35+15, three plates either way.
     result = load_plates_from_inventory(215, {45: 2, 35: 2, 20: 2, 15: 2}, unit="lb", bar=45)
     assert result.plates == [(35, 2), (15, 1)]
+
+
+def test_inventory_tie_rule_holds_through_float_noise():
+    # 12.1 a side is 4.4+4.4+3.3 or 5.5+3.3+3.3, but in floats the second adds up to 12.099999999999998.
+    result = load_plates_from_inventory(69.2, {5.5: 1, 4.4: 2, 3.3: 2}, unit="lb", bar=45)
+    assert result.plates == [(4.4, 2), (3.3, 1)]
+    assert result.shortfall == 0
+
+
+def test_inventory_totals_add_left_to_right_like_the_web_app():
+    # sum() is compensated on 3.12+ and would give 18.3 here; the web app and 3.10 give this.
+    result = load_plates_from_inventory(31.5, {2.5: 2, 0.3: 1, 0.1: 1}, unit="lb", bar=7.5)
+    assert result.plates == [(2.5, 2), (0.3, 1), (0.1, 1)]
+    assert result.nearest_below == 7.5 + 2 * (2 * 2.5 + 0.3 + 0.1)
+
+
+@pytest.mark.parametrize(
+    "inventory",
+    [
+        {45: 2, 35: 2, 20: 2, 15: 2},
+        {5.5: 1, 4.4: 2, 3.3: 2},
+        {5.5: 3, 4.4: 3, 3.3: 4, 2.2: 1},
+        {45: 4, 25: 1, 10: 2, 5: 2, 2.5: 1},
+        {2.5: 2, 0.7: 3, 0.3: 2, 0.1: 4},
+    ],
+)
+def test_inventory_fallback_search_gives_the_same_answers(monkeypatch, inventory):
+    targets = [45 + i * 0.3 for i in range(int(2 * sum(s * c for s, c in inventory.items()) / 0.3) + 10)]
+    merged = [load_plates_from_inventory(t, inventory, unit="lb", bar=45) for t in targets]
+    monkeypatch.setattr(plates, "MAX_MERGE_STEPS", 0)
+    assert [load_plates_from_inventory(t, inventory, unit="lb", bar=45) for t in targets] == merged
+
+
+def test_inventory_search_falls_back_when_sizes_share_no_step():
+    # Nothing merges here, so a merged search would hold all 200,000 combinations at once.
+    inventory = {45.123457: 9, 35.234561: 9, 25.345679: 9, 10.123457: 9, 1.123457: 19}
+    assert not isinstance(_inventory_entries(inventory)(), list)
 
 
 def test_inventory_rejects_count_over_per_size_cap():

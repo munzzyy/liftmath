@@ -515,9 +515,9 @@ function renderOneRm() {
 
 /**
  * The 1RM percentage table, rounded to whatever Plates is set up with. A
- * setup that can't apply here (a kg-only preset in lb, or My plates while
- * its fields don't parse) falls back to the default plates, and the hint
- * says so.
+ * setup that can't apply here (a kg-only preset in lb, or My plates that
+ * don't parse or get rejected) falls back to the default plates, and the
+ * hint says so.
  */
 function oneRmTable(consensus) {
   const yours = "Loads are rounded down to what your plates can make.";
@@ -531,7 +531,7 @@ function oneRmTable(consensus) {
       const inventory = parseInventorySpec($("plates-inventory-spec").value);
       return { table: percentageTable(consensus, unit, { bar, inventory }), hint: yours };
     } catch {
-      return fallback("until My plates on the Plates tab is filled in");
+      return fallback("because the My plates setup on the Plates tab can't be used");
     }
   }
   if (platesMode === "womens" || platesMode === "metric-no-45") {

@@ -329,6 +329,21 @@ def gen_plate_inventory() -> list[dict]:
         "args": {"target": 215, "inventory": inv_tie, "opts": {"unit": "lb", "bar": 45}},
         "expected": dump(plates.load_plates_from_inventory(215, inv_tie, unit="lb", bar=45)),
     })
+    # the same tie where float noise splits the totals: 5.5+3.3+3.3 adds up to 12.099999999999998
+    for target, inv_noisy_tie in [(69.2, {5.5: 1, 4.4: 2, 3.3: 2}), (100, {5.5: 3, 4.4: 3, 3.3: 4, 2.2: 1})]:
+        cases.append({
+            "fn": "loadPlatesFromInventory",
+            "args": {"target": target, "inventory": inv_noisy_tie, "opts": {"unit": "lb", "bar": 45}},
+            "expected": dump(plates.load_plates_from_inventory(target, inv_noisy_tie, unit="lb", bar=45)),
+        })
+    # sizes with no common step: past MAX_MERGE_STEPS both engines check every combination
+    inv_no_step = {45.123457: 9, 35.234561: 9, 25.345679: 9, 10.123457: 9, 1.123457: 19}
+    for target in (300, 977.7):
+        cases.append({
+            "fn": "loadPlatesFromInventory",
+            "args": {"target": target, "inventory": inv_no_step, "opts": {"unit": "lb", "bar": 45}},
+            "expected": dump(plates.load_plates_from_inventory(target, inv_no_step, unit="lb", bar=45)),
+        })
     # kg case
     inv_kg = {20: 2, 10: 1}
     cases.append({

@@ -16,9 +16,9 @@
 // are small (a handful of distinct denominations, single-digit counts each),
 // this instead searches every combination of "how many of each denomination
 // to use" (bounded by that denomination's available count, see
-// inventoryTotals) and picks the closest total to the per-side target, preferring
+// inventoryEntries) and picks the closest total to the per-side target, preferring
 // exact matches and otherwise the closest at-or-below match (ties broken
-// toward fewer total plates).
+// toward fewer total plates, then fewer of the larger plates).
 
 import { DEFAULT_BAR, loadPlates, resolveBarWeight } from "./plate-loading.js";
 import { pyRepr } from "./py-repr.js";
@@ -31,6 +31,8 @@ import { pyRepr } from "./py-repr.js";
 // either cap.
 export const MAX_PLATES_PER_SIZE = 99;
 export const MAX_SEARCH_COMBINATIONS = 5_000_000;
+// Past this many steps the plate sizes share no step to merge on (see inventoryEntries).
+export const MAX_MERGE_STEPS = 200_000;
 
 /**
  * Parse a "SIZExCOUNT,SIZExCOUNT,..." inventory spec string into a
@@ -109,7 +111,7 @@ export function loadPlatesFromInventory(target, inventory, opts = {}) {
     throw new RangeError(`target ${target}${unit} is below the bar (${barWeight}${unit})`);
   }
 
-  return loadFromTotals(target, inventory, unit, barWeight, inventoryTotals(inventory));
+  return pickFrom(target, inventory, unit, barWeight, inventoryEntries(inventory));
 }
 
 function checkInventory(inventory) {
@@ -138,8 +140,11 @@ function checkBar(barWeight) {
   }
 }
 
-/** Python's tuple order on two equal-length count lists: fewer of the larger plates first. */
-function lexLess(a, b) {
+/** Python's (sum(a), a) < (sum(b), b): fewer plates, then fewer of the larger plates. */
+function fewerPlates(a, b) {
+  const countA = a.reduce((x, y) => x + y, 0);
+  const countB = b.reduce((x, y) => x + y, 0);
+  if (countA !== countB) return countA < countB;
   for (let i = 0; i < a.length; i++) {
     if (a[i] !== b[i]) return a[i] < b[i];
   }
@@ -147,14 +152,16 @@ function lexLess(a, b) {
 }
 
 /**
- * Every per-side total `inventory` can build, smallest first, each with the
- * combination that builds it from the fewest plates. Mirrors plates.py's
- * _inventory_totals, which explains the merging that keeps this fast.
+ * What pickFrom scans for this inventory: the sizes, largest first, and a
+ * scan(visit) that calls visit(total, combo) for every per-side total the
+ * inventory can build, with a combination that builds it. Mirrors plates.py's
+ * _inventory_entries, which explains the merging and the fallback, and adds
+ * the totals the same way.
  *
- * @returns {{sizes:number[], totals:{total:number, combo:number[]}[]}}
+ * @returns {{sizes:number[], scan:(visit:(total:number, combo:number[]) => void) => void}}
  * @throws {RangeError} if the inventory is over MAX_SEARCH_COMBINATIONS.
  */
-function inventoryTotals(inventory) {
+function inventoryEntries(inventory) {
   const sizeEntries = Object.entries(inventory).map(([s, c]) => [parseFloat(s), c]);
   const sizes = sizeEntries.map(([s]) => s).sort((a, b) => b - a);
   const invBySize = new Map(sizeEntries);
@@ -169,64 +176,94 @@ function inventoryTotals(inventory) {
     );
   }
 
-  let best = new Map([[0, { used: 0, combo: [] }]]);
-  sizes.forEach((size, i) => {
+  // Per total: plates used * span + the combination's rank in tuple order. Lower wins, as in Python.
+  let best = new Map([[0, 0]]);
+  let span = 1;
+  let steps = 0;
+  for (let i = 0; i < sizes.length; i++) {
+    const base = counts[i] + 1;
+    steps += best.size * base;
+    if (steps > MAX_MERGE_STEPS) {
+      return { sizes, scan: (visit) => everyCombination(sizes, counts, visit) };
+    }
     const grown = new Map();
-    for (const [total, { used, combo }] of best) {
-      for (let n = 0; n <= counts[i]; n++) {
-        const key = total + n * size;
+    for (const [total, code] of best) {
+      const used = Math.floor(code / span);
+      const rank = code % span;
+      for (let n = 0; n < base; n++) {
+        const key = total + n * sizes[i];
+        const next = (used + n) * span * base + rank * base + n;
         const seen = grown.get(key);
-        const nextUsed = used + n;
-        const nextCombo = [...combo, n];
-        if (
-          seen === undefined ||
-          nextUsed < seen.used ||
-          (nextUsed === seen.used && lexLess(nextCombo, seen.combo))
-        ) {
-          grown.set(key, { used: nextUsed, combo: nextCombo });
-        }
+        if (seen === undefined || next < seen) grown.set(key, next);
       }
     }
     best = grown;
-  });
+    span *= base;
+  }
 
-  const totals = [...best.values()].map(({ combo }) => {
+  const totals = [];
+  for (const [total, code] of best) {
+    let rank = code % span;
+    const combo = new Array(sizes.length);
+    for (let i = sizes.length - 1; i >= 0; i--) {
+      combo[i] = rank % (counts[i] + 1);
+      rank = Math.floor(rank / (counts[i] + 1));
+    }
+    totals.push({ total, combo });
+  }
+  totals.sort((a, b) => a.total - b.total);
+  return {
+    sizes,
+    scan: (visit) => {
+      for (const { total, combo } of totals) visit(total, combo);
+    },
+  };
+}
+
+/** Every combination in itertools.product order (last size fastest). Reuses one combo array. */
+function everyCombination(sizes, counts, visit) {
+  const combo = counts.map(() => 0);
+  for (;;) {
     let total = 0;
     for (let i = 0; i < sizes.length; i++) total += combo[i] * sizes[i];
-    return { total, combo };
-  });
-  totals.sort((a, b) => a.total - b.total || (lexLess(a.combo, b.combo) ? -1 : 1));
-  return { sizes, totals };
+    visit(total, combo);
+    let i = counts.length - 1;
+    while (i >= 0 && combo[i] === counts[i]) {
+      combo[i] = 0;
+      i--;
+    }
+    if (i < 0) return;
+    combo[i]++;
+  }
 }
 
 /**
- * Pick the best of inventoryTotals for one target: the heaviest total at or
- * below the per-side target, fewer plates on a tie within 1e-9. Mirrors
- * plates.py's _load_from_totals.
+ * The best of inventoryEntries for one target: the heaviest total at or
+ * below the per-side target, with totals within 1e-9 of each other taken as
+ * the same weight and settled by fewerPlates. Mirrors plates.py's _pick_from.
  */
-function loadFromTotals(target, inventory, unit, barWeight, { sizes, totals }) {
+function pickFrom(target, inventory, unit, barWeight, { sizes, scan }) {
   const perSide = (target - barWeight) / 2.0;
-  const plateCount = (combo) => combo.reduce((a, b) => a + b, 0);
 
   let bestCombo = sizes.map(() => 0);
   let bestTotal = 0.0;
   let bestDiff = perSide;
   let bestOver = null;
-  for (const { total, combo } of totals) {
+  scan((total, combo) => {
     if (total > perSide + 1e-9) {
-      bestOver = total;
-      break;
+      if (bestOver === null || total < bestOver) bestOver = total;
+      return;
     }
     const diff = perSide - total;
     if (
       diff < bestDiff - 1e-9 ||
-      (Math.abs(diff - bestDiff) <= 1e-9 && plateCount(combo) < plateCount(bestCombo))
+      (Math.abs(diff - bestDiff) <= 1e-9 && fewerPlates(combo, bestCombo))
     ) {
       bestDiff = diff;
       bestTotal = total;
-      bestCombo = combo;
+      bestCombo = combo.slice();
     }
-  }
+  });
 
   const loaded = [];
   for (let i = 0; i < sizes.length; i++) {
@@ -273,6 +310,6 @@ export function setupLoader(unit, bar, plates, preset, inventory) {
   checkInventory(inventory);
   const barWeight = bar !== null ? bar : DEFAULT_BAR[unit];
   checkBar(barWeight);
-  const search = inventoryTotals(inventory);
-  return { barWeight, load: (t) => loadFromTotals(t, inventory, unit, barWeight, search) };
+  const entries = inventoryEntries(inventory);
+  return { barWeight, load: (t) => pickFrom(t, inventory, unit, barWeight, entries) };
 }

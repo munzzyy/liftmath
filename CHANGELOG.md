@@ -71,8 +71,16 @@
   it together with `plates` or `preset` raises ValueError.
 - The finite-inventory solver merges combinations that reach the same total as it goes. A
   6-size inventory with 8 of each took about half a second per solve in Python and now takes
-  a few milliseconds. The answers are the same. When two combinations tie on total and plate
-  count, the web app now picks the same one as Python, the one with fewer of the larger plates.
+  a few milliseconds. Plate sizes with no common step, like 45.123457 and 25.345679, leave
+  nothing to merge and still get the old search over every combination, so memory stays flat.
+  Python picks the same plates as before. When two combinations tie on total and plate count,
+  the web app now picks the same one as Python, the one with fewer of the larger plates.
+- Inventory totals are added left to right on every Python version, the way the web app adds
+  them, so the two engines agree to the last digit. They went through sum() before, which
+  rounds differently on Python 3.12 and later. On those versions some totals built from plates
+  like 2.2 or 0.3 change in the last digit in `load_plates_from_inventory` and
+  `plates --inventory --json`, like 18.3 coming out as 18.299999999999997. The text output
+  rounds them the same as before.
 
 ## 2.5.1 - 2026-09-27
 

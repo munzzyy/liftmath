@@ -128,3 +128,14 @@ test("a realistic big home-gym inventory still solves under the caps", () => {
   const result = loadPlatesFromInventory(405, inv, { unit: "lb" });
   assert.equal(result.exact, true);
 });
+
+// The fixtures only compare within EPSILON. plates.py adds totals the same way, so the engines agree to the bit.
+test("loadPlatesFromInventory adds each total left to right, largest plate first", () => {
+  const merged = loadPlatesFromInventory(31.5, { 2.5: 2, 0.3: 1, 0.1: 1 }, { unit: "lb", bar: 7.5 });
+  assert.equal(merged.nearestBelow, 7.5 + 2 * (2 * 2.5 + 0.3 + 0.1));
+  // no common step to merge on, so this one checks every combination
+  const noStep = { 45.123457: 9, 35.234561: 9, 25.345679: 9, 10.123457: 9, 1.123457: 19 };
+  const full = loadPlatesFromInventory(173, noStep, { unit: "lb", bar: 45 });
+  assert.deepEqual(full.plates, [[35.234561, 1], [25.345679, 1], [1.123457, 3]]);
+  assert.equal(full.nearestBelow, 45 + 2 * (35.234561 + 25.345679 + 3 * 1.123457));
+});
