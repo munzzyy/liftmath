@@ -11,8 +11,8 @@ android {
         applicationId = "io.github.munzzyy.liftmath"
         minSdk = 24
         targetSdk = 36
-        versionCode = 20501
-        versionName = "2.5.1"
+        versionCode = 20600
+        versionName = "2.6.0"
     }
 
     buildTypes {

@@ -11,8 +11,8 @@ abstract: >-
 authors:
   - family-names: "Munz"
     given-names: "Cole"
-version: 2.5.1
-date-released: "2026-09-27"
+version: 2.6.0
+date-released: "2026-10-02"
 url: "https://github.com/munzzyy/liftmath"
 repository-code: "https://github.com/munzzyy/liftmath"
 license: GPL-3.0-or-later

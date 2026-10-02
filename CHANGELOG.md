@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.6.0 - 2026-10-02
 
 - The site moved to liftmath.munzzyy.dev. Share in the Android app hands out links there too.
 - The page footer says who made it and links to github.com/munzzyy. From the next release the
