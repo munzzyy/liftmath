@@ -7,6 +7,8 @@
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg)](LICENSE)
 ![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
 
+[<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/io.github.munzzyy.liftmath/)
+
 <p align="center">
   <a href="https://liftmath.munzzyy.dev/"><img src="docs/media/app-dark.png" alt="liftmath web app: a 1RM estimate, a plate calculator with a barbell that loads itself, and Wilks/DOTS/IPF strength scores" width="380"></a>
 </p>
@@ -57,10 +59,10 @@ you import or a command you run.
 
 The same app runs on Android from [`android/`](android): the web app bundled into a small WebView
 wrapper with no internet permission, so it works with the phone in airplane mode. Share opens the
-system share sheet and the rest timer keeps the screen on. Signed APKs are on the
-[releases page](https://github.com/munzzyy/liftmath/releases), and F-Droid is on the way (see [Roadmap](#roadmap)).
-[Tern](https://tern.munzzyy.dev) keeps it up to date from those releases. To build it yourself, run `./gradlew assembleDebug`
-inside `android/`.
+system share sheet and the rest timer keeps the screen on. Get it from
+[F-Droid](https://f-droid.org/packages/io.github.munzzyy.liftmath/), or download a signed APK from the
+[releases page](https://github.com/munzzyy/liftmath/releases) and let [Tern](https://tern.munzzyy.dev)
+keep it up to date from there. To build it yourself, run `./gradlew assembleDebug` inside `android/`.
 
 [<img src="https://tern.munzzyy.dev/badge.png" alt="Get it with Tern" height="80">](https://tern.munzzyy.dev/add/?url=https%3A%2F%2Fgithub.com%2Fmunzzyy%2Fliftmath)
 
@@ -449,12 +451,6 @@ If you change any math, both engines need the change. CONTRIBUTING.md has the fu
 
 These need a store or a decision more than they need code.
 
-- F-Droid. The build recipe
-  [was merged into fdroiddata](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/50147) on
-  2026-10-01. The package page is not up yet, so F-Droid still has to build and publish the first
-  version. Every update after that has to rebuild from its tag to the same bytes as the signed
-  APK here. That is what lets F-Droid ship this signature instead of its own. The link goes in
-  this README once the listing is live.
 - A rest timer that alerts while the Android app is in the background. The timer runs inside the
   page. Once you switch away the WebView throttles the page and then freezes it, so the buzz at
   zero is not reliable if you go to your music between sets. A native alarm would fix that. It
